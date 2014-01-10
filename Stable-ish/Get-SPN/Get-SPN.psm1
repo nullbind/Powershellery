@@ -20,33 +20,68 @@ function Get-SPN
 	   handy for both system administrators and penetration testers.  The script currentls supports 
 	   trusted connections and provided credentials.
 	.EXAMPLE
-	   Return list of servers running a particular service.  Below are some examples:
-	   Get-SPN  -type service -search "*www*"
-	   Get-SPN  -type service -search "MSSQLSvc*"
-	   Get-SPN  -type service -search "MSSQLSvc*" -List yes
-	   Get-SPN  -type service -search "*vnc*" -list yes | select server -Unique
-	   Get-SPN  -type service -search "MSSQLSvc*" -List yes | Select Server
-	   Get-SPN  -type service -search "MSSQLSvc*" -DomainController 192.168.1.100 -Credential domain\user
-	   Get-SPN  -type service -search "MSSQLSvc*" -List yes -DomainController 192.168.1.100 -Credential domain\user
-	   Get-SPN  -type service -search "MSSQLSvc*" -List yes -DomainController 192.168.1.100 -Credential domain\user | Select Server 
+	   Return a list of SQL Servers that have registered SPNs in LDAP on the current user's domain.
+	   
+	   PS C:\Get-SPN -type service -search "MSSQLSvc*"	   
+
+	   Name            : sql admin
+	   SAMAccount      : sqladmin
+	   Description     : This account is used to run SQL Server services on the domain.
+	   UserPrincipal   : sqladmin@demo.com
+	   DN              : CN=sql admin,CN=Users,DC=demo,DC=com
+	   Created         : 9/3/2010 9:42:08 PM
+	   LastModified    : 12/27/2013 6:40:35 PM
+	   PasswordLastSet : 12/27/2013 12:40:35 PM
+	   AccountExpires  : <Never>
+	   LastLogon       : 12/27/2013 8:46:10 PM
+	   GroupMembership : CN=Domain Admins,CN=Users,DC=demo,DC=com CN=Remote Desktop Users,CN=Builtin,DC=demo,DC=com
+	   SPN Count       : 1
+	   
+	   ServicePrincipalNames (SPN):
+	   MSSQLSvc/DB1.demo.com:1433
+	   
+	.EXAMPLE
+	   Return a list of SQL Servers that have registered SPNs in LDAP on the current user's domain in list view.  This output can be piped.
+	   PS C:\Get-SPN -type service -search "MSSQLSvc*" -List yes | Format-Table -AutoSize
+	   
+	   Account       Server       Service
+	   -------       ------       -------
+	   sqladmin      DB1.demo.com MSSQLSvc
+	   
+	.EXAMPLE
+	   Using supplied credentials return a list of SQL Servers that have registered SPNs in LDAP for the default domain of a remote domain controller.
+	   PS C:\Get-SPN  -type service -search "MSSQLSvc*" -List yes -DomainController 192.168.1.100 -Credential domain\user | Format-Table -AutoSize
+	   	   
+	   Account       Server       Service
+	   -------       ------       -------
+	   sqladmin      DB1.demo.com MSSQLSvc
+	   
+	.EXAMPLE
+	   Using supplied credentials return a list of SQL Servers that have registered SPNs in LDAP for the default domain of a remote domain controller, but select one column.
+	   PS C:\Get-SPN -type service -search "MSSQLSvc*" -List yes -DomainController 192.168.1.100 -Credential domain\user | Select Server | Format-Table -AutoSize
+
+	   Account
+	   -------
+	   sqladmin
+
 	 .EXAMPLE
-	   Return list of servers where a particular user is registered to run services.  Below are some examples:
-	   Get-SPN  -type user -search "serveradmin"
-	   Get-SPN  -type user -search "sqladmin"
-	   Get-SPN  -type user -search "sqladmin" -List yes
-	   Get-SPN  -type user -search "sqladmin" -List yes | Select Server
-	   Get-SPN  -type user -search "sqladmin" -DomainController 192.168.1.100 -Credential domain\user
-	   Get-SPN  -type user -search "sqladmin" -List yes -DomainController 192.168.1.100 -Credential domain\user
-	   Get-SPN  -type user -search "sqladmin" -List yes -DomainController 192.168.1.100 -Credential domain\user | Select Server
+	   Using supplied credentials to authenticate to a remote domain controller query LDAP to return a list of servers where the supplied user is registered to run services.
+	   PS C:\Get-SPN -type user -search "*sql*" -List yes -DomainController 192.168.1.100 -Credential domain\user -list yes | Format-Table -AutoSize
+	   
+	   Account  Server       Service
+	   -------  ------       -------
+	   sqladmin DB1.demo.com MSSQLSvc
+
 	 .EXAMPLE
-		Return list of servers where members of a particular domain group are registered to run services. Below are some examples:
-		Get-SPN  -type group -search "Domain Users"
-		Get-SPN  -type group -search "Domain Admins"
-		Get-SPN  -type group -search "Domain Admins" -List yes
-		Get-SPN  -type group -search "Domain Admins" -List yes | Select Server
-		Get-SPN  -type group -search "Domain Admins" -DomainController 192.168.1.100 -Credential domain\user
-		Get-SPN  -type group -search "Domain Admins" -List yes -DomainController 192.168.1.100 -Credential domain\user
-		Get-SPN  -type group -search "Domain Admins" -List yes -DomainController 192.168.1.100 -Credential domain\user | Select Server
+	   Using supplied credentials to authenticate to a remote domain controller query LDAP to return a list of servers where the supplied group members are registered to run services.
+	   PS C:\ Get-SPN -type group -search "Domain Admins" -List yes -DomainController 192.168.1.100 -Credential domain\user
+	   
+	   Account       Server        Service
+	   -------       ------        -------
+	   Administrator DB1.demo.com  MSSQLSvc
+	   sqladmin      DB1.demo.com  MSSQLSvc
+	   svc_PoolAdmin hav3.demo.com www
+
 	 .LINK
 		http://www.netspi.com
 		http://msdn.microsoft.com/en-us/library/windows/desktop/ms677949(v=vs.85).aspx
@@ -183,7 +218,7 @@ function Get-SPN
                 If (!$list){
 
                     # Format array as object and display records
-                    Write-Host " "
+                    Write-Verbose " "
                     [pscustomobject]$UserProps 
                 }
 
@@ -209,8 +244,8 @@ function Get-SPN
                     
                 # Only display line for detailed view
                 If (!$list){
-                    Write-Host " "
-                    Write-Host "-------------------------------------------------------------"
+                    Write-Verbose " "
+                    Write-Verbose "-------------------------------------------------------------"
                 }
             } 
 
@@ -218,18 +253,18 @@ function Get-SPN
             If (!$list){
 
                 # Display number of accounts found
-                Write-Host "Found $RecordCount accounts that matched your search."   
-                Write-Host "-------------------------------------------------------------"
-                Write-Host " "                                    
+                Write-Verbose "Found $RecordCount accounts that matched your search."   
+                Write-Verbose "-------------------------------------------------------------"
+                Write-Verbose " "                                    
 
                 # Dispaly list view of results
                 #$DataTable |  Sort-Object Account,Server,Service | select account,server,service -Unique
 
                 # Display number of service instances
                 #$InstanceCount = $DataTable.rows.count
-                #Write-Host "-------------------------------------------------------------"
-                #Write-Host "Found $InstanceCount service instances that matched your search."
-                #Write-Host "-------------------------------------------------------------"
+                #Write-Verbose "-------------------------------------------------------------"
+                #Write-Verbose "Found $InstanceCount service instances that matched your search."
+                #Write-Verbose "-------------------------------------------------------------"
             }else{
 
                 # Dispaly list view of results in sorted order
@@ -238,9 +273,9 @@ function Get-SPN
         }else{
 
             # Display fail
-            Write-Host " " 
-            Write-Host "No records were found that match your search."
-            Write-Host ""
+            Write-Verbose " " 
+            Write-Verbose "No records were found that match your search."
+            Write-Verbose ""
         }        
     }
 }
