@@ -260,7 +260,7 @@ function Get-SPN
                 Write-Verbose " "                                    
             }else{
 
-                # Dispaly list view of results in sorted order
+                # Display results in list view that can feed into the pipeline
                 $DataTable |  Sort-Object Account,Server,Service | select account,server,service -Unique
             }
         }else{
