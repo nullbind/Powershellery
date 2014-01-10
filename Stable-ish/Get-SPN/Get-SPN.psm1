@@ -1,5 +1,5 @@
 # Author: Scott Sutherland 2013, NetSPI
-# Version: Get-SPN version 1
+# Version: Get-SPN version 1.1
 # Requirements: Powershell v.3
 # Comments: The technique used to query LDAP was based on the "Get-AuditDSDisabledUserAcount" 
 # function found in Carols Perez's PoshSec-Mod project.#
@@ -256,15 +256,6 @@ function Get-SPN
                 Write-Verbose "Found $RecordCount accounts that matched your search."   
                 Write-Verbose "-------------------------------------------------------------"
                 Write-Verbose " "                                    
-
-                # Dispaly list view of results
-                #$DataTable |  Sort-Object Account,Server,Service | select account,server,service -Unique
-
-                # Display number of service instances
-                #$InstanceCount = $DataTable.rows.count
-                #Write-Verbose "-------------------------------------------------------------"
-                #Write-Verbose "Found $InstanceCount service instances that matched your search."
-                #Write-Verbose "-------------------------------------------------------------"
             }else{
 
                 # Dispaly list view of results in sorted order
