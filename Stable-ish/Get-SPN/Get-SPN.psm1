@@ -8,8 +8,9 @@
 function Get-SPN
 {	
 	<#
-	.Synopsis
+	.SYNOPSIS
 	   Displays Service Principal Names (SPN) for domain accounts based on SPN service name, domain account, or domain group via LDAP queries.
+	   
 	.DESCRIPTION
 	   Displays Service Principal Names (SPN) for domain accounts based on SPN service name, domain 
 	   account, or domain group via LDAP queries. This information can be used to identify systems 
@@ -19,6 +20,7 @@ function Get-SPN
 	   accounts where used to run services on the domain (which is very common).  So this should be 
 	   handy for both system administrators and penetration testers.  The script currentls supports 
 	   trusted connections and provided credentials.
+	   
 	.EXAMPLE
 	   Return a list of SQL Servers that have registered SPNs in LDAP on the current user's domain.
 	   
@@ -127,7 +129,7 @@ function Get-SPN
 
     Begin
     {        
-        # Setup domain and user defiend domain controller(if defined)
+        # Setup domain user and domain controller (if provided)
         if ($DomainController -and $Credential.GetNetworkCredential().Password)
         {
             $ObjDomain = New-Object System.DirectoryServices.DirectoryEntry "LDAP://$($DomainController)", $Credential.UserName,$Credential.GetNetworkCredential().Password
