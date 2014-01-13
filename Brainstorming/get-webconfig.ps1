@@ -1,4 +1,7 @@
-﻿# Check if appcmd.exe exists
+﻿# Author: Scott Sutherland 2013, NetSPI
+# Version: Get-Webconfig v1.0
+
+# Check if appcmd.exe exists
 if (Test-Path  ("c:\windows\system32\inetsrv\appcmd.exe"))
 {
     # Create data table to house results
