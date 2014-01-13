@@ -18,12 +18,21 @@ if (Test-Path  ("c:\windows\system32\inetsrv\appcmd.exe"))
     # Get list of virtual directories in IIS 
     c:\windows\system32\inetsrv\appcmd.exe list vdir /text:physicalpath | 
     foreach { 
-                        
+
+        $TheSite = $_
+
+        # Fix default site path 
+        if ($_ -like "*%*")
+        {
+            $TheDriveVar = $env:SystemDrive
+            $TheSite  = $_.replace("%SystemDrive%",$TheDriveVar)
+        }
+
         # Set site  
-        $CurrentSite = $_
+        $CurrentSite = $TheSite
 
         # Search for web.config files in each virtual directory
-        "$_" | Get-ChildItem -Recurse -Filter web.config | 
+        $TheSite | Get-ChildItem -Recurse -Filter web.config | 
         foreach{
             
             # Set web.config path
@@ -85,7 +94,6 @@ if (Test-Path  ("c:\windows\system32\inetsrv\appcmd.exe"))
 
 # Bugs / Todo
 # Need to finish decryption
-# Need to be able to dump creds from site with env vars in their path
 # Derpy derp....
 # Quick way without addressing encryption: 
 # for /f "tokens=*" %i in ('%systemroot%\system32\inetsrv\appcmd.exe list sites /text:name') do %systemroot%\system32\inetsrv\appcmd.exe list config "%i" -section:connectionstrings
