@@ -113,7 +113,7 @@ if (Test-Path  ("c:\windows\system32\inetsrv\appcmd.exe"))
     {
 
         # Display results in list view that can feed into the pipeline    
-        $DataTable |  Sort-Object user,pass,dbserv,vdir,path,encr | select user,pass,dbserv,vdir,path,encr -Unique | Format-Table -AutoSize
+        $DataTable |  Sort-Object user,pass,dbserv,vdir,path,encr | select user,pass,dbserv,vdir,path,encr -Unique       
     }else{
 
         # Status user
