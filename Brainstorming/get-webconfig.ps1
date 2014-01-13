@@ -1,5 +1,5 @@
 ﻿# Author: Scott Sutherland 2013, NetSPI
-# Version: Get-Webconfig v.-37
+# Version: Get-Webconfig v.0.141592
 
 # Check if appcmd.exe exists
 if (Test-Path  ("c:\windows\system32\inetsrv\appcmd.exe"))
@@ -61,7 +61,7 @@ if (Test-Path  ("c:\windows\system32\inetsrv\appcmd.exe"))
 
             }else{
 
-                # Check if appcmd.exe exists
+                # Check if aspnet_regiis.exe exists
                 if (Test-Path  ("c:\Windows\Microsoft.NET\Framework\v2.0.50727\aspnet_regiis.exe"))
                 {
 
@@ -71,13 +71,13 @@ if (Test-Path  ("c:\windows\system32\inetsrv\appcmd.exe"))
                         Del C:\TEMP\web.config 
                     }
                     
-                    # Copy web.config for decryption
+                    # Copy web.config from vdir to temp for decryption
                     Copy $CurrentPath C:\TEMP\web.config
 
-                    #Decrypt web.config                    
+                    #Decrypt web.config in temp                    
                     C:\Windows\Microsoft.NET\Framework\v2.0.50727\aspnet_regiis.exe -pdf "connectionStrings" "C:\TEMP" | Out-Null
 
-                    # Read the data from the web.config xml file
+                    # Read the data from the web.config in temp
                     [xml]$TMPConfigFile = Get-Content C:\TEMP\web.config
 
                     # Check if the connectionStrings are still encrypted
