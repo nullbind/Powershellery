@@ -22,13 +22,13 @@ if (Test-Path  ("c:\windows\system32\inetsrv\appcmd.exe"))
         $TheSite = $_
 
         # Fix default site path 
-        if ($_ -like "*%*")
+        if ($_ -like "*%SystemDrive%*")
         {
             $TheDriveVar = $env:SystemDrive
             $TheSite  = $_.replace("%SystemDrive%",$TheDriveVar)
         }
 
-        # Set site  
+        # Set site  clear
         $CurrentSite = $TheSite
 
         # Search for web.config files in each virtual directory
@@ -61,16 +61,49 @@ if (Test-Path  ("c:\windows\system32\inetsrv\appcmd.exe"))
 
             }else{
 
-                Write-Host "Found connectionStrings encrypted!"
-                
-                # Check if aspnet_regiis.exe exists
-                # %systemroot%\Microsoft.NET\Framework\v2.0.50727\aspnet_regiis.exe
-                # Copy web.config for vdir to c:\temp
-                # Decrypt web.config
-                # %systemroot%\Microsoft.NET\Framework\v2.0.50727\aspnet_regiis.exe -pdf connectionStrings c:\web.config
-                # Extract the credentials
-                # Log the credentials
-                # Remove the temp web.config file from c:\temp
+                # Check if appcmd.exe exists
+                if (Test-Path  ("c:\Windows\Microsoft.NET\Framework\v2.0.50727\aspnet_regiis.exe"))
+                {
+
+                    # Remove existing temp web.config
+                    if (Test-Path  ("c:\TEMP\web.config")) 
+                    { 
+                        Del C:\TEMP\web.config 
+                    }
+                    
+                    # Copy web.config for decryption
+                    Copy $CurrentPath C:\TEMP\web.config
+
+                    #Decrypt web.config                    
+                    C:\Windows\Microsoft.NET\Framework\v2.0.50727\aspnet_regiis.exe -pdf "connectionStrings" "C:\TEMP" | Out-Null
+
+                    # Read the data from the web.config xml file
+                    [xml]$TMPConfigFile = Get-Content C:\TEMP\web.config
+
+                    # Check if the connectionStrings are still encrypted
+                    if ($TMPConfigFile.configuration.connectionStrings.add)
+                    {
+                                
+                        # Foreach connection string add to data table
+                        $TMPConfigFile.configuration.connectionStrings.add| 
+                        foreach {
+
+                            [string]$MyConString = $_.connectionString  
+                            $ConfUser = $MyConString.Split("=")[3].Split(";")[0]
+                            $ConfPass = $MyConString.Split("=")[4].Split(";")[0]
+                            $ConfServ = $MyConString.Split("=")[1].Split(";")[0]
+                            $ConfVdir = $CurrentSite
+                            $ConfPath = $CurrentPath
+                            $ConfEnc = "Yes"
+                            $DataTable.Rows.Add($ConfUser, $ConfPass, $ConfServ,$ConfVdir,$CurrentPath, $ConfEnc) | Out-Null                    
+                        }  
+
+                    }else{
+                        Write-Host "Decryption of $CurrentPath failed."                        
+                    }
+                }else{
+                    Write-Host "aspnet_regiis.exe does not exist in the default location."
+                }
             }           
         }
     }
@@ -90,10 +123,19 @@ if (Test-Path  ("c:\windows\system32\inetsrv\appcmd.exe"))
     Write-Host "Appcmd.exe does not exist in the default location."
 }
 
- 
-
 # Bugs / Todo
-# Need to finish decryption
-# Derpy derp....
-# Quick way without addressing encryption: 
+# ---------------
+# needs a little qa
+# Sample output
+# PS C:\> C:\Powershellery\Brainstorming\get-webconfig.ps1
+#
+# user    pass       dbserv                vdir               path                          encr
+# ----    ----       ------                ----               ----                          ----
+# s1admin s1password 192.168.1.103\server1 C:\test2           C:\test2\web.config           No  
+# s1user  s1password 192.168.1.103\server1 C:\inetpub\wwwroot C:\inetpub\wwwroot\web.config No  
+# s2user  s2password 192.168.1.103\server2 C:\App1            C:\App1\test\web.config       No  
+# s2user  s2password 192.168.1.103\server2 C:\App1            C:\App1\web.config            Yes 
+# s3user  s3password 192.168.1.103\server3 C:\wamp\www        C:\wamp\www\web.config        No  
+
+# Quick and dirty method and doesn't do any decryption 
 # for /f "tokens=*" %i in ('%systemroot%\system32\inetsrv\appcmd.exe list sites /text:name') do %systemroot%\system32\inetsrv\appcmd.exe list config "%i" -section:connectionstrings
