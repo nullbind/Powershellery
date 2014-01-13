@@ -1,5 +1,5 @@
 ﻿# Author: Scott Sutherland 2013, NetSPI
-# Version: Get-Webconfig v1.0
+# Version: Get-Webconfig v.-37
 
 # Check if appcmd.exe exists
 if (Test-Path  ("c:\windows\system32\inetsrv\appcmd.exe"))
@@ -53,6 +53,15 @@ if (Test-Path  ("c:\windows\system32\inetsrv\appcmd.exe"))
             }else{
 
                 Write-Host "Found connectionStrings encrypted!"
+                
+                # Check if aspnet_regiis.exe exists
+                # %systemroot%\Microsoft.NET\Framework\v2.0.50727\aspnet_regiis.exe
+                # Copy web.config for vdir to c:\temp
+                # Decrypt web.config
+                # %systemroot%\Microsoft.NET\Framework\v2.0.50727\aspnet_regiis.exe -pdf connectionStrings c:\web.config
+                # Extract the credentials
+                # Log the credentials
+                # Remove the temp web.config file from c:\temp
             }           
         }
     }
@@ -74,4 +83,7 @@ if (Test-Path  ("c:\windows\system32\inetsrv\appcmd.exe"))
 
  
 
-# http://blogs.msdn.com/b/kalleb/archive/2008/07/19/using-powershell-to-read-xml-files.aspx
+# Bugs / Todo
+# Need to finish decryption
+# Need to be able to dump creds from site with env vars in their path
+# Derpy derp....
