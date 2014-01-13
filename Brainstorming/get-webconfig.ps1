@@ -87,3 +87,5 @@ if (Test-Path  ("c:\windows\system32\inetsrv\appcmd.exe"))
 # Need to finish decryption
 # Need to be able to dump creds from site with env vars in their path
 # Derpy derp....
+# Quick way without addressing encryption: 
+# for /f "tokens=*" %i in ('%systemroot%\system32\inetsrv\appcmd.exe list sites /text:name') do %systemroot%\system32\inetsrv\appcmd.exe list config "%i" -section:connectionstrings
