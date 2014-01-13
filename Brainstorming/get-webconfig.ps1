@@ -139,3 +139,8 @@ if (Test-Path  ("c:\windows\system32\inetsrv\appcmd.exe"))
 
 # Quick and dirty method and doesn't do any decryption 
 # for /f "tokens=*" %i in ('%systemroot%\system32\inetsrv\appcmd.exe list sites /text:name') do %systemroot%\system32\inetsrv\appcmd.exe list config "%i" -section:connectionstrings
+
+# Bugs
+# search for / and use the newest aspnet_regiis.exe on the system
+# use environmental variables for checking for and executing file
+# update temp %temp%
