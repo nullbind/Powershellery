@@ -10,7 +10,7 @@ if (Test-Path  ("c:\windows\system32\inetsrv\appcmd.exe"))
     # Create and name columns in the data table
     $DataTable.Columns.Add("user") | Out-Null
     $DataTable.Columns.Add("pass") | Out-Null  
-    $DataTable.Columns.Add("serv") | Out-Null
+    $DataTable.Columns.Add("dbserv") | Out-Null
     $DataTable.Columns.Add("vdir") | Out-Null
     $DataTable.Columns.Add("path") | Out-Null
     $DataTable.Columns.Add("encr") | Out-Null
@@ -71,7 +71,7 @@ if (Test-Path  ("c:\windows\system32\inetsrv\appcmd.exe"))
     {
 
         # Display results in list view that can feed into the pipeline    
-        $DataTable |  Sort-Object User,Pass,Serv,Vdir,Path,Encr | select User,Pass,Serv,Vdir,Path,Encr -Unique | Format-Table -AutoSize
+        $DataTable |  Sort-Object user,pass,dbserv,vdir,path,encr | select user,pass,dbserv,vdir,path,encr -Unique | Format-Table -AutoSize
     }else{
 
         # Status user

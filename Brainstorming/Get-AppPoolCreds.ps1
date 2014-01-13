@@ -1,3 +1,13 @@
+# Author: Scott Sutherland 2013, NetSPI
+# Version: Get-AppPoolCreds v.-37
+
+#todo
+#ftp
+#pool
+#server
+#vdir
+#ads
+
 <#
 	.SYNOPSIS
     Displays the clear text passwords for custom IIS application pool idenities.
