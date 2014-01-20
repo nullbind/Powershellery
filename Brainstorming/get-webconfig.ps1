@@ -12,50 +12,50 @@ function Get-Webconfig
 	       This script will identify all of the web.config files on the system and recover the  
 	       connectionStrings used to support authentication to backend databases.  If needed, the 
 	       script will also decrypt the connectionStrings on the fly.  The output supports the 
-           pipeline which can be used to convert all of the results into a pretty table by piping 
-           to format-table.
+	       pipeline which can be used to convert all of the results into a pretty table by piping 
+	       to format-table.
 	   
 	    .EXAMPLE
 	       Return a list of cleartext and decrypted connect strings from web.config files.
 	   
 	       PS C:\>get-webconfig.ps1 	   
 
-           user   : s1admin
-           pass   : s1password
-           dbserv : 192.168.1.103\server1
-           vdir   : C:\test2
-           path   : C:\test2\web.config
-           encr   : No
-
-           user   : s1user
-           pass   : s1password
-           dbserv : 192.168.1.103\server1
-           vdir   : C:\inetpub\wwwroot
-           path   : C:\inetpub\wwwroot\web.config
-           encr   : Yes
+	       user   : s1admin
+	       pass   : s1password
+	       dbserv : 192.168.1.103\server1
+	       vdir   : C:\test2
+	       path   : C:\test2\web.config
+	       encr   : No
+	       
+	       user   : s1user
+	       pass   : s1password
+	       dbserv : 192.168.1.103\server1
+	       vdir   : C:\inetpub\wwwroot
+	       path   : C:\inetpub\wwwroot\web.config
+	       encr   : Yes
 	   
 	    .EXAMPLE
 	       Return a list of cleartext and decrypted connect strings from web.config files.
 	   
 	       PS C:\>get-webconfig.ps1 | Format-Table -Autosize
-	   
-           user    pass       dbserv                vdir               path                          encr
-           ----    ----       ------                ----               ----                          ----
-           s1admin s1password 192.168.1.101\server1 C:\App1            C:\App1\web.config            No  
-           s1user  s1password 192.168.1.101\server1 C:\inetpub\wwwroot C:\inetpub\wwwroot\web.config No  
-           s2user  s2password 192.168.1.102\server2 C:\App2            C:\App2\test\web.config       No  
-           s2user  s2password 192.168.1.102\server2 C:\App2            C:\App2\web.config            Yes 
-           s3user  s3password 192.168.1.103\server3 D:\App3            D:\App3\web.config            No 
+	       
+	       user    pass       dbserv                vdir               path                          encr
+	       ----    ----       ------                ----               ----                          ----
+	       s1admin s1password 192.168.1.101\server1 C:\App1            C:\App1\web.config            No  
+	       s1user  s1password 192.168.1.101\server1 C:\inetpub\wwwroot C:\inetpub\wwwroot\web.config No  
+	       s2user  s2password 192.168.1.102\server2 C:\App2            C:\App2\test\web.config       No  
+	       s2user  s2password 192.168.1.102\server2 C:\App2            C:\App2\web.config            Yes 
+	       s3user  s3password 192.168.1.103\server3 D:\App3            D:\App3\web.config            No 
 
 	     .LINK
-		    http://www.netspi.com
-		    https://raw2.github.com/NetSPI/cmdsql/master/cmdsql.aspx
-		    http://www.iis.net/learn/get-started/getting-started-with-iis/getting-started-with-appcmdexe
-		    http://msdn.microsoft.com/en-us/library/k6h9cz8h(v=vs.80).aspx	
+	       http://www.netspi.com
+	       https://raw2.github.com/NetSPI/cmdsql/master/cmdsql.aspx
+	       http://www.iis.net/learn/get-started/getting-started-with-iis/getting-started-with-appcmdexe
+	       http://msdn.microsoft.com/en-us/library/k6h9cz8h(v=vs.80).aspx	
 
 	     .NOTES
-           Below is an alterantive method for grabbing connection strings, but it doesn't support decryption.
-           for /f "tokens=*" %i in ('%systemroot%\system32\inetsrv\appcmd.exe list sites /text:name') do %systemroot%\system32\inetsrv\appcmd.exe list config "%i" -section:connectionstrings
+	       Below is an alterantive method for grabbing connection strings, but it doesn't support decryption.
+	       for /f "tokens=*" %i in ('%systemroot%\system32\inetsrv\appcmd.exe list sites /text:name') do %systemroot%\system32\inetsrv\appcmd.exe list config "%i" -section:connectionstrings
 	    #>
 
 
