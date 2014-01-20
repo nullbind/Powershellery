@@ -6,7 +6,7 @@ function Get-Webconfig
 	
     <#
 	    .SYNOPSIS
-	       This script will recover cleartext and encryped connection strings from all web.config files on the system.
+	       This script will recover cleartext and encrypted connection strings from all web.config files on the system.
 	   
 	    .DESCRIPTION
 	       This script will identify all of the web.config files on the system and recover the  
