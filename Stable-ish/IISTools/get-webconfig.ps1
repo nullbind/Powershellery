@@ -163,10 +163,10 @@ function Get-Webconfig
                             }  
 
                         }else{
-                            Write-Host "Decryption of $CurrentPath failed."                        
+                            Write-Error "Decryption of $CurrentPath failed."                        
                         }
                     }else{
-                        Write-Host "aspnet_regiis.exe does not exist in the default location."
+                        Write-Error "aspnet_regiis.exe does not exist in the default location."
                     }
                 }           
             }
@@ -181,10 +181,10 @@ function Get-Webconfig
         }else{
 
             # Status user
-            Write-Host "No connectionStrings found."
+            Write-Error "No connectionStrings found."
         }     
     }else{
-        Write-Host "Appcmd.exe does not exist in the default location."
+        Write-Error "Appcmd.exe does not exist in the default location."
     }
 
 }
