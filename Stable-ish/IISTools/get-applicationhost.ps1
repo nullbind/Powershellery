@@ -1,8 +1,7 @@
 function Get-ApplicationHost
 {	
     # Author: Scott Sutherland - 2014, NetSPI
-    # Author: Antti Rantasaari - 2014, NetSPI
-    # Version: Get-Webconfig.ps1 v1.0
+    # Version: Get-ApplicationHost.ps1 v1.0
 	
     <#
 	    .SYNOPSIS
