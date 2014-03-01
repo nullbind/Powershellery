@@ -1,4 +1,4 @@
-function Get-Webconfig
+function Get-ApplicationHost
 {	
     # Author: Scott Sutherland - 2014, NetSPI
     # Author: Antti Rantasaari - 2014, NetSPI
@@ -143,4 +143,4 @@ function Get-Webconfig
     }
 
 }
-Get-Webconfig
+Get-ApplicationHost
