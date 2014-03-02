@@ -1,15 +1,15 @@
 function Get-ApplicationHost
 {	
     # Author: Scott Sutherland - 2014, NetSPI
-    # Version: Get-ApplicationHost.ps1 v1.0
+    # Version: Get-ApplicationHost v1.0
 	
     <#
 	    .SYNOPSIS
 	       This script will recover encrypted application pool and virtual directory passwords from the applicationHost.config on the system.
 	   
 	    .DESCRIPTION
-	       This script will the applicationHost.config on the system and recover the  
-	       encrypted application pool and virtual directory passwords.  The output supports the 
+	       This script will decrypt and recover application pool and virtual directory passwords
+	       from the applicationHost.config file on the system.  The output supports the 
 	       pipeline which can be used to convert all of the results into a pretty table by piping 
 	       to format-table.
 	   
@@ -24,8 +24,8 @@ function Get-ApplicationHost
             vdir    : NA
             apppool : ApplicationPool1
 
-            user    : PoolUser1
-            pass    : PoolParty1!
+            user    : PoolUser2
+            pass    : PoolParty2!
             type    : Application Pool
             vdir    : NA
             apppool : ApplicationPool2
@@ -50,9 +50,9 @@ function Get-ApplicationHost
             user          pass               type              vdir         apppool
             ----          ----               ----              ----         -------
             PoolUser1     PoolParty1!       Application Pool   NA           ApplicationPool1
-            PoolUser1     PoolParty2!       Application Pool   NA           ApplicationPool2 
+            PoolUser2     PoolParty2!       Application Pool   NA           ApplicationPool2 
             VdirUser1     VdirPassword1!    Virtual Directory  site1/vdir1/ NA     
-            VdirUser1     VdirPassword2!    Virtual Directory  site2/       NA     
+            VdirUser2     VdirPassword2!    Virtual Directory  site2/       NA     
 
 	     .LINK
 	       http://www.netspi.com
@@ -135,7 +135,7 @@ function Get-ApplicationHost
         }else{
 
             # Status user
-            Write-Error "No passwords were found."
+            Write-Error "No application pool or virtual directory passwords were found."
         }     
     }else{
         Write-Error "Appcmd.exe does not exist in the default location."
