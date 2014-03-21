@@ -295,4 +295,4 @@ function Invoke-FindandQuerySQL
     }
 }
 
-Invoke-FindandQuerySQL -DomainController 10.2.3.3 -Credential netspi\ssutherland 
+Invoke-FindandQuerySQL -DomainController 192.168.1.100 -Credential netspi\ssutherland 
