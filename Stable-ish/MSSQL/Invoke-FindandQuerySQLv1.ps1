@@ -2,15 +2,16 @@
 # Version: Invoke-FindandQuerySQL version .01
 # Requirements: Powershell v.3
 
-#todo
-# put output in table
+# todo
+# ----
 # add authentication as option (sql server, trusted connection, alternative Windows credentials)
+# seperate custom and default info gather query
+# write full info gather query
+# update default output - add colors and remove query output...
+# add custom query option
 # finalize table option
-# add ping check and reduce sql auth time out
-# figure out alternative windows creds\
-# [ ] enumeratings databases from ldap
-# [+] found x database servers
-
+# update help
+# make pretty
 
 function Invoke-FindandQuerySQL
 {	
