@@ -160,8 +160,11 @@ function Invoke-FindandQuerySQL
         }
 
         # Status user
-        Write-Output "[ ] -----------------------------------------------------------"
-        Write-Output "[ ] Sending LDAP query to $DomainController as $CurrentUser ..." 
+        $StartTime = Get-Date
+        Write-Output "[ ] ----------------------------------------------------------------------"
+        Write-Output "[ ] Start Date/Time: $StartTime"
+        Write-Output "[ ] ----------------------------------------------------------------------"
+        Write-Output "[ ] Getting list of SQL Servers from $DomainController as $CurrentUser..."         
 
         # Get a count of the number of accounts that match the LDAP query
         $Records = $ObjSearcher.FindAll()
@@ -220,9 +223,9 @@ function Invoke-FindandQuerySQL
 
                 # Status user
                 $SQLServerCount = $TableLDAP.Rows.Count
-                Write-Output "[ ] -----------------------------------------------------------"
-                Write-Output "[ ] $SQLServerCount SQL Server instances will be tested..."    
-                Write-Output "[ ] -----------------------------------------------------------"
+                Write-Output "[+] $SQLServerCount SQL Server instances found."    
+                Write-Output "[ ] Attempting to login into SQL Server instances as $CurrentUser..."
+                Write-Output "[ ] ----------------------------------------------------------------------"
 
                 # Display results in list view that can feed into the pipeline
                 $TableLDAP |  Sort-Object server,instance| select server,instance -unique | foreach {
@@ -241,7 +244,7 @@ function Invoke-FindandQuerySQL
                     $conn.ConnectionString = "Server=$SQLInstance;Database=master;Trusted_Connection=True;" #CurrentwinCreds aka TrustedConnection - uses typed in creds?
 
                     #-------------------------
-                    # Test database conections
+                    # Test database conection
                     #-------------------------
 
                     # Check if the server is up via ping
@@ -255,19 +258,26 @@ function Invoke-FindandQuerySQL
                             $sql = "SELECT name from master..sysdatabases"
                             $cmd = New-Object System.Data.SqlClient.SqlCommand($sql,$conn)
                             #$cmd.CommandTimeout = 2
-                            $rdr = $cmd.ExecuteReader()
-                            $QueryOutput = @()
-                            while($rdr.Read())
+                            $reader = $cmd.ExecuteReader()
+                            $results = @()
+                            while ($reader.Read())
                             {
-                                $QueryOutput += ($rdr["name"].ToString())
+                                $row = @{}
+                                for ($i = 0; $i -lt $reader.FieldCount; $i++)
+                                {
+                                    $row[$reader.GetName($i)] = $reader.GetValue($i)
+                                }
+                                $results += new-object psobject -property $row            
                             }
 
                             # Status user
                             Write-Output "[+] $SQLInstance is up - authentication successful"
-                            Write-Output "    Query Data: $QueryOutput"
-
+                            Write-Output "Query results:"
+                            $results
+                            Write-Output " "
                             # Add record to list
-                            $TableSQL.Rows.Add($SQLServer, $SQLInstance, $QueryOutput,'user','sysadmin','svcacct','dblinks') | Out-Null 
+                            $TableSQL.Rows.Add($SQLServer, $SQLInstance, 'results','user','sysadmin','svcacct','dblinks') | Out-Null 
+                            $connection.Close();
                         }
                         Catch
                         {
@@ -281,18 +291,25 @@ function Invoke-FindandQuerySQL
 
                 # Status user
                 $SQLServerLoginCount = $TableSQL.Rows.count
-                Write-Output "[ ] -----------------------------------------------------------"   
-                Write-Output "[+] $SQLServerLoginCount SQL Server instances could be accessed as $CurrentUser"    
-                Write-Output "[ ] -----------------------------------------------------------"
+                Write-Output "[ ] ----------------------------------------------------------------------"  
+                Write-Output "[+] $SQLServerLoginCount SQL Server instances could be accessed as $CurrentUser"                  
             }
         }else{
 
             # Display fail
-            Write-Output "[ ] -----------------------------------------------------------"
-            Write-Output "[-] No SQL Servers were found in Active Directory."
-            Write-Output "[ ] -----------------------------------------------------------"
-        }        
+            Write-Output "[ ] ----------------------------------------------------------------------"
+            Write-Output "[-] No SQL Servers were found in Active Directory."            
+        }      
+        
+        # Status user
+        $EndTime = Get-Date
+        $TotalTime = NEW-TIMESPAN –Start $Starttime –End $Endtime        
+        Write-Output "[ ] ----------------------------------------------------------------------" 
+        Write-Output "[ ] End Date/Time: $Endtime"
+        Write-Output "[ ] ----------------------------------------------------------------------" 
+        Write-Output "[ ] Total Time: $TotalTime" 
+        Write-Output "[ ] ----------------------------------------------------------------------" 
     }
 }
 
-Invoke-FindandQuerySQL -DomainController 192.168.1.100 -Credential domain\user 
+Invoke-FindandQuerySQL -DomainController 10.2.3.3 -Credential netspi\ssutherland
