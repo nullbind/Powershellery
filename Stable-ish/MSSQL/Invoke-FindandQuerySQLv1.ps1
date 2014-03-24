@@ -138,13 +138,12 @@ function Invoke-FindandQuerySQL
         $TableSQL = New-Object System.Data.DataTable 
 
         # Create and name columns in the data table
-        $TableSQL.Columns.Add("Server") | Out-Null
-        $TableSQL.Columns.Add("Instance") | Out-Null
-        $TableSQL.Columns.Add("Query") | Out-Null  
-        $TableSQL.Columns.Add("User") | Out-Null 
-        $TableSQL.Columns.Add("Sysadmin") | Out-Null 
-        $TableSQL.Columns.Add("SvcAcct") | Out-Null 
-        $TableSQL.Columns.Add("DBLinks") | Out-Null
+        $TableSQL.Columns.Add("ipaddress") | Out-Null
+        $TableSQL.Columns.Add("server") | Out-Null
+        $TableSQL.Columns.Add("instance") | Out-Null
+        $TableSQL.Columns.Add("sqlver") | Out-Null  
+        $TableSQL.Columns.Add("osver") | Out-Null 
+        $TableSQL.Columns.Add("sysadmin") | Out-Null 
 
         #----------------------------
         # Setup LDAP query parameters
@@ -225,7 +224,7 @@ function Invoke-FindandQuerySQL
                 # Status user
                 $SQLServerCount = $TableLDAP.Rows.Count
                 Write-Output "[+] $SQLServerCount SQL Server instances found."    
-                Write-Output "[ ] Attempting to login into SQL Server instances as $CurrentUser..."
+                Write-Output "[ ] Attempting to login into $SQLServerCount SQL Server instances as $CurrentUser..."
                 Write-Output "[ ] ----------------------------------------------------------------------"
 
                 # Display results in list view that can feed into the pipeline
@@ -254,35 +253,56 @@ function Invoke-FindandQuerySQL
 
                         Try
                         {
+                            # Get host ip address
+                            $SQLServerIP = [Net.Dns]::GetHostEntry($SQLServer).AddressList.IPAddressToString.split(" ")[0]
+
                             # Create connection to system and issue query 
                             $conn.Open()
                             $sql = "SELECT @@servername as server,SERVERPROPERTY('productversion') as sqlver,RIGHT(SUBSTRING(@@VERSION, CHARINDEX('Windows NT', @@VERSION), 14), 3) as osver,is_srvrolemember('sysadmin') as priv"
                             $cmd = New-Object System.Data.SqlClient.SqlCommand($sql,$conn)
                             $cmd.CommandTimeout = 0
-                            $reader = $cmd.ExecuteReader()
-                            $results = @()
-                            while ($reader.Read())
-                            {
-                                $row = @{}
-                                for ($i = 0; $i -lt $reader.FieldCount; $i++)
-                                {
-                                    $row[$reader.GetName($i)] = $reader.GetValue($i)
-                                }
-                                $results += new-object psobject -property $row            
-                            }
+                            $results = $cmd.ExecuteReader()
+                            $MyTempTable = new-object “System.Data.DataTable”
+                            $MyTempTable.Load($results)
 
+                            # Add entry to sql server data table
+                            foreach ($row in $MyTempTable){  
+                            
+                                # Get SQL Server Version
+                                $SQLVersioncheck = $MyTempTable.sqlver.split(".")[0]
+                                if ( $SQLVersioncheck -eq '7' ){ $SQLVersion = "7" }
+                                    elseif ( $SQLVersioncheck -eq '8' ){ $SQLVersion = "2000" }
+                                    elseif ( $SQLVersioncheck -eq '9' ){ $SQLVersion = "2005" }
+                                    elseif ( $SQLVersioncheck -eq '10' ){ $SQLVersion = "2008" }
+                                    elseif ( $SQLVersioncheck -eq '11' ){ $SQLVersion = "2012" }
+                                else { $SQLVersion = $MyTempTable.sqlver }
+
+                                # Get OS Server Version
+                                # Use http://support.microsoft.com/?kbid=304721 to figure out workstation vs server
+                                $OSVersioncheck = $MyTempTable.osver.split(".")[0]+"."+$MyTempTable.osver.split(".")[1]
+                                if ( $OSVersioncheck -eq '7' ){ $OSVersion = "7" }
+                                    elseif ( $OSVersioncheck -eq '6.3' ){ $OSVersion = "Windows 8.1 or Server 2012" }
+                                    elseif ( $OSVersioncheck -eq '6.2' ){ $OSVersion = "Windows 8 or Server 2012" }
+                                    elseif ( $OSVersioncheck -eq '6.1' ){ $OSVersion = "Windows 7 or Server 2008 R2" }
+                                    elseif ( $OSVersioncheck -eq '6.0' ){ $OSVersion = "Windows Vista or Server 2008" }
+                                    elseif ( $OSVersioncheck -eq '5.2' ){ $OSVersion = "Windows Server 2003" }
+                                    elseif ( $OSVersioncheck -eq '5.1' ){ $OSVersion = "Windows XP or Server 2003" }
+                                    elseif ( $OSVersioncheck -eq '5.0' ){ $OSVersion = "Windows 2000" }
+                                else { $OSVersion = $MyTempTable.osver }
+                                                                                                                      
+                                $TableSQL.Rows.Add($SQLServerIP, $SQLServer, $SQLInstance, $SQLVersion,$OSVersion,$($MyTempTable.priv)) | Out-Null                                 
+                            }                                                  
+                            
                             # Status user
-                            Write-Output "[+] $SQLInstance is up - authentication successful"
-                            Write-Output "Query results:"
-                            $results | Format-Table -AutoSize
-                            Write-Output " "
-                            # Add record to list
-                            $TableSQL.Rows.Add($SQLServer, $SQLInstance, 'results','user','sysadmin','svcacct','dblinks') | Out-Null 
+                            write-host "[-] $SQLInstance ($SQLServerIP) - SUCCESS!"                           
+                            $TableSQL | format-table -autosize
+
+                            # close connection                            
                             $connection.Close();
                         }
                         Catch
                         {
-                            write-host "[-] $SQLInstance is up - authentication failed or bad query"
+                            write-host "[-] $SQLInstance ($SQLServerIP) is up - FAIL!"
                         }
 
                     }else{
@@ -290,10 +310,17 @@ function Invoke-FindandQuerySQL
                     }
                 }
 
-                # Status user
+                #-------------------------
+                # Display results
+                #-------------------------
+                $TableSQL | format-table -autosize 
                 $SQLServerLoginCount = $TableSQL.Rows.count
-                Write-Output "[ ] ----------------------------------------------------------------------"  
-                Write-Output "[+] $SQLServerLoginCount SQL Server instances could be accessed as $CurrentUser"                  
+                if ($SQLServerLoginCount -gt 0) {                                        
+                    Write-Output "[ ] ----------------------------------------------------------------------"  
+                    Write-Output "[+] $SQLServerLoginCount of $SQLServerCount SQL Server instances could be accessed as $CurrentUser" 
+                }else{
+                    Write-Output "[-] No SQL Server instances could be accessed as $CurrentUser" 
+                }                                 
             }
         }else{
 
@@ -313,4 +340,4 @@ function Invoke-FindandQuerySQL
     }
 }
 
-Invoke-FindandQuerySQL -DomainController 192.168.1.1 -Credential demo\user
+Invoke-FindandQuerySQL -DomainController 192.168.1.100 -Credential demo\user
