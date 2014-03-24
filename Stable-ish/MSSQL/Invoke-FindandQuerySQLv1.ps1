@@ -12,6 +12,7 @@
 # finalize table option
 # update help
 # make pretty
+# http://blogs.technet.com/b/heyscriptingguy/archive/2013/05/06/10-tips-for-the-sql-server-powershell-scripter.aspx
 
 function Invoke-FindandQuerySQL
 {	
@@ -255,9 +256,9 @@ function Invoke-FindandQuerySQL
                         {
                             # Create connection to system and issue query 
                             $conn.Open()
-                            $sql = "SELECT name from master..sysdatabases"
+                            $sql = "SELECT @@servername as server,SERVERPROPERTY('productversion') as sqlver,RIGHT(SUBSTRING(@@VERSION, CHARINDEX('Windows NT', @@VERSION), 14), 3) as osver,is_srvrolemember('sysadmin') as priv"
                             $cmd = New-Object System.Data.SqlClient.SqlCommand($sql,$conn)
-                            #$cmd.CommandTimeout = 2
+                            $cmd.CommandTimeout = 0
                             $reader = $cmd.ExecuteReader()
                             $results = @()
                             while ($reader.Read())
@@ -273,7 +274,7 @@ function Invoke-FindandQuerySQL
                             # Status user
                             Write-Output "[+] $SQLInstance is up - authentication successful"
                             Write-Output "Query results:"
-                            $results
+                            $results | Format-Table -AutoSize
                             Write-Output " "
                             # Add record to list
                             $TableSQL.Rows.Add($SQLServer, $SQLInstance, 'results','user','sysadmin','svcacct','dblinks') | Out-Null 
@@ -312,4 +313,4 @@ function Invoke-FindandQuerySQL
     }
 }
 
-Invoke-FindandQuerySQL -DomainController 10.2.3.3 -Credential netspi\ssutherland
+Invoke-FindandQuerySQL -DomainController 192.168.1.1 -Credential demo\user
