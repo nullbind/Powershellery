@@ -4,15 +4,18 @@
 
 # todo
 # ----
-# add authentication as option (sql server, trusted connection, alternative Windows credentials)
-# seperate custom and default info gather query
-# write full info gather query
-# update default output - add colors and remove query output...
-# add custom query option
-# finalize table option
+# add authentication as option (sql server + domain creds)
+# - sql auth + domain creds
+# - trusted connection
+# - add help to show how to runas as alternative windows user # powershell.exe -Credential "TestDomain\Me" -NoNewWindow
+# 
+# only show status table in verbose mode
+# show full pipable table at the end of default output
+# add other fields dblinks,svcacct,clustered 
+# determine if sql server is a server or workstation to determine specific os
 # update help
-# make pretty
-# http://blogs.technet.com/b/heyscriptingguy/archive/2013/05/06/10-tips-for-the-sql-server-powershell-scripter.aspx
+# Make it all pretty
+# fix pop up = $credential = New-Object System.Management.Automation.PsCredential(".\administrator", (ConvertTo-SecureString "P@ssw0rd" -AsPlainText -Force))
 
 function Invoke-FindandQuerySQL
 {	
@@ -25,9 +28,27 @@ function Invoke-FindandQuerySQL
        the Service Principal Names (SPN). The list is then used to test if the provided user has
        access to login along with some based configuration information.The script currently supports 
 	   trusted connections and provided credentials.
+	
+.EXAMPLE
+	   Return a list of SQL Servers that have registered SPNs in LDAP on the current user's domain using the trusted connection (current user).
 	   
+	   PS C:\Invoke-FindandQuerySQL.ps1 -DomainController 192.168.1.100 -Credential domain\user	   
+
+        [ ] Sending LDAP query to 192.168.1.100 as demo\user...
+        [ ] ---------------------------------------------------
+        [ ] 4 SQL Servers will be tested...
+        [ ] ---------------------------------------------------	   
+        [-] server1.acme.local,58697 is down!
+        [-] server2.acme.local is up - authentication failed or bad query
+        [+] server3.acme.local,1433 is up - authentication successful
+        [+] server4.acme.local\SQLEXPRESS is up - authentication successful
+        [ ] ---------------------------------------------------
+        [ ] Testing of access to SQL Server complete.
+        [+] 6 SQL Servers could be accessed by demo\user
+        [ ] ---------------------------------------------------
+        	   
 	.EXAMPLE
-	   Return a list of SQL Servers that have registered SPNs in LDAP on the current user's domain.
+	   Return a list of SQL Servers that have registered SPNs in LDAP on the current user's domain using a provided set of domain cedentials.
 	   
 	   PS C:\Invoke-FindandQuerySQL.ps1 -DomainController 192.168.1.100 -Credential domain\user	   
 
@@ -144,6 +165,9 @@ function Invoke-FindandQuerySQL
         $TableSQL.Columns.Add("sqlver") | Out-Null  
         $TableSQL.Columns.Add("osver") | Out-Null 
         $TableSQL.Columns.Add("sysadmin") | Out-Null 
+        #$TableSQL.Columns.Add("svcacct") | Out-Null 
+        #$TableSQL.Columns.Add("dblinks") | Out-Null # (select count(srvname) from master..sysservers)
+        ##$TableSQL.Columns.Add("IsClustered") | Out-Null # (select SERVERPROPERTY('IsClustered')) 
 
         #----------------------------
         # Setup LDAP query parameters
@@ -161,10 +185,14 @@ function Invoke-FindandQuerySQL
 
         # Status user
         $StartTime = Get-Date
-        Write-Output "[ ] ----------------------------------------------------------------------"
-        Write-Output "[ ] Start Date/Time: $StartTime"
-        Write-Output "[ ] ----------------------------------------------------------------------"
-        Write-Output "[ ] Getting list of SQL Servers from $DomainController as $CurrentUser..."         
+        Write-Host "[ ] ----------------------------------------------------------------------"
+        Write-Host "[ ] Start Time: $StartTime"        
+        Write-Host "[ ] Getting a list of SQL Server instances from the domain controller..."         
+
+
+        # --------------------------------------------------------
+        # Get list of SQL Server instances from domain controller
+        # --------------------------------------------------------
 
         # Get a count of the number of accounts that match the LDAP query
         $Records = $ObjSearcher.FindAll()
@@ -223,9 +251,9 @@ function Invoke-FindandQuerySQL
 
                 # Status user
                 $SQLServerCount = $TableLDAP.Rows.Count
-                Write-Output "[+] $SQLServerCount SQL Server instances found."    
-                Write-Output "[ ] Attempting to login into $SQLServerCount SQL Server instances as $CurrentUser..."
-                Write-Output "[ ] ----------------------------------------------------------------------"
+                Write-Host "[+] $SQLServerCount SQL Server instances found."    
+                Write-Host "[ ] Attempting to login into $SQLServerCount SQL Server instances..."
+                Write-Host "[ ] ----------------------------------------------------------------------"
 
                 # Display results in list view that can feed into the pipeline
                 $TableLDAP |  Sort-Object server,instance| select server,instance -unique | foreach {
@@ -233,15 +261,14 @@ function Invoke-FindandQuerySQL
                     #------------------------
                     # Setup connection string
                     #------------------------
-
+                    $conn = New-Object System.Data.SqlClient.SqlConnection
                     $SQLServer = $_.server
                     $SQLInstance = $_.instance
-                    $conn = New-Object System.Data.SqlClient.SqlConnection
 
-                    # Set authentication type
-                    #$connection = New-Object-TypeName System.Data.OleDb.OleDbConnection  #ODBC              
-                    #$conn.ConnectionString = "Server=$SQLServer;Database=master;User ID=superadmin;Password=superpassword;" #SQL Creds
-                    $conn.ConnectionString = "Server=$SQLInstance;Database=master;Trusted_Connection=True;" #CurrentwinCreds aka TrustedConnection - uses typed in creds?
+                    # Set authentication type                                                    
+                    #$conn.ConnectionString = "Server=$SQLInstance;Database=master;User ID=superadmin;Password=superpassword;" # Provided SQL Credentials
+                    $conn.ConnectionString = "Server=$SQLInstance;Database=master;Integrated Security=SSPI;" # Trusted Connection - Need to runas for alt creds
+                    #$conn.ConnectionString = "Server=$SQLInstance;Database=master;Trusted_Connection=True;" # Trusted Connection
 
                     #-------------------------
                     # Test database conection
@@ -294,50 +321,60 @@ function Invoke-FindandQuerySQL
                             }                                                  
                             
                             # Status user
-                            write-host "[-] $SQLInstance ($SQLServerIP) - SUCCESS!"                           
-                            $TableSQL | format-table -autosize
+                            if ($($MyTempTable.priv) -eq 1){
+                                $DBAaccess = "Sysadmin privs!"
+                            }else{
+                                $DBAaccess = "User privs"
+                            }
+
+                            write-host "[+] SUCCESS! - $SQLInstance ($SQLServerIP) - SQL Server $SQLVersion - $DBAaccess"                                
+                            #$TableSQL | Format-Table -Autosize
 
                             # close connection                            
                             $connection.Close();
                         }
                         Catch
                         {
-                            write-host "[-] $SQLInstance ($SQLServerIP) is up - FAIL!"
+                            write-host "[-] Failed   - $SQLInstance ($SQLServerIP) is up, but authentication failed"
                         }
 
                     }else{
-                        write-host "[-] $SQLInstance is down!"
+                        write-host "[-] Failed   - $SQLServer is not respnding to pings"
                     }
                 }
 
                 #-------------------------
                 # Display results
                 #-------------------------
-                $TableSQL | format-table -autosize 
                 $SQLServerLoginCount = $TableSQL.Rows.count
                 if ($SQLServerLoginCount -gt 0) {                                        
-                    Write-Output "[ ] ----------------------------------------------------------------------"  
-                    Write-Output "[+] $SQLServerLoginCount of $SQLServerCount SQL Server instances could be accessed as $CurrentUser" 
+                    Write-Host "[ ] ----------------------------------------------------------------------"  
+                    Write-Host "[+] $SQLServerLoginCount of $SQLServerCount SQL Server instances could be accessed." 
                 }else{
                     Write-Output "[-] No SQL Server instances could be accessed as $CurrentUser" 
                 }                                 
             }
         }else{
 
-            # Display fail
-            Write-Output "[ ] ----------------------------------------------------------------------"
+            # Display fail            
             Write-Output "[-] No SQL Servers were found in Active Directory."            
         }      
         
         # Status user
         $EndTime = Get-Date
         $TotalTime = NEW-TIMESPAN –Start $Starttime –End $Endtime        
-        Write-Output "[ ] ----------------------------------------------------------------------" 
-        Write-Output "[ ] End Date/Time: $Endtime"
-        Write-Output "[ ] ----------------------------------------------------------------------" 
-        Write-Output "[ ] Total Time: $TotalTime" 
-        Write-Output "[ ] ----------------------------------------------------------------------" 
+        Write-Host "[ ] ----------------------------------------------------------------------" 
+        Write-Host "[ ] End Time: $Endtime"
+        Write-Host "[ ] ----------------------------------------------------------------------" 
+        Write-Host "[ ] Total Time: $TotalTime" 
+        Write-Host "[ ] ----------------------------------------------------------------------" 
+
+        # Display final results
+        $TableSQL | format-table -AutoSize
     }
 }
 
-Invoke-FindandQuerySQL -DomainController 192.168.1.100 -Credential demo\user
+
+
+#Invoke-FindandQuerySQL -DomainController 192.168.1.100 -Credential demo\user #Supplied Domain Creds and SQL Creds
+Invoke-FindandQuerySQL # Trusted Connection 
