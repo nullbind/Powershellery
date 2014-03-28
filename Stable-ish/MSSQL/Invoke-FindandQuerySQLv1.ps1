@@ -5,7 +5,8 @@
 # todo
 # ----
 # add help to show how to runas as alternative windows user # powershell.exe -Credential "TestDomain\Me" -NoNewWindow
-# add other fields dblinks,svcacct,clustered 
+# add switch to connect to database as sql user
+# add other fields dblinks,svcacct,clustered - also grad das via ldap and check if svcacct is domain admin
 # update help
 # Make it all pretty
 # get number sql sessions/users into sql server - SELECT login_name ,COUNT(session_id) AS session_count FROM sys.dm_exec_sessions GROUP BY login_name;
@@ -316,6 +317,14 @@ function Invoke-FindandQuerySQL
                                     }else{
                                         $DBAaccess = "No"
                                     }
+
+                                    # Get the service account
+                                    #SELECT @@SERVICENAME -- returns name for regread
+                                    #DECLARE @ServiceaccountName varchar(250)  
+                                    #EXECUTE master.dbo.xp_instance_regread  
+                                    #N'HKEY_LOCAL_MACHINE', N'SYSTEM\CurrentControlSet\Services\MSSQLSERVER',  
+                                    #N'ObjectName',@ServiceAccountName OUTPUT, N'no_output'  
+                                    #SELECT @ServiceAccountName
                                                                                                                       
                                     $TableSQL.Rows.Add($SQLServerIP, $SQLServer, $SQLInstance, $SQLVersion,$OSVersion,$DBAaccess) | Out-Null                                 
                                 }                                                  
