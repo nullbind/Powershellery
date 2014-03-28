@@ -4,13 +4,7 @@
 
 # todo
 # ----
-# add authentication as option (sql server + domain creds)
-# - sql auth + domain creds
-# - trusted connection
-# - add help to show how to runas as alternative windows user # powershell.exe -Credential "TestDomain\Me" -NoNewWindow
-# 
-# only show status table in verbose mode
-# show full pipable table at the end of default output
+# add help to show how to runas as alternative windows user # powershell.exe -Credential "TestDomain\Me" -NoNewWindow
 # add other fields dblinks,svcacct,clustered 
 # determine if sql server is a server or workstation to determine specific os
 # update help
@@ -242,18 +236,15 @@ function Invoke-FindandQuerySQL
                 }                                
             } 
 
-            # Only display lines for detailed view
-            If ($list){
+            # ------------------------------------------------------------
+            # Test access to each SQL Server instance and grab basic info
+            # ------------------------------------------------------------          
 
-                # This should be the table only view....by default...show the other view in verbose mode
-                                                  
-            }else{
-
-                # Status user
-                $SQLServerCount = $TableLDAP.Rows.Count
-                Write-Host "[+] $SQLServerCount SQL Server instances found."    
-                Write-Host "[ ] Attempting to login into $SQLServerCount SQL Server instances..."
-                Write-Host "[ ] ----------------------------------------------------------------------"
+            # Status user
+            $SQLServerCount = $TableLDAP.Rows.Count
+            Write-Host "[+] $SQLServerCount SQL Server instances found."    
+            Write-Host "[ ] Attempting to login into $SQLServerCount SQL Server instances..."
+            Write-Host "[ ] ----------------------------------------------------------------------"
 
                 # Display results in list view that can feed into the pipeline
                 $TableLDAP |  Sort-Object server,instance| select server,instance -unique | foreach {
@@ -267,8 +258,7 @@ function Invoke-FindandQuerySQL
 
                     # Set authentication type                                                    
                     #$conn.ConnectionString = "Server=$SQLInstance;Database=master;User ID=superadmin;Password=superpassword;" # Provided SQL Credentials
-                    $conn.ConnectionString = "Server=$SQLInstance;Database=master;Integrated Security=SSPI;" # Trusted Connection - Need to runas for alt creds
-                    #$conn.ConnectionString = "Server=$SQLInstance;Database=master;Trusted_Connection=True;" # Trusted Connection
+                    $conn.ConnectionString = "Server=$SQLInstance;Database=master;Integrated Security=SSPI;" # Trusted Connection                    
 
                     #-------------------------
                     # Test database conection
@@ -328,7 +318,7 @@ function Invoke-FindandQuerySQL
                             }
 
                             write-host "[+] SUCCESS! - $SQLInstance ($SQLServerIP) - SQL Server $SQLVersion - $DBAaccess"                                
-                            #$TableSQL | Format-Table -Autosize
+                            $TableSQL | Format-Table -Autosize
 
                             # close connection                            
                             $connection.Close();
@@ -339,39 +329,39 @@ function Invoke-FindandQuerySQL
                         }
 
                     }else{
-                        write-host "[-] Failed   - $SQLServer is not respnding to pings"
+                        write-host "[-] Failed   - $SQLServer is not responding to pings"
                     }
                 }
 
                 #-------------------------
-                # Display results
+                # Display final results
                 #-------------------------
+
+                $EndTime = Get-Date
+                $TotalTime = NEW-TIMESPAN –Start $Starttime –End $Endtime   
                 $SQLServerLoginCount = $TableSQL.Rows.count
                 if ($SQLServerLoginCount -gt 0) {                                        
                     Write-Host "[ ] ----------------------------------------------------------------------"  
-                    Write-Host "[+] $SQLServerLoginCount of $SQLServerCount SQL Server instances could be accessed." 
+                    Write-Host "[+] $SQLServerLoginCount of $SQLServerCount SQL Server instances could be accessed."                             
+                    Write-Host "[ ] ----------------------------------------------------------------------" 
+                    Write-Host "[ ] End Time: $Endtime"
+                    Write-Host "[ ] ----------------------------------------------------------------------" 
+                    Write-Host "[ ] Total Time: $TotalTime" 
+                    Write-Host "[ ] ----------------------------------------------------------------------" 
+
+                    # Display final results table
+                    $TableSQL | format-table -AutoSize
+
                 }else{
                     Write-Output "[-] No SQL Server instances could be accessed as $CurrentUser" 
                 }                                 
-            }
+            
         }else{
 
             # Display fail            
             Write-Output "[-] No SQL Servers were found in Active Directory."            
-        }      
-        
-        # Status user
-        $EndTime = Get-Date
-        $TotalTime = NEW-TIMESPAN –Start $Starttime –End $Endtime        
-        Write-Host "[ ] ----------------------------------------------------------------------" 
-        Write-Host "[ ] End Time: $Endtime"
-        Write-Host "[ ] ----------------------------------------------------------------------" 
-        Write-Host "[ ] Total Time: $TotalTime" 
-        Write-Host "[ ] ----------------------------------------------------------------------" 
-
-        # Display final results
-        $TableSQL | format-table -AutoSize
-    }
+        }   
+    }   
 }
 
 
