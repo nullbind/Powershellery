@@ -6,9 +6,10 @@
 # ----
 # add help to show how to runas as alternative windows user # powershell.exe -Credential "TestDomain\Me" -NoNewWindow
 # add other fields dblinks,svcacct,clustered 
-# determine if sql server is a server or workstation to determine specific os
 # update help
 # Make it all pretty
+# get number sql sessions/users into sql server - SELECT login_name ,COUNT(session_id) AS session_count FROM sys.dm_exec_sessions GROUP BY login_name;
+# get list of connected hosts - should reveal app/web servers - select hostname from sys.sysprocesses 
 # fix pop up = $credential = New-Object System.Management.Automation.PsCredential(".\administrator", (ConvertTo-SecureString "P@ssw0rd" -AsPlainText -Force))
 
 function Invoke-FindandQuerySQL
@@ -297,28 +298,30 @@ function Invoke-FindandQuerySQL
 
                                 # Get OS Server Version
                                 # Use http://support.microsoft.com/?kbid=304721 to figure out workstation vs server
+                                # http://msdn.microsoft.com/en-us/library/windows/desktop/ms724832(v=vs.85).aspx
                                 $OSVersioncheck = $MyTempTable.osver.split(".")[0]+"."+$MyTempTable.osver.split(".")[1]
                                 if ( $OSVersioncheck -eq '7' ){ $OSVersion = "7" }
-                                    elseif ( $OSVersioncheck -eq '6.3' ){ $OSVersion = "Windows 8.1 or Server 2012" }
-                                    elseif ( $OSVersioncheck -eq '6.2' ){ $OSVersion = "Windows 8 or Server 2012" }
-                                    elseif ( $OSVersioncheck -eq '6.1' ){ $OSVersion = "Windows 7 or Server 2008 R2" }
-                                    elseif ( $OSVersioncheck -eq '6.0' ){ $OSVersion = "Windows Vista or Server 2008" }
-                                    elseif ( $OSVersioncheck -eq '5.2' ){ $OSVersion = "Windows Server 2003" }
-                                    elseif ( $OSVersioncheck -eq '5.1' ){ $OSVersion = "Windows XP or Server 2003" }
-                                    elseif ( $OSVersioncheck -eq '5.0' ){ $OSVersion = "Windows 2000" }
+                                    elseif ( $OSVersioncheck -eq '6.3' ){ $OSVersion = "8.1/2012" }
+                                    elseif ( $OSVersioncheck -eq '6.2' ){ $OSVersion = "8/2012" }
+                                    elseif ( $OSVersioncheck -eq '6.1' ){ $OSVersion = "7/2008 R2" }
+                                    elseif ( $OSVersioncheck -eq '6.0' ){ $OSVersion = "Vista/2008" }
+                                    elseif ( $OSVersioncheck -eq '5.2' ){ $OSVersion = "2003" }
+                                    elseif ( $OSVersioncheck -eq '5.1' ){ $OSVersion = "XP/2003" }
+                                    elseif ( $OSVersioncheck -eq '5.0' ){ $OSVersion = "2000" }
                                 else { $OSVersion = $MyTempTable.osver }
+
+                                    # set sysadmin status
+                                    if ($($MyTempTable.priv) -eq 1){
+                                        $DBAaccess = "Yes"
+                                    }else{
+                                        $DBAaccess = "No"
+                                    }
                                                                                                                       
-                                $TableSQL.Rows.Add($SQLServerIP, $SQLServer, $SQLInstance, $SQLVersion,$OSVersion,$($MyTempTable.priv)) | Out-Null                                 
-                            }                                                  
+                                    $TableSQL.Rows.Add($SQLServerIP, $SQLServer, $SQLInstance, $SQLVersion,$OSVersion,$DBAaccess) | Out-Null                                 
+                                }                                                  
                             
                             # Status user
-                            if ($($MyTempTable.priv) -eq 1){
-                                $DBAaccess = "Sysadmin privs!"
-                            }else{
-                                $DBAaccess = "User privs"
-                            }
-
-                            write-host "[+] SUCCESS! - $SQLInstance ($SQLServerIP) - SQL Server $SQLVersion - $DBAaccess"                                
+                            write-host "[+] SUCCESS! - $SQLInstance ($SQLServerIP) - SQL Server $SQLVersion - Sysadmin: $DBAaccess"                                
                             
                             if($ShowTable){
                                 $TableSQL | Format-Table -Autosize
