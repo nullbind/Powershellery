@@ -116,8 +116,8 @@ function Invoke-FindandQuerySQL
         [string]$SearchDN,
 
         [Parameter(Mandatory=$false,
-        HelpMessage="View minimal information that includes the accounts,affected systems,and registered services.  Nice for getting quick list of DAs.")]
-        [string]$List
+        HelpMessage="View additional information during discovery.")]
+        [string]$ShowTable
     )
 
     Begin
@@ -252,6 +252,7 @@ function Invoke-FindandQuerySQL
                     #------------------------
                     # Setup connection string
                     #------------------------
+
                     $conn = New-Object System.Data.SqlClient.SqlConnection
                     $SQLServer = $_.server
                     $SQLInstance = $_.instance
@@ -318,7 +319,10 @@ function Invoke-FindandQuerySQL
                             }
 
                             write-host "[+] SUCCESS! - $SQLInstance ($SQLServerIP) - SQL Server $SQLVersion - $DBAaccess"                                
-                            $TableSQL | Format-Table -Autosize
+                            
+                            if($ShowTable){
+                                $TableSQL | Format-Table -Autosize
+                            }
 
                             # close connection                            
                             $connection.Close();
@@ -367,4 +371,5 @@ function Invoke-FindandQuerySQL
 
 
 #Invoke-FindandQuerySQL -DomainController 192.168.1.100 -Credential demo\user #Supplied Domain Creds and SQL Creds
-Invoke-FindandQuerySQL # Trusted Connection 
+#Invoke-FindandQuerySQL -ShowTable yes
+Invoke-FindandQuerySQL 
