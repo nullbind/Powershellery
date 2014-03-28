@@ -179,9 +179,9 @@ function Invoke-FindandQuerySQL
 
         # Status user
         $StartTime = Get-Date
-        Write-Host "[ ] ----------------------------------------------------------------------"
-        Write-Host "[ ] Start Time: $StartTime"        
-        Write-Host "[ ] Getting a list of SQL Server instances from the domain controller..."         
+        Write-Host "[*] ----------------------------------------------------------------------"
+        Write-Host "[*] Start Time: $StartTime"        
+        Write-Host "[*] Getting a list of SQL Server instances from the domain controller..."         
 
 
         # --------------------------------------------------------
@@ -243,8 +243,8 @@ function Invoke-FindandQuerySQL
             # Status user
             $SQLServerCount = $TableLDAP.Rows.Count
             Write-Host "[+] $SQLServerCount SQL Server instances found."    
-            Write-Host "[ ] Attempting to login into $SQLServerCount SQL Server instances..."
-            Write-Host "[ ] ----------------------------------------------------------------------"
+            Write-Host "[*] Attempting to login into $SQLServerCount SQL Server instances..."
+            Write-Host "[*] ----------------------------------------------------------------------"
 
                 # Display results in list view that can feed into the pipeline
                 $TableLDAP |  Sort-Object server,instance| select server,instance -unique | foreach {
@@ -341,13 +341,13 @@ function Invoke-FindandQuerySQL
                 $TotalTime = NEW-TIMESPAN –Start $Starttime –End $Endtime   
                 $SQLServerLoginCount = $TableSQL.Rows.count
                 if ($SQLServerLoginCount -gt 0) {                                        
-                    Write-Host "[ ] ----------------------------------------------------------------------"  
+                    Write-Host "[*] ----------------------------------------------------------------------"  
                     Write-Host "[+] $SQLServerLoginCount of $SQLServerCount SQL Server instances could be accessed."                             
-                    Write-Host "[ ] ----------------------------------------------------------------------" 
-                    Write-Host "[ ] End Time: $Endtime"
-                    Write-Host "[ ] ----------------------------------------------------------------------" 
-                    Write-Host "[ ] Total Time: $TotalTime" 
-                    Write-Host "[ ] ----------------------------------------------------------------------" 
+                    Write-Host "[*] ----------------------------------------------------------------------" 
+                    Write-Host "[*] End Time: $Endtime"
+                    Write-Host "[*] ----------------------------------------------------------------------" 
+                    Write-Host "[*] Total Time: $TotalTime" 
+                    Write-Host "[*] ----------------------------------------------------------------------" 
 
                     # Display final results table
                     $TableSQL | format-table -AutoSize
