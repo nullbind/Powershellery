@@ -8,8 +8,8 @@
 # grab list of da from ldap
 # add help to show how to runas as alternative windows user # powershell.exe -Credential "TestDomain\Me" -NoNewWindow
 # add switch to connect to database as sql user
-# add other fields dblinks,svcacct,clustered - also grad das via ldap and check if svcacct is domain admin
 # update help
+# map service account look to actual instance instead of just default mssqlserver
 # Make it all pretty
 # get number sql sessions/users into sql server - SELECT login_name ,COUNT(session_id) AS session_count FROM sys.dm_exec_sessions GROUP BY login_name;
 # get list of connected hosts - should reveal app/web servers - select hostname from sys.sysprocesses 
@@ -170,7 +170,6 @@ function Invoke-FindandQuerySQL
         $TableSQL.Columns.Add("IsClustered") | Out-Null
         $TableSQL.Columns.Add("DBLinks") | Out-Null  
         
-
         #----------------------------
         # Setup LDAP query parameters
         #----------------------------
@@ -283,8 +282,22 @@ function Invoke-FindandQuerySQL
                         $SQLServerIP = [Net.Dns]::GetHostEntry($SQLServer).AddressList.IPAddressToString.split(" ")[0]
 
                         # Create connection to system and issue query 
-                        $conn.Open()
-                        $sql = "SELECT @@servername as server,SERVERPROPERTY('productversion') as sqlver,RIGHT(SUBSTRING(@@VERSION, CHARINDEX('Windows NT', @@VERSION), 14), 3) as osver,is_srvrolemember('sysadmin') as priv, (select SERVERPROPERTY('IsClustered')) as IsClustered,(select count(srvname) from master..sysservers) as DBLinks"
+                        $conn.Open()                        
+                        $sql= @"
+                        DECLARE @ServiceaccountName varchar(250)  
+                        EXECUTE master.dbo.xp_instance_regread  
+                        N'HKEY_LOCAL_MACHINE', N'SYSTEM\CurrentControlSet\Services\MSSQLSERVER',  
+                        N'ObjectName',@ServiceAccountName OUTPUT, N'no_output' 
+
+                        SELECT @@servername as server,
+                        SERVERPROPERTY('productversion') as sqlver,
+                        RIGHT(SUBSTRING(@@VERSION, CHARINDEX('Windows NT', @@VERSION), 14), 3) as osver,
+                        is_srvrolemember('sysadmin') as priv, 
+                        (select SERVERPROPERTY('IsClustered')) as IsClustered,
+                        (select count(srvname) from master..sysservers) as DBLinks,
+                        @ServiceAccountName as SvcAcct
+"@
+
                         $cmd = New-Object System.Data.SqlClient.SqlCommand($sql,$conn)
                         $cmd.CommandTimeout = 0
                         $results = $cmd.ExecuteReader()
@@ -337,19 +350,10 @@ function Invoke-FindandQuerySQL
                                 $DBLinks = $MyTempTable.DBLinks-1
                             }
 
-                            # Get the service account
-                            #SELECT @@SERVICENAME -- returns name for regread
-                            #DECLARE @ServiceaccountName varchar(250)  
-                            #EXECUTE master.dbo.xp_instance_regread  
-                            #N'HKEY_LOCAL_MACHINE', N'SYSTEM\CurrentControlSet\Services\MSSQLSERVER',  
-                            #N'ObjectName',@ServiceAccountName OUTPUT, N'no_output'  
-                            #SELECT @ServiceAccountName
-
                             # Check if service account is a domain admin
-                            # Pending...
 
                             # Add the SQL Server information to the data table
-                            $TableSQL.Rows.Add($SQLServerIP, $SQLServer, $SQLInstance, $SQLVersion,$OSVersion,$DBAaccess,'svcacct','isda',$IsClustered,$DBLinks) | Out-Null                                 
+                            $TableSQL.Rows.Add($SQLServerIP, $SQLServer, $SQLInstance, $SQLVersion,$OSVersion,$DBAaccess,$($MyTempTable.SvcAcct),'isda',$IsClustered,$DBLinks) | Out-Null                                 
                         }                                                  
                             
                         # Status user
@@ -365,7 +369,7 @@ function Invoke-FindandQuerySQL
                     Catch
                     {
                         # Status user
-                        Write-Host "[-] Failed   - $SQLInstance ($SQLServerIP) is up, but authentication failed"
+                        Write-Host "[-] Failed   - $SQLInstance ($SQLServerIP) is up, but authentication/query failed"
                     }
                 }else{
 
