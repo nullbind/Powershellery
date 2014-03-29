@@ -91,6 +91,8 @@ function Invoke-FindandQuerySQL
 
 	 .LINK
 		http://www.netspi.com
+        http://support.microsoft.com/?kbid=304721 to figure out workstation vs server
+        http://msdn.microsoft.com/en-us/library/windows/desktop/ms724832(v=vs.85).aspx
 	
 	#>
     [CmdletBinding()]
@@ -168,6 +170,7 @@ function Invoke-FindandQuerySQL
         #----------------------------
         # Setup LDAP query parameters
         #----------------------------
+
         $CurrentDomain = $ObjDomain.distinguishedName
         $ObjSearcher.PageSize = $Limit
         $ObjSearcher.Filter = "(ServicePrincipalName=*MSSQLSvc*)"
@@ -185,10 +188,9 @@ function Invoke-FindandQuerySQL
         Write-Host "[*] Start Time: $StartTime"        
         Write-Host "[*] Getting a list of SQL Server instances from the domain controller..."         
 
-
-        # --------------------------------------------------------
-        # Get list of SQL Server instances from domain controller
-        # --------------------------------------------------------
+        # ----------------------------------------------------------------
+        # Get list of SQL Server instances from domain controller via LDAP
+        # ----------------------------------------------------------------
 
         # Get a count of the number of accounts that match the LDAP query
         $Records = $ObjSearcher.FindAll()
@@ -217,9 +219,7 @@ function Invoke-FindandQuerySQL
                         $SpnService =  $item.split("/")[0]  
 
                         # Filter for only SQL Server instances
-                        if ($SpnService -eq "MSSQLsvc"){ 
-                                     
-                            #$SpnServer       
+                        if ($SpnService -eq "MSSQLsvc"){                                            
 
                             # Check if a port or named instance is used
                             $ConnectParse = $item.split("/")[1].split(":")[1]                             
@@ -231,7 +231,7 @@ function Invoke-FindandQuerySQL
                                 $SpnServerInstance = $SpnServerFull -replace ":", "\"                             
                             } 
                                                         
-                            # Add record to list
+                            # Add SQL Server instance to list
                             $TableLDAP.Rows.Add($SpnServer, $SpnServerInstance) | Out-Null  
                         }
                     }
@@ -248,140 +248,158 @@ function Invoke-FindandQuerySQL
             Write-Host "[*] Attempting to login into $SQLServerCount SQL Server instances..."
             Write-Host "[*] ----------------------------------------------------------------------"
 
-                # Display results in list view that can feed into the pipeline
-                $TableLDAP |  Sort-Object server,instance| select server,instance -unique | foreach {
-                
-                    #------------------------
-                    # Setup connection string
-                    #------------------------
+            # Display results in list view that can feed into the pipeline
+            $TableLDAP |  Sort-Object server,instance| select server,instance -unique | foreach {
 
-                    $conn = New-Object System.Data.SqlClient.SqlConnection
-                    $SQLServer = $_.server
-                    $SQLInstance = $_.instance
+                #------------------------
+                # Setup connection string
+                #------------------------
 
-                    # Set authentication type                                                    
-                    #$conn.ConnectionString = "Server=$SQLInstance;Database=master;User ID=superadmin;Password=superpassword;" # Provided SQL Credentials
-                    $conn.ConnectionString = "Server=$SQLInstance;Database=master;Integrated Security=SSPI;" # Trusted Connection                    
+                $conn = New-Object System.Data.SqlClient.SqlConnection
+                $SQLServer = $_.server
+                $SQLInstance = $_.instance
 
-                    #-------------------------
-                    # Test database conection
-                    #-------------------------
+                # Set authentication type                                                    
+                # $conn.ConnectionString = "Server=$SQLInstance;Database=master;User ID=superadmin;Password=superpassword;" # Provided SQL Credentials
+                $conn.ConnectionString = "Server=$SQLInstance;Database=master;Integrated Security=SSPI;" # Trusted Connection                    
 
-                    # Check if the server is up via ping
-                    if((Test-Connection -Cn $SQLServer -BufferSize 16 -Count 1 -ea 0 -quiet))               
+                #-------------------------
+                # Test database conection
+                #-------------------------
+
+                # Check if the server is up via ping
+                if((Test-Connection -Cn $SQLServer -BufferSize 16 -Count 1 -ea 0 -quiet)) 
+                {
+
+                    # Attempt to authenticate and query remote SQL Server instance
+                    Try 
                     {
 
-                        Try
-                        {
-                            # Get host ip address
-                            $SQLServerIP = [Net.Dns]::GetHostEntry($SQLServer).AddressList.IPAddressToString.split(" ")[0]
+                        # Get host ip address for SQL Server
+                        $SQLServerIP = [Net.Dns]::GetHostEntry($SQLServer).AddressList.IPAddressToString.split(" ")[0]
 
-                            # Create connection to system and issue query 
-                            $conn.Open()
-                            $sql = "SELECT @@servername as server,SERVERPROPERTY('productversion') as sqlver,RIGHT(SUBSTRING(@@VERSION, CHARINDEX('Windows NT', @@VERSION), 14), 3) as osver,is_srvrolemember('sysadmin') as priv"
-                            $cmd = New-Object System.Data.SqlClient.SqlCommand($sql,$conn)
-                            $cmd.CommandTimeout = 0
-                            $results = $cmd.ExecuteReader()
-                            $MyTempTable = new-object “System.Data.DataTable”
-                            $MyTempTable.Load($results)
+                        # Create connection to system and issue query 
+                        $conn.Open()
+                        $sql = "SELECT @@servername as server,SERVERPROPERTY('productversion') as sqlver,RIGHT(SUBSTRING(@@VERSION, CHARINDEX('Windows NT', @@VERSION), 14), 3) as osver,is_srvrolemember('sysadmin') as priv"
+                        $cmd = New-Object System.Data.SqlClient.SqlCommand($sql,$conn)
+                        $cmd.CommandTimeout = 0
+                        $results = $cmd.ExecuteReader()
+                        $MyTempTable = new-object “System.Data.DataTable”
+                        $MyTempTable.Load($results)
 
-                            # Add entry to sql server data table
-                            foreach ($row in $MyTempTable){  
+                        # Parse query data from SQL Server and add info to data table
+                        foreach ($row in $MyTempTable){  
                             
-                                # Get SQL Server Version
-                                $SQLVersioncheck = $MyTempTable.sqlver.split(".")[0]
-                                if ( $SQLVersioncheck -eq '7' ){ $SQLVersion = "7" }
-                                    elseif ( $SQLVersioncheck -eq '8' ){ $SQLVersion = "2000" }
-                                    elseif ( $SQLVersioncheck -eq '9' ){ $SQLVersion = "2005" }
-                                    elseif ( $SQLVersioncheck -eq '10' ){ $SQLVersion = "2008" }
-                                    elseif ( $SQLVersioncheck -eq '11' ){ $SQLVersion = "2012" }
-                                else { $SQLVersion = $MyTempTable.sqlver }
+                            # Set the SQL Server version
+                            $SQLVersioncheck = $MyTempTable.sqlver.split(".")[0]
+                            if ( $SQLVersioncheck -eq '7' ){ $SQLVersion = "7" }
+                            elseif ( $SQLVersioncheck -eq '8' ){ $SQLVersion = "2000" }
+                            elseif ( $SQLVersioncheck -eq '9' ){ $SQLVersion = "2005" }
+                            elseif ( $SQLVersioncheck -eq '10' ){ $SQLVersion = "2008" }
+                            elseif ( $SQLVersioncheck -eq '11' ){ $SQLVersion = "2012" }
+                            else { $SQLVersion = $MyTempTable.sqlver }
 
-                                # Get OS Server Version
-                                # Use http://support.microsoft.com/?kbid=304721 to figure out workstation vs server
-                                # http://msdn.microsoft.com/en-us/library/windows/desktop/ms724832(v=vs.85).aspx
-                                $OSVersioncheck = $MyTempTable.osver.split(".")[0]+"."+$MyTempTable.osver.split(".")[1]
-                                if ( $OSVersioncheck -eq '7' ){ $OSVersion = "7" }
-                                    elseif ( $OSVersioncheck -eq '6.3' ){ $OSVersion = "8.1/2012" }
-                                    elseif ( $OSVersioncheck -eq '6.2' ){ $OSVersion = "8/2012" }
-                                    elseif ( $OSVersioncheck -eq '6.1' ){ $OSVersion = "7/2008 R2" }
-                                    elseif ( $OSVersioncheck -eq '6.0' ){ $OSVersion = "Vista/2008" }
-                                    elseif ( $OSVersioncheck -eq '5.2' ){ $OSVersion = "2003" }
-                                    elseif ( $OSVersioncheck -eq '5.1' ){ $OSVersion = "XP/2003" }
-                                    elseif ( $OSVersioncheck -eq '5.0' ){ $OSVersion = "2000" }
-                                else { $OSVersion = $MyTempTable.osver }
+                            # Set the Windows version
+                            $OSVersioncheck = $MyTempTable.osver.split(".")[0]+"."+$MyTempTable.osver.split(".")[1]
+                            if ( $OSVersioncheck -eq '7' ){ $OSVersion = "7" }
+                            elseif ( $OSVersioncheck -eq '6.3' ){ $OSVersion = "8.1/2012" }
+                            elseif ( $OSVersioncheck -eq '6.2' ){ $OSVersion = "8/2012" }
+                            elseif ( $OSVersioncheck -eq '6.1' ){ $OSVersion = "7/2008 R2" }
+                            elseif ( $OSVersioncheck -eq '6.0' ){ $OSVersion = "Vista/2008" }
+                            elseif ( $OSVersioncheck -eq '5.2' ){ $OSVersion = "2003" }
+                            elseif ( $OSVersioncheck -eq '5.1' ){ $OSVersion = "XP/2003" }
+                            elseif ( $OSVersioncheck -eq '5.0' ){ $OSVersion = "2000" }
+                            else { $OSVersion = $MyTempTable.osver }
 
-                                    # set sysadmin status
-                                    if ($($MyTempTable.priv) -eq 1){
-                                        $DBAaccess = "Yes"
-                                    }else{
-                                        $DBAaccess = "No"
-                                    }
-
-                                    # Get the service account
-                                    #SELECT @@SERVICENAME -- returns name for regread
-                                    #DECLARE @ServiceaccountName varchar(250)  
-                                    #EXECUTE master.dbo.xp_instance_regread  
-                                    #N'HKEY_LOCAL_MACHINE', N'SYSTEM\CurrentControlSet\Services\MSSQLSERVER',  
-                                    #N'ObjectName',@ServiceAccountName OUTPUT, N'no_output'  
-                                    #SELECT @ServiceAccountName
-                                                                                                                      
-                                    $TableSQL.Rows.Add($SQLServerIP, $SQLServer, $SQLInstance, $SQLVersion,$OSVersion,$DBAaccess) | Out-Null                                 
-                                }                                                  
-                            
-                            # Status user
-                            write-host "[+] SUCCESS! - $SQLInstance ($SQLServerIP) - SQL Server $SQLVersion - Sysadmin: $DBAaccess"                                
-                            
-                            if($ShowTable){
-                                $TableSQL | Format-Table -Autosize
+                            # Check if user is a sysadmin
+                            if ($($MyTempTable.priv) -eq 1){
+                                $DBAaccess = "Yes"
+                            }else{
+                                $DBAaccess = "No"
                             }
 
-                            # close connection                            
-                            $connection.Close();
-                        }
-                        Catch
-                        {
-                            write-host "[-] Failed   - $SQLInstance ($SQLServerIP) is up, but authentication failed"
+                            # Get the service account
+                            #SELECT @@SERVICENAME -- returns name for regread
+                            #DECLARE @ServiceaccountName varchar(250)  
+                            #EXECUTE master.dbo.xp_instance_regread  
+                            #N'HKEY_LOCAL_MACHINE', N'SYSTEM\CurrentControlSet\Services\MSSQLSERVER',  
+                            #N'ObjectName',@ServiceAccountName OUTPUT, N'no_output'  
+                            #SELECT @ServiceAccountName
+
+                            # Check if service account is a domain admin
+
+                            # Check if the server is part of a cluster
+                            
+                            # Get the number of database links
+
+                            # Add the SQL Server information to the data table
+                            $TableSQL.Rows.Add($SQLServerIP, $SQLServer, $SQLInstance, $SQLVersion,$OSVersion,$DBAaccess) | Out-Null                                 
+                        }                                                  
+                            
+                        # Status user
+                        Write-Host "[+] SUCCESS! - $SQLInstance ($SQLServerIP) - SQL Server $SQLVersion - Sysadmin: $DBAaccess"                                
+                            
+                        if($ShowTable){
+                            $TableSQL | Format-Table -Autosize
                         }
 
-                    }else{
-                        write-host "[-] Failed   - $SQLServer is not responding to pings"
+                        # close connection                            
+                        $connection.Close();
                     }
+                    Catch
+                    {
+                        # Status user
+                        Write-Host "[-] Failed   - $SQLInstance ($SQLServerIP) is up, but authentication failed"
+                    }
+                }else{
+
+                    # Status user
+                    Write-Host "[-] Failed   - $SQLServer is not responding to pings"
                 }
 
-                #-------------------------
-                # Display final results
-                #-------------------------
+            } # End SQL Server instnace foreach loop
 
-                $EndTime = Get-Date
-                $TotalTime = NEW-TIMESPAN –Start $Starttime –End $Endtime   
-                $SQLServerLoginCount = $TableSQL.Rows.count
-                if ($SQLServerLoginCount -gt 0) {                                        
-                    Write-Host "[*] ----------------------------------------------------------------------"  
-                    Write-Host "[+] $SQLServerLoginCount of $SQLServerCount SQL Server instances could be accessed."                             
-                    Write-Host "[*] ----------------------------------------------------------------------" 
-                    Write-Host "[*] End Time: $Endtime"
-                    Write-Host "[*] ----------------------------------------------------------------------" 
-                    Write-Host "[*] Total Time: $TotalTime" 
-                    Write-Host "[*] ----------------------------------------------------------------------" 
-
-                    # Display final results table
-                    $TableSQL | format-table -AutoSize
-
-                }else{
-                    Write-Output "[-] No SQL Server instances could be accessed as $CurrentUser" 
-                }                                 
             
+            #-------------------------
+            # Display final results
+            #-------------------------
+            $EndTime = Get-Date
+            $TotalTime = NEW-TIMESPAN –Start $Starttime –End $Endtime   
+            $SQLServerLoginCount = $TableSQL.Rows.count
+            if ($SQLServerLoginCount -gt 0) {                        
+            
+                # Display total servers and time                
+                Write-Host "[*] ----------------------------------------------------------------------"  
+                Write-Host "[+] $SQLServerLoginCount of $SQLServerCount SQL Server instances could be accessed."                             
+                Write-Host "[*] ----------------------------------------------------------------------" 
+                Write-Host "[*] End Time: $Endtime"
+                Write-Host "[*] ----------------------------------------------------------------------" 
+                Write-Host "[*] Total Time: $TotalTime" 
+                Write-Host "[*] ----------------------------------------------------------------------" 
+                
+                # Display final results table
+                $TableSQL | format-table -AutoSize
+
+            }else{
+        
+                # Status user
+                Write-Host "[-] No SQL Server instances could be accessed" 
+            }   
+
         }else{
 
             # Display fail            
-            Write-Output "[-] No SQL Servers were found in Active Directory."            
-        }   
-    }   
-}
+            Write-Host "[-] No SQL Servers were found in Active Directory."            
+        } 
+
+    }  # End process 
+
+} # End function
 
 
-
+                
+# Testing 123....
+                                      
 #Invoke-FindandQuerySQL -DomainController 192.168.1.100 -Credential demo\user #Supplied Domain Creds and SQL Creds
 #Invoke-FindandQuerySQL -ShowTable yes
 Invoke-FindandQuerySQL 
