@@ -346,10 +346,7 @@ function Invoke-FindandQuerySQL
                             #SELECT @ServiceAccountName
 
                             # Check if service account is a domain admin
-
-                            # Check if the server is part of a cluster
-                            
-                            # Get the number of database links
+                            # Pending...
 
                             # Add the SQL Server information to the data table
                             $TableSQL.Rows.Add($SQLServerIP, $SQLServer, $SQLInstance, $SQLVersion,$OSVersion,$DBAaccess,'svcacct','isda',$IsClustered,$DBLinks) | Out-Null                                 
