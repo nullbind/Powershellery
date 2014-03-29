@@ -4,6 +4,8 @@
 
 # todo
 # ----
+# in status - display user connecting to ldap and user connecting to sql server instances (same if no sql provided)
+# grab list of da from ldap
 # add help to show how to runas as alternative windows user # powershell.exe -Credential "TestDomain\Me" -NoNewWindow
 # add switch to connect to database as sql user
 # add other fields dblinks,svcacct,clustered - also grad das via ldap and check if svcacct is domain admin
@@ -157,15 +159,17 @@ function Invoke-FindandQuerySQL
         $TableSQL = New-Object System.Data.DataTable 
 
         # Create and name columns in the data table
-        $TableSQL.Columns.Add("ipaddress") | Out-Null
-        $TableSQL.Columns.Add("server") | Out-Null
-        $TableSQL.Columns.Add("instance") | Out-Null
-        $TableSQL.Columns.Add("sqlver") | Out-Null  
-        $TableSQL.Columns.Add("osver") | Out-Null 
-        $TableSQL.Columns.Add("sysadmin") | Out-Null 
-        #$TableSQL.Columns.Add("svcacct") | Out-Null 
-        #$TableSQL.Columns.Add("dblinks") | Out-Null # (select count(srvname) from master..sysservers)
-        ##$TableSQL.Columns.Add("IsClustered") | Out-Null # (select SERVERPROPERTY('IsClustered')) 
+        $TableSQL.Columns.Add("IpAddress") | Out-Null
+        $TableSQL.Columns.Add("Server") | Out-Null
+        $TableSQL.Columns.Add("Instance") | Out-Null
+        $TableSQL.Columns.Add("SQLVer") | Out-Null  
+        $TableSQL.Columns.Add("OsVer") | Out-Null 
+        $TableSQL.Columns.Add("Sysadmin") | Out-Null 
+        $TableSQL.Columns.Add("SvcAcct") | Out-Null 
+        $TableSQL.Columns.Add("IsDA") | Out-Null
+        $TableSQL.Columns.Add("IsClustered") | Out-Null
+        $TableSQL.Columns.Add("DBLinks") | Out-Null  
+        
 
         #----------------------------
         # Setup LDAP query parameters
@@ -280,7 +284,7 @@ function Invoke-FindandQuerySQL
 
                         # Create connection to system and issue query 
                         $conn.Open()
-                        $sql = "SELECT @@servername as server,SERVERPROPERTY('productversion') as sqlver,RIGHT(SUBSTRING(@@VERSION, CHARINDEX('Windows NT', @@VERSION), 14), 3) as osver,is_srvrolemember('sysadmin') as priv"
+                        $sql = "SELECT @@servername as server,SERVERPROPERTY('productversion') as sqlver,RIGHT(SUBSTRING(@@VERSION, CHARINDEX('Windows NT', @@VERSION), 14), 3) as osver,is_srvrolemember('sysadmin') as priv, (select SERVERPROPERTY('IsClustered')) as IsClustered,(select count(srvname) from master..sysservers) as DBLinks"
                         $cmd = New-Object System.Data.SqlClient.SqlCommand($sql,$conn)
                         $cmd.CommandTimeout = 0
                         $results = $cmd.ExecuteReader()
@@ -288,8 +292,8 @@ function Invoke-FindandQuerySQL
                         $MyTempTable.Load($results)
 
                         # Parse query data from SQL Server and add info to data table
-                        foreach ($row in $MyTempTable){  
-                            
+                        foreach ($row in $MyTempTable){                             
+
                             # Set the SQL Server version
                             $SQLVersioncheck = $MyTempTable.sqlver.split(".")[0]
                             if ( $SQLVersioncheck -eq '7' ){ $SQLVersion = "7" }
@@ -318,6 +322,21 @@ function Invoke-FindandQuerySQL
                                 $DBAaccess = "No"
                             }
 
+                            # Check if server is clustered
+                            if ($($MyTempTable.IsClustered) -eq 1){
+                                $IsClustered = "Yes"
+                            }else{
+                                $IsClustered = "No"
+                            }
+
+                            # Check if server has database links - removing one, because link to 
+                            # the db server always exists without data access
+                            if ($($MyTempTable.DBLinks) -le 1){
+                                $DBLinks = 0
+                            }else{
+                                $DBLinks = $MyTempTable.DBLinks-1
+                            }
+
                             # Get the service account
                             #SELECT @@SERVICENAME -- returns name for regread
                             #DECLARE @ServiceaccountName varchar(250)  
@@ -333,7 +352,7 @@ function Invoke-FindandQuerySQL
                             # Get the number of database links
 
                             # Add the SQL Server information to the data table
-                            $TableSQL.Rows.Add($SQLServerIP, $SQLServer, $SQLInstance, $SQLVersion,$OSVersion,$DBAaccess) | Out-Null                                 
+                            $TableSQL.Rows.Add($SQLServerIP, $SQLServer, $SQLInstance, $SQLVersion,$OSVersion,$DBAaccess,'svcacct','isda',$IsClustered,$DBLinks) | Out-Null                                 
                         }                                                  
                             
                         # Status user
@@ -402,4 +421,4 @@ function Invoke-FindandQuerySQL
                                       
 #Invoke-FindandQuerySQL -DomainController 192.168.1.100 -Credential demo\user #Supplied Domain Creds and SQL Creds
 #Invoke-FindandQuerySQL -ShowTable yes
-Invoke-FindandQuerySQL 
+Invoke-FindandQuerySQL -ShowTable yes
