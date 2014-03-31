@@ -14,6 +14,7 @@
 # get number sql sessions/users into sql server - SELECT login_name ,COUNT(session_id) AS session_count FROM sys.dm_exec_sessions GROUP BY login_name;
 # get list of connected hosts - should reveal app/web servers - select hostname from sys.sysprocesses 
 # fix pop up = $credential = New-Object System.Management.Automation.PsCredential(".\administrator", (ConvertTo-SecureString "P@ssw0rd" -AsPlainText -Force))
+# note that domain computer accounts can take same action as users on the domain in most cases - psexec -s -i powershell 
 # rename to Get-SQLServerAccess
 
 function Invoke-FindandQuerySQL
