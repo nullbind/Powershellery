@@ -4,16 +4,17 @@
 
 # todo
 # ----
+# reorder and sort datatable columns
 # in status - display user connecting to ldap and user connecting to sql server instances (same if no sql provided)
-# grab list of da from ldap
-# add help to show how to runas as alternative windows user # powershell.exe -Credential "TestDomain\Me" -NoNewWindow
 # add switch to connect to database as sql user
-# update help
 # map service account look to actual instance instead of just default mssqlserver
+# update help
+# add help to show how to runas as alternative windows user # powershell.exe -Credential "TestDomain\Me" -NoNewWindow
 # Make it all pretty
 # get number sql sessions/users into sql server - SELECT login_name ,COUNT(session_id) AS session_count FROM sys.dm_exec_sessions GROUP BY login_name;
 # get list of connected hosts - should reveal app/web servers - select hostname from sys.sysprocesses 
 # fix pop up = $credential = New-Object System.Management.Automation.PsCredential(".\administrator", (ConvertTo-SecureString "P@ssw0rd" -AsPlainText -Force))
+# rename to Get-SQLServerAccess
 
 function Invoke-FindandQuerySQL
 {	
@@ -144,21 +145,27 @@ function Invoke-FindandQuerySQL
     Process
     {	
 
-        #----------------------------
+        # ----------------------------------------------------------------
         # Setup data tables
-        #----------------------------
+        # ----------------------------------------------------------------
         
-        # Create data table to house initial ldap query results
+        # Create data table to house list of domain admins
+        $TableDomainAdmins = New-Object System.Data.DataTable 
+
+        # Create and name columns in the domainadmintable
+        $TableDomainAdmins.Columns.Add("Account") | Out-Null
+        
+        # Create data table to house list of sql servers found in ldap
         $TableLDAP = New-Object System.Data.DataTable 
 
         # Create and name columns in the TableLDAP data table
         $TableLDAP.Columns.Add("Server") | Out-Null 
         $TableLDAP.Columns.Add("Instance") | Out-Null  
 
-        # Create data table to house database access results
+        # Create data table to house info for accessible sql server instances
         $TableSQL = New-Object System.Data.DataTable 
 
-        # Create and name columns in the data table
+        # Create and name columns in the TableSQL
         $TableSQL.Columns.Add("IpAddress") | Out-Null
         $TableSQL.Columns.Add("Server") | Out-Null
         $TableSQL.Columns.Add("Instance") | Out-Null
@@ -166,14 +173,40 @@ function Invoke-FindandQuerySQL
         $TableSQL.Columns.Add("OsVer") | Out-Null 
         $TableSQL.Columns.Add("Sysadmin") | Out-Null 
         $TableSQL.Columns.Add("SvcAcct") | Out-Null 
-        $TableSQL.Columns.Add("IsDA") | Out-Null
+        $TableSQL.Columns.Add("SvcIsDA") | Out-Null
         $TableSQL.Columns.Add("IsClustered") | Out-Null
         $TableSQL.Columns.Add("DBLinks") | Out-Null  
-        
-        #----------------------------
-        # Setup LDAP query parameters
-        #----------------------------
 
+        # ----------------------------------------------------------------
+        # Get list of Domain Admins from domain controller via LDAP
+        # ----------------------------------------------------------------
+
+        $CurrentDomain = $ObjDomain.distinguishedName
+        $ObjSearcher.PageSize = $Limit
+        $ObjSearcher.Filter = "(&(objectCategory=user)(memberOf=CN=Domain Admins,CN=Users,$CurrentDomain))"
+        $ObjSearcher.SearchScope = $SearchScope
+        $CurrentUser = $Credential.UserName
+
+        if ($SearchDN)
+        {
+            $ObjSearcher.SearchDN = New-Object System.DirectoryServices.DirectoryEntry("LDAP://$($SearchDN)")
+        }
+         
+
+        # Place a list of domain admin in data table
+        $ObjSearcher.FindAll() | ForEach-Object {
+                $TableDomainAdmins.Rows.Add($($_.properties.samaccountname)) | Out-Null                                          
+        } 
+
+        #Display Domain Admins
+        $DomainAdminsTable
+        
+        
+        # ----------------------------------------------------------------
+        # Get list of SQL Server instances from domain controller via LDAP
+        # ----------------------------------------------------------------
+
+        # Setup LDAP query parameters
         $CurrentDomain = $ObjDomain.distinguishedName
         $ObjSearcher.PageSize = $Limit
         $ObjSearcher.Filter = "(ServicePrincipalName=*MSSQLSvc*)"
@@ -190,10 +223,6 @@ function Invoke-FindandQuerySQL
         Write-Host "[*] ----------------------------------------------------------------------"
         Write-Host "[*] Start Time: $StartTime"        
         Write-Host "[*] Getting a list of SQL Server instances from the domain controller..."         
-
-        # ----------------------------------------------------------------
-        # Get list of SQL Server instances from domain controller via LDAP
-        # ----------------------------------------------------------------
 
         # Get a count of the number of accounts that match the LDAP query
         $Records = $ObjSearcher.FindAll()
@@ -351,9 +380,18 @@ function Invoke-FindandQuerySQL
                             }
 
                             # Check if service account is a domain admin
+                            $IsDA = "No" 
+                            $JustAccount = $($MyTempTable.SvcAcct).split("\")[1]
+                            $TableDomainAdmins | ForEach-Object {
+
+                                $DAUser=$_.Account                                
+                                if( $DAUser -eq $JustAccount){
+                                    $IsDA = "Yes" 
+                                }                                                                    
+                            }
 
                             # Add the SQL Server information to the data table
-                            $TableSQL.Rows.Add($SQLServerIP, $SQLServer, $SQLInstance, $SQLVersion,$OSVersion,$DBAaccess,$($MyTempTable.SvcAcct),'isda',$IsClustered,$DBLinks) | Out-Null                                 
+                            $TableSQL.Rows.Add($SQLServerIP, $SQLServer, $SQLInstance, $SQLVersion,$OSVersion,$DBAaccess,$($MyTempTable.SvcAcct),$IsDA,$IsClustered,$DBLinks) | Out-Null                                                            
                         }                                                  
                             
                         # Status user
