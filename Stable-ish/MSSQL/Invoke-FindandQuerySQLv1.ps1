@@ -7,7 +7,6 @@
 # reorder and sort datatable columns
 # in status - display user connecting to ldap and user connecting to sql server instances (same if no sql provided)
 # add switch to connect to database as sql user
-# map service account look to actual instance instead of just default mssqlserver
 # update help
 # add help to show how to runas as alternative windows user # powershell.exe -Credential "TestDomain\Me" -NoNewWindow
 # Make it all pretty
@@ -314,11 +313,25 @@ function Invoke-FindandQuerySQL
                         # Create connection to system and issue query 
                         $conn.Open()                        
                         $sql= @"
-                        DECLARE @ServiceaccountName varchar(250)  
-                        EXECUTE master.dbo.xp_instance_regread  
-                        N'HKEY_LOCAL_MACHINE', N'SYSTEM\CurrentControlSet\Services\MSSQLSERVER',  
+
+						-- Setup reg path 
+						DECLARE @SQLServerInstance varchar(250)  
+						if @@SERVICENAME = 'MSSQLSERVER'
+						BEGIN											
+							set @SQLServerInstance = 'SYSTEM\CurrentControlSet\Services\MSSQLSERVER'
+						END						
+						ELSE
+						BEGIN
+							set @SQLServerInstance = 'SYSTEM\CurrentControlSet\Services\MSSQL$'+cast(@@SERVICENAME as varchar(250))		
+						END
+
+						-- Grab service account from service's reg path
+						DECLARE @ServiceaccountName varchar(250)  
+						EXECUTE master.dbo.xp_instance_regread  
+                        N'HKEY_LOCAL_MACHINE', @SQLServerInstance,  
                         N'ObjectName',@ServiceAccountName OUTPUT, N'no_output' 
 
+						-- Grab more info about the server
                         SELECT @@servername as server,
                         SERVERPROPERTY('productversion') as sqlver,
                         RIGHT(SUBSTRING(@@VERSION, CHARINDEX('Windows NT', @@VERSION), 14), 3) as osver,
