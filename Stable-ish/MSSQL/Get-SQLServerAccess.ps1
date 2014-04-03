@@ -277,7 +277,7 @@ function Get-SQLServerAccess
             $SQLServerCount = $TableLDAP.Rows.Count
             Write-Host "[+] $SQLServerCount SQL Server instances found."    
             Write-Host "[*] Attempting to login into $SQLServerCount SQL Server instances..."
-            Write-Host "[*] ----------------------------------------------------------------------"
+            Write-Host "[*] ----------------------------------------------------------------------" 
 
             # Display results in list view that can feed into the pipeline
             $TableLDAP |  Sort-Object server,instance| select server,instance -unique | foreach {
@@ -288,7 +288,7 @@ function Get-SQLServerAccess
 
                 $conn = New-Object System.Data.SqlClient.SqlConnection
                 $SQLServer = $_.server
-                $SQLInstance = $_.instance
+                $SQLInstance = $_.instance       
 
                 # Set authentication type                                                    
                 # $conn.ConnectionString = "Server=$SQLInstance;Database=master;User ID=superadmin;Password=superpassword;" # Provided SQL Credentials
@@ -415,17 +415,18 @@ function Get-SQLServerAccess
                         }
 
                         # close connection                            
-                        $connection.Close();
+                        $conn.Close();                      
                     }
-                    Catch
-                    {
+                    Catch {
+
                         # Status user
-                        Write-Host "[-] Failed   - $SQLInstance ($SQLServerIP) is up, but authentication/query failed"
+                        Write-Host "[-] Failed   - $SQLInstance ($SQLServerIP) is up, but authentication/query failed"                        
                     }
+
                 }else{
 
                     # Status user
-                    Write-Host "[-] Failed   - $SQLServer is not responding to pings"
+                    Write-Host "[-] Failed   - $SQLInstance is not responding to pings"
                 }
 
             } # End SQL Server instnace foreach loop
