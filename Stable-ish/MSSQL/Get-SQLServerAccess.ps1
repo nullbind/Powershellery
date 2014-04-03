@@ -4,10 +4,10 @@
 
 # todo
 # ----
-# add edition to output - select serverproperty('edition')
 # add switch for providing custom sql user for db auth
 # add switch for a custom query option
 # fix pop up = $credential = New-Object System.Management.Automation.PsCredential(".\administrator", (ConvertTo-SecureString "P@ssw0rd" -AsPlainText -Force))
+# consider 3 output views - sho
 # update help
 
 function Get-SQLServerAccess
@@ -45,11 +45,11 @@ function Get-SQLServerAccess
         [*] Total Time: 00:03:00
         [*] ----------------------------------------------------------------------
 
-        IpAddress      Server                      Instance                                   SQLVer OsVer      Sysadmin SvcAcct                     SvcIsDA IsClustered DBLinks
-        ---------      ------                      --------                                   ------ -----      -------- -------                     ------- ----------- -------           
-        192.168.1.103  server3.mydomain.com        server3.mydomain.com,1433                  2008   7/2008     No       NT AUTHORITY\NETWORKSERVICE No      No          4      
-        192.168.1.103  server3.mydomain.com        server3.mydomain.com\SQLEXPRESS            2008   7/2008     No       NT AUTHORITY\LocalSystem    No      No          1      
-        192.168.1.104  server4.mydomain.com        server4.mydomain.com\AppData               2005   2003       Yes      NT AUTHORITY\sql_svc        Yes     No          0        
+        IpAddress      Server                      Instance                                   SQLVer                 OsVer      Sysadmin SvcAcct                     SvcIsDA IsClustered DBLinks
+        ---------      ------                      --------                                   ------                 -----      -------- -------                     ------- ----------- -------           
+        192.168.1.103  server3.mydomain.com        server3.mydomain.com,1433                  2008 Express Edition   7/2008     No       NT AUTHORITY\NETWORKSERVICE No      No          4      
+        192.168.1.103  server3.mydomain.com        server3.mydomain.com\SQLEXPRESS            2008 Express Edition   7/2008     No       NT AUTHORITY\LocalSystem    No      No          1      
+        192.168.1.104  server4.mydomain.com        server4.mydomain.com\AppData               2005 Standard Edition  2003       Yes      NT AUTHORITY\sql_svc        Yes     No          0   
         
 	.EXAMPLE
 	   Return a list of SQL Servers that have registered SPNs in LDAP on the current user's domain using 
@@ -68,24 +68,24 @@ function Get-SQLServerAccess
         [-] Failed   - server2.mydomain.com (192.168.1.102) is up, but authentication/query failed
         [+] SUCCESS! - server3.mydomain.com,1433 (192.168.1.103) - SQL Server 2008 - Sysadmin: No 
 
-        IpAddress      Server                      Instance                                   SQLVer OsVer      Sysadmin SvcAcct                     SvcIsDA IsClustered DBLinks
-        ---------      ------                      --------                                   ------ -----      -------- -------                     ------- ----------- -------           
-        192.168.1.103  server3.mydomain.com        server3.mydomain.com,1433                  2008   7/2008     No       NT AUTHORITY\NETWORKSERVICE No      No          4                     
+        IpAddress      Server                      Instance                                   SQLVer                 OsVer      Sysadmin SvcAcct                     SvcIsDA IsClustered DBLinks
+        ---------      ------                      --------                                   ------                 -----      -------- -------                     ------- ----------- -------           
+        192.168.1.103  server3.mydomain.com        server3.mydomain.com,1433                  2008 Express Edition   7/2008     No       NT AUTHORITY\NETWORKSERVICE No      No          4      
           
         [+] SUCCESS! - server3.mydomain.com\SQLEXPRESS (192.168.1.103) - SQL Server 2008 - Sysadmin: No 
 
-        IpAddress      Server                      Instance                                   SQLVer OsVer      Sysadmin SvcAcct                     SvcIsDA IsClustered DBLinks
-        ---------      ------                      --------                                   ------ -----      -------- -------                     ------- ----------- -------           
-        192.168.1.103  server3.mydomain.com        server3.mydomain.com,1433                  2008   7/2008     No       NT AUTHORITY\NETWORKSERVICE No      No          4      
-        192.168.1.103  server3.mydomain.com        server3.mydomain.com\SQLEXPRESS            2008   7/2008     No       NT AUTHORITY\LocalSystem    No      No          1                             
+        IpAddress      Server                      Instance                                   SQLVer                 OsVer      Sysadmin SvcAcct                     SvcIsDA IsClustered DBLinks
+        ---------      ------                      --------                                   ------                 -----      -------- -------                     ------- ----------- -------           
+        192.168.1.103  server3.mydomain.com        server3.mydomain.com,1433                  2008 Express Edition   7/2008     No       NT AUTHORITY\NETWORKSERVICE No      No          4      
+        192.168.1.103  server3.mydomain.com        server3.mydomain.com\SQLEXPRESS            2008 Express Edition   7/2008     No       NT AUTHORITY\LocalSystem    No      No          1                                 
           
         [+] SUCCESS! - server4.mydomain.com\AppData (192.168.1.104) - SQL Server 2005 - Sysadmin: Yes        
         
-        IpAddress      Server                      Instance                                   SQLVer OsVer      Sysadmin SvcAcct                     SvcIsDA IsClustered DBLinks
-        ---------      ------                      --------                                   ------ -----      -------- -------                     ------- ----------- -------           
-        192.168.1.103  server3.mydomain.com        server3.mydomain.com,1433                  2008   7/2008     No       NT AUTHORITY\NETWORKSERVICE No      No          4      
-        192.168.1.103  server3.mydomain.com        server3.mydomain.com\SQLEXPRESS            2008   7/2008     No       NT AUTHORITY\LocalSystem    No      No          1      
-        192.168.1.104  server4.mydomain.com        server4.mydomain.com\AppData               2005   2003       Yes      NT AUTHORITY\sql_svc        Yes     No          0                                  
+        IpAddress      Server                      Instance                                   SQLVer                 OsVer      Sysadmin SvcAcct                     SvcIsDA IsClustered DBLinks
+        ---------      ------                      --------                                   ------                 -----      -------- -------                     ------- ----------- -------           
+        192.168.1.103  server3.mydomain.com        server3.mydomain.com,1433                  2008 Express Edition   7/2008     No       NT AUTHORITY\NETWORKSERVICE No      No          4      
+        192.168.1.103  server3.mydomain.com        server3.mydomain.com\SQLEXPRESS            2008 Express Edition   7/2008     No       NT AUTHORITY\LocalSystem    No      No          1      
+        192.168.1.104  server4.mydomain.com        server4.mydomain.com\AppData               2005 Standard Edition  2003       Yes      NT AUTHORITY\sql_svc        Yes     No          0                              
              
         [*] ----------------------------------------------------------------------
         [+] 3 of 5 SQL Server instances could be accessed.        
@@ -93,11 +93,11 @@ function Get-SQLServerAccess
         [*] Total Time: 00:03:00
         [*] ----------------------------------------------------------------------
 
-        IpAddress      Server                      Instance                                   SQLVer OsVer      Sysadmin SvcAcct                     SvcIsDA IsClustered DBLinks
-        ---------      ------                      --------                                   ------ -----      -------- -------                     ------- ----------- -------           
-        192.168.1.103  server3.mydomain.com        server3.mydomain.com,1433                  2008   7/2008     No       NT AUTHORITY\NETWORKSERVICE No      No          4      
-        192.168.1.103  server3.mydomain.com        server3.mydomain.com\SQLEXPRESS            2008   7/2008     No       NT AUTHORITY\LocalSystem    No      No          1      
-        192.168.1.104  server4.mydomain.com        server4.mydomain.com\AppData               2005   2003       Yes      NT AUTHORITY\sql_svc        Yes     No          0                          
+        IpAddress      Server                      Instance                                   SQLVer                 OsVer      Sysadmin SvcAcct                     SvcIsDA IsClustered DBLinks
+        ---------      ------                      --------                                   ------                 -----      -------- -------                     ------- ----------- -------           
+        192.168.1.103  server3.mydomain.com        server3.mydomain.com,1433                  2008 Express Edition   7/2008     No       NT AUTHORITY\NETWORKSERVICE No      No          4      
+        192.168.1.103  server3.mydomain.com        server3.mydomain.com\SQLEXPRESS            2008 Express Edition   7/2008     No       NT AUTHORITY\LocalSystem    No      No          1      
+        192.168.1.104  server4.mydomain.com        server4.mydomain.com\AppData               2005 Standard Edition  2003       Yes      NT AUTHORITY\sql_svc        Yes     No          0                          
 
 	 .LINK
 		http://www.netspi.com
@@ -330,8 +330,11 @@ function Get-SQLServerAccess
                         N'HKEY_LOCAL_MACHINE', @SQLServerInstance,  
                         N'ObjectName',@ServiceAccountName OUTPUT, N'no_output' 
 
+                        
+
                         -- Grab more info about the server
                         SELECT @@servername as server,
+                        serverproperty('edition') as Edition,
                         SERVERPROPERTY('productversion') as sqlver,
                         RIGHT(SUBSTRING(@@VERSION, CHARINDEX('Windows NT', @@VERSION), 14), 3) as osver,
                         is_srvrolemember('sysadmin') as priv, 
@@ -349,13 +352,15 @@ function Get-SQLServerAccess
                         # Parse query data from SQL Server and add info to data table
                         foreach ($row in $MyTempTable){                             
 
+                            $Edition = $($MyTempTable.Edition)
+
                             # Set the SQL Server version
                             $SQLVersioncheck = $MyTempTable.sqlver.split(".")[0]
-                            if ( $SQLVersioncheck -eq '7' ){ $SQLVersion = "7" }
-                            elseif ( $SQLVersioncheck -eq '8' ){ $SQLVersion = "2000" }
-                            elseif ( $SQLVersioncheck -eq '9' ){ $SQLVersion = "2005" }
-                            elseif ( $SQLVersioncheck -eq '10' ){ $SQLVersion = "2008" }
-                            elseif ( $SQLVersioncheck -eq '11' ){ $SQLVersion = "2012" }
+                            if ( $SQLVersioncheck -eq '7' ){ $SQLVersion = "7 $Edition" }
+                            elseif ( $SQLVersioncheck -eq '8' ){ $SQLVersion = "2000 $Edition" }
+                            elseif ( $SQLVersioncheck -eq '9' ){ $SQLVersion = "2005 $Edition" }
+                            elseif ( $SQLVersioncheck -eq '10' ){ $SQLVersion = "2008 $Edition" }
+                            elseif ( $SQLVersioncheck -eq '11' ){ $SQLVersion = "2012 $Edition" }
                             else { $SQLVersion = $MyTempTable.sqlver }
 
                             # Set the Windows version
@@ -464,11 +469,10 @@ function Get-SQLServerAccess
 
     }  # End process 
 
-} # End function
+} # End function                
 
-
-                
-                                      
-#Get-SQLServerAccess -DomainController 192.168.1.100 -Credential demo\user #Supplied Domain Creds and SQL Creds
-Get-SQLServerAccess 
-#Get-SQLServerAccess -ShowTable yes
+#Get-SQLServerAccess -DomainController 192.168.1.100 -Credential demo\user -sqluser sa -sqlpass Password1 #Supplied Domain Creds and SQL Creds                                      
+#runas /netonly /user:mydomain\myuser "Powershell ./Get-SQLServerAccess.ps1" #run as another user
+#Get-SQLServerAccess -DomainController 192.168.1.100 -Credential mydomain\myuser #Supplied Domain Creds and SQL Creds #target a specific DC
+#Get-SQLServerAccess  #run as current user
+Get-SQLServerAccess -ShowTable yes #show table during run time
