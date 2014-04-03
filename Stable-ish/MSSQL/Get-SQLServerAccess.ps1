@@ -4,11 +4,11 @@
 
 # todo
 # ----
-# add edition - select serverproperty('edition')
-# add switch to connect to database as sql user
-# update help
+# add edition to output - select serverproperty('edition')
+# add switch for providing custom sql user for db auth
+# add switch for a custom query option
 # fix pop up = $credential = New-Object System.Management.Automation.PsCredential(".\administrator", (ConvertTo-SecureString "P@ssw0rd" -AsPlainText -Force))
-# note that domain computer accounts can take same action as users on the domain in most cases - psexec -s -i powershell 
+# update help
 
 function Get-SQLServerAccess
 {	
@@ -22,69 +22,82 @@ function Get-SQLServerAccess
        access to login along with some based configuration information.The script currently supports 
 	   trusted connections and provided credentials.
 	
-.EXAMPLE
-	   Return a list of SQL Servers that have registered SPNs in LDAP on the current user's domain using the trusted connection (current user).
-	   
-	   PS C:\Invoke-FindandQuerySQL.ps1 -DomainController 192.168.1.100 -Credential domain\user	   
-
-        [ ] Sending LDAP query to 192.168.1.100 as demo\user...
-        [ ] ---------------------------------------------------
-        [ ] 4 SQL Servers will be tested...
-        [ ] ---------------------------------------------------	   
-        [-] server1.acme.local,58697 is down!
-        [-] server2.acme.local is up - authentication failed or bad query
-        [+] server3.acme.local,1433 is up - authentication successful
-        [+] server4.acme.local\SQLEXPRESS is up - authentication successful
-        [ ] ---------------------------------------------------
-        [ ] Testing of access to SQL Server complete.
-        [+] 6 SQL Servers could be accessed by demo\user
-        [ ] ---------------------------------------------------
-        	   
 	.EXAMPLE
-	   Return a list of SQL Servers that have registered SPNs in LDAP on the current user's domain using a provided set of domain cedentials.
+	   Return a list of SQL Servers that have registered SPNs in LDAP on the current user's domain using 
+       the trusted connection (current user), and query basic information.
 	   
-	   PS C:\Invoke-FindandQuerySQL.ps1 -DomainController 192.168.1.100 -Credential domain\user	   
+	   PS C:\Get-SQLServerAccess.ps1    
 
-        [ ] Sending LDAP query to 192.168.1.100 as demo\user...
-        [ ] ---------------------------------------------------
-        [ ] 4 SQL Servers will be tested...
-        [ ] ---------------------------------------------------	   
-        [-] server1.acme.local,58697 is down!
-        [-] server2.acme.local is up - authentication failed or bad query
-        [+] server3.acme.local,1433 is up - authentication successful
-        [+] server4.acme.local\SQLEXPRESS is up - authentication successful
-        [ ] ---------------------------------------------------
-        [ ] Testing of access to SQL Server complete.
-        [+] 6 SQL Servers could be accessed by demo\user
-        [ ] ---------------------------------------------------
-	   
+        [*] ----------------------------------------------------------------------
+        [*] Start Time: 04/03/2014 10:56:00
+        [*] Getting a list of SQL Server instances from the domain controller...
+        [+] 5 SQL Server instances found.
+        [*] Attempting to login into 5 SQL Server instances...
+        [*] ----------------------------------------------------------------------
+        [-] Failed   - server1.mydomain.com is not responding to pings
+        [-] Failed   - server2.mydomain.com (192.168.1.102) is up, but authentication/query failed
+        [+] SUCCESS! - server3.mydomain.com,1433 (192.168.1.103) - SQL Server 2008 - Sysadmin: No   
+        [+] SUCCESS! - server3.mydomain.com\SQLEXPRESS (192.168.1.103) - SQL Server 2008 - Sysadmin: No   
+        [+] SUCCESS! - server4.mydomain.com\AppData (192.168.1.104) - SQL Server 2005 - Sysadmin: Yes             
+        [*] ----------------------------------------------------------------------
+        [+] 3 of 5 SQL Server instances could be accessed.        
+        [*] End Time: 04/03/2014 10:58:00      
+        [*] Total Time: 00:03:00
+        [*] ----------------------------------------------------------------------
+
+        IpAddress      Server                      Instance                                   SQLVer OsVer      Sysadmin SvcAcct                     SvcIsDA IsClustered DBLinks
+        ---------      ------                      --------                                   ------ -----      -------- -------                     ------- ----------- -------           
+        192.168.1.103  server3.mydomain.com        server3.mydomain.com,1433                  2008   7/2008     No       NT AUTHORITY\NETWORKSERVICE No      No          4      
+        192.168.1.103  server3.mydomain.com        server3.mydomain.com\SQLEXPRESS            2008   7/2008     No       NT AUTHORITY\LocalSystem    No      No          1      
+        192.168.1.104  server4.mydomain.com        server4.mydomain.com\AppData               2005   2003       Yes      NT AUTHORITY\sql_svc        Yes     No          0        
+        
 	.EXAMPLE
-	   Return a list of SQL Servers that the user can log into.
-	   PS C:\Invoke-FindandQuerySQL.ps1 -table yes -DomainController 192.168.1.100 -Credential domain\user
+	   Return a list of SQL Servers that have registered SPNs in LDAP on the current user's domain using 
+       the trusted connection (current user), and query basic information.  This will also return the data 
+       table every time a new server it found to show more information while scanning.
 	   
-	   Server        Version      User      Sysadmin   SvcAcct     DBLinks
-	   -------       ------       -------   --------   -------     -----
-	   sqladmin      DB1.demo.com MSSQLSvc	  1        LocalSystem   5
+	   PS C:\Get-SQLServerAccess.ps1 -ShowTable yes  
 
-	.EXAMPLE
-	   Return a list of SQL Servers that have registered SPNs in LDAP on the current user's domain.
-	   
-	   PS C:\Invoke-FindandQuerySQL.ps1 -query "select name from master..sysdatabases" -DomainController 192.168.1.100 -Credential domain\user	   
+        [*] ----------------------------------------------------------------------
+        [*] Start Time: 04/03/2014 10:56:00
+        [*] Getting a list of SQL Server instances from the domain controller...
+        [+] 5 SQL Server instances found.
+        [*] Attempting to login into 5 SQL Server instances...
+        [*] ----------------------------------------------------------------------
+        [-] Failed   - server1.mydomain.com is not responding to pings
+        [-] Failed   - server2.mydomain.com (192.168.1.102) is up, but authentication/query failed
+        [+] SUCCESS! - server3.mydomain.com,1433 (192.168.1.103) - SQL Server 2008 - Sysadmin: No 
 
-        [ ] Sending LDAP query to 192.168.1.100 as demo\user...
-        [ ] ---------------------------------------------------
-        [ ] 4 SQL Servers will be tested...
-        [ ] ---------------------------------------------------	      
-        [-] server1.acme.local,58697 is down!
-        [-] server2.acme.local is up - authentication failed or bad query
-        [+] server3.acme.local,1433 is up - authentication successful
-            Query Data: master tempdb model msdb 
-        [+] server4.acme.local\SQLEXPRESS is up - authentication successful
-            Query Data: master tempdb model msdb 
-        [ ] ---------------------------------------------------
-        [ ] Testing of access to SQL Server complete.
-        [+] 6 SQL Servers could be accessed by demo\user
-        [ ] ---------------------------------------------------
+        IpAddress      Server                      Instance                                   SQLVer OsVer      Sysadmin SvcAcct                     SvcIsDA IsClustered DBLinks
+        ---------      ------                      --------                                   ------ -----      -------- -------                     ------- ----------- -------           
+        192.168.1.103  server3.mydomain.com        server3.mydomain.com,1433                  2008   7/2008     No       NT AUTHORITY\NETWORKSERVICE No      No          4                     
+          
+        [+] SUCCESS! - server3.mydomain.com\SQLEXPRESS (192.168.1.103) - SQL Server 2008 - Sysadmin: No 
+
+        IpAddress      Server                      Instance                                   SQLVer OsVer      Sysadmin SvcAcct                     SvcIsDA IsClustered DBLinks
+        ---------      ------                      --------                                   ------ -----      -------- -------                     ------- ----------- -------           
+        192.168.1.103  server3.mydomain.com        server3.mydomain.com,1433                  2008   7/2008     No       NT AUTHORITY\NETWORKSERVICE No      No          4      
+        192.168.1.103  server3.mydomain.com        server3.mydomain.com\SQLEXPRESS            2008   7/2008     No       NT AUTHORITY\LocalSystem    No      No          1                             
+          
+        [+] SUCCESS! - server4.mydomain.com\AppData (192.168.1.104) - SQL Server 2005 - Sysadmin: Yes        
+        
+        IpAddress      Server                      Instance                                   SQLVer OsVer      Sysadmin SvcAcct                     SvcIsDA IsClustered DBLinks
+        ---------      ------                      --------                                   ------ -----      -------- -------                     ------- ----------- -------           
+        192.168.1.103  server3.mydomain.com        server3.mydomain.com,1433                  2008   7/2008     No       NT AUTHORITY\NETWORKSERVICE No      No          4      
+        192.168.1.103  server3.mydomain.com        server3.mydomain.com\SQLEXPRESS            2008   7/2008     No       NT AUTHORITY\LocalSystem    No      No          1      
+        192.168.1.104  server4.mydomain.com        server4.mydomain.com\AppData               2005   2003       Yes      NT AUTHORITY\sql_svc        Yes     No          0                                  
+             
+        [*] ----------------------------------------------------------------------
+        [+] 3 of 5 SQL Server instances could be accessed.        
+        [*] End Time: 04/03/2014 10:58:00      
+        [*] Total Time: 00:03:00
+        [*] ----------------------------------------------------------------------
+
+        IpAddress      Server                      Instance                                   SQLVer OsVer      Sysadmin SvcAcct                     SvcIsDA IsClustered DBLinks
+        ---------      ------                      --------                                   ------ -----      -------- -------                     ------- ----------- -------           
+        192.168.1.103  server3.mydomain.com        server3.mydomain.com,1433                  2008   7/2008     No       NT AUTHORITY\NETWORKSERVICE No      No          4      
+        192.168.1.103  server3.mydomain.com        server3.mydomain.com\SQLEXPRESS            2008   7/2008     No       NT AUTHORITY\LocalSystem    No      No          1      
+        192.168.1.104  server4.mydomain.com        server4.mydomain.com\AppData               2005   2003       Yes      NT AUTHORITY\sql_svc        Yes     No          0                          
 
 	 .LINK
 		http://www.netspi.com
@@ -428,10 +441,8 @@ function Get-SQLServerAccess
             
                 # Display total servers and time                
                 Write-Host "[*] ----------------------------------------------------------------------"  
-                Write-Host "[+] $SQLServerLoginCount of $SQLServerCount SQL Server instances could be accessed."                             
-                Write-Host "[*] ----------------------------------------------------------------------" 
-                Write-Host "[*] End Time: $Endtime"
-                Write-Host "[*] ----------------------------------------------------------------------" 
+                Write-Host "[+] $SQLServerLoginCount of $SQLServerCount SQL Server instances could be accessed."                                             
+                Write-Host "[*] End Time: $Endtime"                
                 Write-Host "[*] Total Time: $TotalTime" 
                 Write-Host "[*] ----------------------------------------------------------------------" 
                 
