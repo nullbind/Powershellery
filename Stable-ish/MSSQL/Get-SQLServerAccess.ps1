@@ -36,9 +36,9 @@ function Get-SQLServerAccess
         [*] ----------------------------------------------------------------------
         [-] Failed   - server1.mydomain.com is not responding to pings
         [-] Failed   - server2.mydomain.com (192.168.1.102) is up, but authentication/query failed
-        [+] SUCCESS! - server3.mydomain.com,1433 (192.168.1.103) - SQL Server 2008 - Sysadmin: No   
-        [+] SUCCESS! - server3.mydomain.com\SQLEXPRESS (192.168.1.103) - SQL Server 2008 - Sysadmin: No   
-        [+] SUCCESS! - server4.mydomain.com\AppData (192.168.1.104) - SQL Server 2005 - Sysadmin: Yes             
+        [+] SUCCESS! - server3.mydomain.com,1433 (192.168.1.103) - Sysadmin: No - SvcIsDA: No 
+        [+] SUCCESS! - server3.mydomain.com\SQLEXPRESS (192.168.1.103) - Sysadmin: No - SvcIsDA: No
+        [+] SUCCESS! - server4.mydomain.com\AppData (192.168.1.104) - Sysadmin: Yes - SvcIsDA: Yes             
         [*] ----------------------------------------------------------------------
         [+] 3 of 5 SQL Server instances could be accessed.        
         [*] End Time: 04/03/2014 10:58:00      
@@ -408,7 +408,7 @@ function Get-SQLServerAccess
                         }                                                  
                             
                         # Status user
-                        Write-Host "[+] SUCCESS! - $SQLInstance ($SQLServerIP) - SQL Server $SQLVersion - Sysadmin: $DBAaccess"                                
+                        Write-Host "[+] SUCCESS! - $SQLInstance ($SQLServerIP) - Sysadmin: $DBAaccess - SvcIsDA: $IsDA"  -foreground "green"                              
                             
                         if($ShowTable){
                             $TableSQL | Format-Table -Autosize
@@ -469,5 +469,5 @@ function Get-SQLServerAccess
                 
                                       
 #Get-SQLServerAccess -DomainController 192.168.1.100 -Credential demo\user #Supplied Domain Creds and SQL Creds
+Get-SQLServerAccess 
 #Get-SQLServerAccess -ShowTable yes
-Get-SQLServerAccess -ShowTable yes
