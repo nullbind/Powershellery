@@ -23,10 +23,10 @@ function Get-SQLServerAccess
 	   trusted connections and provided credentials.
 	
 	.EXAMPLE
-	   Return a list of SQL Servers that have registered SPNs in LDAP on the current user's domain using 
-       the trusted connection (current user), and query basic information.
+	   Returns a list of SQL Server instances on the current user's domain that they have
+       access to.  This is the default output.
 	   
-	   PS C:\Get-SQLServerAccess.ps1    
+	   PS C:\Get-SQLServerAccess.ps1
 
         [*] ----------------------------------------------------------------------
         [*] Start Time: 04/03/2014 10:56:00
@@ -45,18 +45,42 @@ function Get-SQLServerAccess
         [*] Total Time: 00:03:00
         [*] ----------------------------------------------------------------------
 
+	.EXAMPLE
+	   Returns a list of SQL Server instances on the current user's domain that they have
+       access to.  This also displays a data table object at the end that is pipeable in 
+       PowerShell.  You can make it pretty using the format-table syntax example below.
+	   
+	   PS C:\Get-SQLServerAccess.ps1 -ShowSum Yes | format-table -AutoSize 
+
+        [*] ----------------------------------------------------------------------
+        [*] Start Time: 04/03/2014 10:56:00
+        [*] Getting a list of SQL Server instances from the domain controller...
+        [+] 5 SQL Server instances found. 
+        [*] Attempting to login into 5 SQL Server instances...
+        [*] ----------------------------------------------------------------------
+        [-] Failed   - server1.mydomain.com is not responding to pings
+        [-] Failed   - server2.mydomain.com (192.168.1.102) is up, but authentication/query failed
+        [+] SUCCESS! - server3.mydomain.com,1433 (192.168.1.103) - Sysadmin: No - SvcIsDA: No 
+        [+] SUCCESS! - server3.mydomain.com\SQLEXPRESS (192.168.1.103) - Sysadmin: No - SvcIsDA: No
+        [+] SUCCESS! - server4.mydomain.com\AppData (192.168.1.104) - Sysadmin: Yes - SvcIsDA: Yes             
+        [*] ----------------------------------------------------------------------
+        [+] 3 of 5 SQL Server instances could be accessed.        
+        [*] End Time: 04/03/2014 10:58:00      
+        [*] Total Time: 00:03:00
+        [*] ----------------------------------------------------------------------
+
         IpAddress      Server                      Instance                                   SQLVer                 OsVer      Sysadmin SvcAcct                     SvcIsDA IsClustered DBLinks
         ---------      ------                      --------                                   ------                 -----      -------- -------                     ------- ----------- -------           
         192.168.1.103  server3.mydomain.com        server3.mydomain.com,1433                  2008 Express Edition   7/2008     No       NT AUTHORITY\NETWORKSERVICE No      No          4      
         192.168.1.103  server3.mydomain.com        server3.mydomain.com\SQLEXPRESS            2008 Express Edition   7/2008     No       NT AUTHORITY\LocalSystem    No      No          1      
         192.168.1.104  server4.mydomain.com        server4.mydomain.com\AppData               2005 Standard Edition  2003       Yes      NT AUTHORITY\sql_svc        Yes     No          0   
-        
+
 	.EXAMPLE
-	   Return a list of SQL Servers that have registered SPNs in LDAP on the current user's domain using 
-       the trusted connection (current user), and query basic information.  This will also return the data 
-       table every time a new server it found to show more information while scanning.
+	   Returns a list of SQL Server instances on the current user's domain that they have
+       access to.  This will display the default output, but also write the results to a 
+       CSV file.
 	   
-	   PS C:\Get-SQLServerAccess.ps1 -ShowTable yes  
+	   PS C:\Get-SQLServerAccess.ps1 -ShowSum Yes | export-csv c:\temp\mysqlaccess.csv
 
         [*] ----------------------------------------------------------------------
         [*] Start Time: 04/03/2014 10:56:00
@@ -66,20 +90,44 @@ function Get-SQLServerAccess
         [*] ----------------------------------------------------------------------
         [-] Failed   - server1.mydomain.com is not responding to pings
         [-] Failed   - server2.mydomain.com (192.168.1.102) is up, but authentication/query failed
-        [+] SUCCESS! - server3.mydomain.com,1433 (192.168.1.103) - SQL Server 2008 - Sysadmin: No 
+        [+] SUCCESS! - server3.mydomain.com,1433 (192.168.1.103) - Sysadmin: No - SvcIsDA: No 
+        [+] SUCCESS! - server3.mydomain.com\SQLEXPRESS (192.168.1.103) - Sysadmin: No - SvcIsDA: No
+        [+] SUCCESS! - server4.mydomain.com\AppData (192.168.1.104) - Sysadmin: Yes - SvcIsDA: Yes             
+        [*] ----------------------------------------------------------------------
+        [+] 3 of 5 SQL Server instances could be accessed.        
+        [*] End Time: 04/03/2014 10:58:00      
+        [*] Total Time: 00:03:00
+        [*] ----------------------------------------------------------------------
+        
+	.EXAMPLE
+	   Returns a list of SQL Server instances on the current user's domain that they have
+       access to.  This will display the default output, but also display a data table of
+       SQL Servers that are accessible every time a successful connection is made.
+	   
+	   PS C:\Get-SQLServerAccess.ps1 -ShowStatus Yes 
+
+        [*] ----------------------------------------------------------------------
+        [*] Start Time: 04/03/2014 10:56:00
+        [*] Getting a list of SQL Server instances from the domain controller...
+        [+] 5 SQL Server instances found.
+        [*] Attempting to login into 5 SQL Server instances...
+        [*] ----------------------------------------------------------------------
+        [-] Failed   - server1.mydomain.com is not responding to pings
+        [-] Failed   - server2.mydomain.com (192.168.1.102) is up, but authentication/query failed
+        [+] SUCCESS! - server3.mydomain.com,1433 (192.168.1.103) - Sysadmin: No - SvcIsDA: No 
 
         IpAddress      Server                      Instance                                   SQLVer                 OsVer      Sysadmin SvcAcct                     SvcIsDA IsClustered DBLinks
         ---------      ------                      --------                                   ------                 -----      -------- -------                     ------- ----------- -------           
         192.168.1.103  server3.mydomain.com        server3.mydomain.com,1433                  2008 Express Edition   7/2008     No       NT AUTHORITY\NETWORKSERVICE No      No          4      
           
-        [+] SUCCESS! - server3.mydomain.com\SQLEXPRESS (192.168.1.103) - SQL Server 2008 - Sysadmin: No 
+        [+] SUCCESS! - server3.mydomain.com\SQLEXPRESS (192.168.1.103) - Sysadmin: No - SvcIsDA: No
 
         IpAddress      Server                      Instance                                   SQLVer                 OsVer      Sysadmin SvcAcct                     SvcIsDA IsClustered DBLinks
         ---------      ------                      --------                                   ------                 -----      -------- -------                     ------- ----------- -------           
         192.168.1.103  server3.mydomain.com        server3.mydomain.com,1433                  2008 Express Edition   7/2008     No       NT AUTHORITY\NETWORKSERVICE No      No          4      
         192.168.1.103  server3.mydomain.com        server3.mydomain.com\SQLEXPRESS            2008 Express Edition   7/2008     No       NT AUTHORITY\LocalSystem    No      No          1                                 
           
-        [+] SUCCESS! - server4.mydomain.com\AppData (192.168.1.104) - SQL Server 2005 - Sysadmin: Yes        
+        [+] SUCCESS! - server4.mydomain.com\AppData (192.168.1.104) - Sysadmin: Yes - SvcIsDA: Yes       
         
         IpAddress      Server                      Instance                                   SQLVer                 OsVer      Sysadmin SvcAcct                     SvcIsDA IsClustered DBLinks
         ---------      ------                      --------                                   ------                 -----      -------- -------                     ------- ----------- -------           
@@ -91,13 +139,7 @@ function Get-SQLServerAccess
         [+] 3 of 5 SQL Server instances could be accessed.        
         [*] End Time: 04/03/2014 10:58:00      
         [*] Total Time: 00:03:00
-        [*] ----------------------------------------------------------------------
-
-        IpAddress      Server                      Instance                                   SQLVer                 OsVer      Sysadmin SvcAcct                     SvcIsDA IsClustered DBLinks
-        ---------      ------                      --------                                   ------                 -----      -------- -------                     ------- ----------- -------           
-        192.168.1.103  server3.mydomain.com        server3.mydomain.com,1433                  2008 Express Edition   7/2008     No       NT AUTHORITY\NETWORKSERVICE No      No          4      
-        192.168.1.103  server3.mydomain.com        server3.mydomain.com\SQLEXPRESS            2008 Express Edition   7/2008     No       NT AUTHORITY\LocalSystem    No      No          1      
-        192.168.1.104  server4.mydomain.com        server4.mydomain.com\AppData               2005 Standard Edition  2003       Yes      NT AUTHORITY\sql_svc        Yes     No          0                          
+        [*] ----------------------------------------------------------------------                   
 
 	 .LINK
 		http://www.netspi.com
@@ -130,8 +172,12 @@ function Get-SQLServerAccess
         [string]$SearchDN,
 
         [Parameter(Mandatory=$false,
-        HelpMessage="View additional information during discovery.")]
-        [string]$ShowTable
+        HelpMessage="At the end of the scan display the results in a pipeable datatable format.")]
+        [string]$ShowSum,
+
+        [Parameter(Mandatory=$false,
+        HelpMessage="Display a status table after accessing each SQL Server instance successfully.")]
+        [string]$ShowStatus
     )
 
     Begin
@@ -411,11 +457,16 @@ function Get-SQLServerAccess
                             # Add the SQL Server information to the data table
                             $TableSQL.Rows.Add($SQLServerIP, $SQLServer, $SQLInstance, $SQLVersion,$OSVersion,$DBAaccess,$($MyTempTable.SvcAcct),$IsDA,$IsClustered,$DBLinks) | Out-Null                                                            
                         }                                                  
+                        
+                        # Set status color   
+                        if ( $DBAaccess -eq "Yes"){ $LineColor = "red" }
+                        elseif ($IsDA -eq "Yes" ){  $LineColor = "red"  }
+                        else{ $LineColor = "green" }
                             
                         # Status user
-                        Write-Host "[+] SUCCESS! - $SQLInstance ($SQLServerIP) - Sysadmin: $DBAaccess - SvcIsDA: $IsDA"  -foreground "green"                              
+                        Write-Host "[+] SUCCESS! - $SQLInstance ($SQLServerIP) - Sysadmin: $DBAaccess - SvcIsDA: $IsDA"  -foreground $LineColor                              
                             
-                        if($ShowTable){
+                        if($ShowStatus){
                             $TableSQL | Format-Table -Autosize
                         }
 
@@ -452,8 +503,11 @@ function Get-SQLServerAccess
                 Write-Host "[*] Total Time: $TotalTime" 
                 Write-Host "[*] ----------------------------------------------------------------------" 
                 
-                # Display final results table
-                $TableSQL | format-table -AutoSize
+                # Display final results table                
+                if($ShowSum){
+                    $TableSQL 
+                }
+                
 
             }else{
         
@@ -471,8 +525,18 @@ function Get-SQLServerAccess
 
 } # End function                
 
+
+#
+# Testing commands...
+#
+
 #Get-SQLServerAccess -DomainController 192.168.1.100 -Credential demo\user -sqluser sa -sqlpass Password1 #Supplied Domain Creds and SQL Creds                                      
 #runas /netonly /user:mydomain\myuser "Powershell ./Get-SQLServerAccess.ps1" #run as another user
-#Get-SQLServerAccess -DomainController 192.168.1.100 -Credential mydomain\myuser #Supplied Domain Creds and SQL Creds #target a specific DC
-#Get-SQLServerAccess  #run as current user
-Get-SQLServerAccess -ShowTable yes #show table during run time
+
+Get-SQLServerAccess # Default output
+# Get-SQLServerAccess -ShowSum Yes | Format-Table -AutoSize # Default output, and pipeable table at end
+# Get-SQLServerAccess -ShowSum Yes | Export-Csv c:\temp\mysqlaccess.csv # Default output, and output to csv
+# Get-SQLServerAccess -ShowSum Yes -ShowStatus Yes  # Default output, and summary table at end, and show status table after every successful SQL Server connection
+# Get-SQLServerAccess -ShowStatus Yes # Default output, and show status table after every successful SQL Server connection
+
+
