@@ -364,7 +364,7 @@ function Get-SQLServerAccess
 
             # Status user
             $SQLServerCount = $TableLDAP.Rows.Count
-            Write-Host "[+] $SQLServerCount SQL Server instances found."    
+            Write-Host "[*] $SQLServerCount SQL Server instances found."    
             Write-Host "[*] Attempting to login into $SQLServerCount SQL Server instances..."
             Write-Host "[*] ----------------------------------------------------------------------" 
 
@@ -509,16 +509,11 @@ function Get-SQLServerAccess
                             
                         # Status user
                         Write-Host "[+] SUCCESS! - $SQLInstance ($SQLServerIP) - Sysadmin: $DBAaccess - SvcIsDA: $IsDA"  -foreground $LineColor                              
-                            
-                        if($ShowStatus){
-                            $TableSQL | Format-Table -Autosize
-                        }
-
 
                         # Run custom querys                           
                         # Set query
                         if($query){
-                         Write-Host "[+] Query sent: $query" -foreground $LineColor 
+                         Write-Host "[+] Custom query sent: $query" -foreground $LineColor 
                          Write-Host "[+] Query output:" -foreground $LineColor 
                         $sql= @"
 
@@ -528,12 +523,19 @@ function Get-SQLServerAccess
                             $cmd = New-Object System.Data.SqlClient.SqlCommand($sql,$conn)
                             $cmd.CommandTimeout = 0
                             $results = $cmd.ExecuteReader()
-                            $MyTempTable = new-object “System.Data.DataTable”
-                            $MyTempTable.Load($results)
+                            $MyTempTable2 = new-object “System.Data.DataTable”
+                            $MyTempTable2.Load($results)
                             Write-Host " "
-                            $MyTempTable 
+                            $MyTempTable2 
                             Write-Host " "
                         }
+
+                        # Show status table
+                        if($ShowStatus){
+                            Write-Host "[+] Status table output:" -foreground $LineColor 
+                            $TableSQL | Format-Table -Autosize
+                        }
+
                         # close connection                            
                         $conn.Close();                           
                                            
@@ -563,7 +565,7 @@ function Get-SQLServerAccess
             
                 # Display total servers and time                
                 Write-Host "[*] ----------------------------------------------------------------------"  
-                Write-Host "[+] $SQLServerLoginCount of $SQLServerCount SQL Server instances could be accessed."                                             
+                Write-Host "[*] $SQLServerLoginCount of $SQLServerCount SQL Server instances could be accessed."                                             
                 Write-Host "[*] End Time: $Endtime"                
                 Write-Host "[*] Total Time: $TotalTime" 
                 Write-Host "[*] ----------------------------------------------------------------------" 
@@ -606,8 +608,8 @@ Get-SQLServerAccess # Default output
 # Get-SQLServerAccess -query "select @@servername,@@version"  #Default output with custom query
 # Get-SQLServerAccess -Credential demo\user # Default output, but use alternative domain creds to auth to dc
 
-# Need fixing
-# Get-SQLServerAccess -query "select @@servername" -ShowSum Yes -ShowStatus Yes  # NOTE: Custom query formatting sucks and is a little flaky - need to fix
+# Need to fix bugs
+Get-SQLServerAccess -ShowSum Yes -ShowStatus Yes -query "select @@servername"  # output starts out fine, but then order gets out of whack
 
 # Not really tested
 #Get-SQLServerAccess -DomainController 192.168.1.100 -Credential demo\user password -sqluser sa -sqlpass Password1 #Supplied Domain Creds and SQL Creds                                      
