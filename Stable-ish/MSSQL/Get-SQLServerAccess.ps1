@@ -609,10 +609,10 @@ Get-SQLServerAccess # Default output
 # Get-SQLServerAccess -Credential demo\user # Default output, but use alternative domain creds to auth to dc
 
 # Need to fix bugs
-Get-SQLServerAccess -ShowSum Yes -ShowStatus Yes -query "select @@servername"  # output starts out fine, but then order gets out of whack
+# Get-SQLServerAccess -ShowSum Yes -ShowStatus Yes -query "select @@servername"  # output starts out fine, but then order gets out of whack
 
 # Not really tested
-#Get-SQLServerAccess -DomainController 192.168.1.100 -Credential demo\user password -sqluser sa -sqlpass Password1 #Supplied Domain Creds and SQL Creds                                      
-#runas /netonly /user:mydomain\myuser "Powershell ./Get-SQLServerAccess.ps1" #run as another user
+# Get-SQLServerAccess -DomainController 192.168.1.100 -Credential demo\user password -sqluser sa -sqlpass Password1 #Supplied Domain Creds and SQL Creds                                      
+# runas /netonly /user:mydomain\myuser "Powershell ./Get-SQLServerAccess.ps1" #run as another user
 
 
