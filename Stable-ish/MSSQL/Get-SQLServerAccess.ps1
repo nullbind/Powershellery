@@ -604,12 +604,13 @@ Get-SQLServerAccess # Default output
 # Get-SQLServerAccess -ShowSum Yes -ShowStatus Yes  # Default output, summary table at end, and show status table after every successful SQL Server connection
 # Get-SQLServerAccess -ShowStatus Yes # Default output, and show status table after every successful SQL Server connection
 # Get-SQLServerAccess -query "select @@servername,@@version"  #Default output with custom query
+# Get-SQLServerAccess -Credential demo\user # Default output, but use alternative domain creds to auth to dc
 
-# Fails
-# Get-SQLServerAccess -query "select @@servername" -ShowSum Yes -ShowStatus Yes  # NOTE: Custom query doesnt work in this scenario - needs fix
+# Need fixing
+# Get-SQLServerAccess -query "select @@servername" -ShowSum Yes -ShowStatus Yes  # NOTE: Custom query formatting sucks and is a little flaky - need to fix
 
-# Not fully tested
-#Get-SQLServerAccess -DomainController 192.168.1.100 -Credential demo\user -sqluser sa -sqlpass Password1 #Supplied Domain Creds and SQL Creds                                      
+# Not really tested
+#Get-SQLServerAccess -DomainController 192.168.1.100 -Credential demo\user password -sqluser sa -sqlpass Password1 #Supplied Domain Creds and SQL Creds                                      
 #runas /netonly /user:mydomain\myuser "Powershell ./Get-SQLServerAccess.ps1" #run as another user
 
 
