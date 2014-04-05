@@ -598,12 +598,11 @@ function Get-SQLServerAccess
 #runas /netonly /user:mydomain\myuser "Powershell ./Get-SQLServerAccess.ps1" #run as another user
 
 Get-SQLServerAccess # Default output
-
 # Get-SQLServerAccess -ShowSum Yes | Format-Table -AutoSize # Default output, and pipeable table at end
 # Get-SQLServerAccess -ShowSum Yes | Export-Csv c:\temp\mysqlaccess.csv # Default output, and output to csv
 # Get-SQLServerAccess -ShowSum Yes -ShowStatus Yes  # Default output, and summary table at end, and show status table after every successful SQL Server connection
 # Get-SQLServerAccess -ShowSum Yes -ShowStatus Yes | Export-Csv c:\temp\mysqlaccess.csv  # Default output, results to file, and show status table after every successful SQL Server connection
 # Get-SQLServerAccess -ShowStatus Yes # Default output, and show status table after every successful SQL Server connection
-# Get-SQLServerAccess -query "select @@servername,@@version"  Default output with custom query
+# Get-SQLServerAccess -query "select @@servername,@@version"  #Default output with custom query
 
 
