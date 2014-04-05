@@ -5,7 +5,7 @@
 # todo
 # ----
 # add switch for providing custom sql user for db auth
-# fix custom query trunction
+# fix custom query trunction, and lack of column names after first time
 # fix pop up = $credential = New-Object System.Management.Automation.PsCredential(".\administrator", (ConvertTo-SecureString "P@ssw0rd" -AsPlainText -Force))
 # update help
 
@@ -478,11 +478,11 @@ function Get-SQLServerAccess
                         # Run custom querys                           
                         # Set query
                         if($query){
-                         Write-Host "[*] Custom query sent: $query" -foreground $LineColor 
+                         Write-Host "[*] Query sent: $query" -foreground $LineColor 
                          Write-Host "[*] Query output:" -foreground $LineColor 
                         $sql= @"
 
-                        -- Setup reg path 
+                        -- custom query 
                         $query
 "@
                             $cmd = New-Object System.Data.SqlClient.SqlCommand($sql,$conn)
@@ -490,7 +490,8 @@ function Get-SQLServerAccess
                             $results = $cmd.ExecuteReader()
                             $MyTempTable = new-object “System.Data.DataTable”
                             $MyTempTable.Load($results)
-                            $MyTempTable 
+                            Write-Host " "
+                            $MyTempTable | Format-Table -AutoSize
                             Write-Host " "
                         }
                         # close connection                            
