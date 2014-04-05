@@ -5,6 +5,7 @@
 # todo
 # ----
 # add switch for providing custom sql user for db auth
+# add switch for additional sql servers
 # fix custom query trunction, and lack of column names after first time
 # fix pop up = $credential = New-Object System.Management.Automation.PsCredential(".\administrator", (ConvertTo-SecureString "P@ssw0rd" -AsPlainText -Force))
 # update help
@@ -594,15 +595,21 @@ function Get-SQLServerAccess
 # Testing commands...
 #
 
-#Get-SQLServerAccess -DomainController 192.168.1.100 -Credential demo\user -sqluser sa -sqlpass Password1 #Supplied Domain Creds and SQL Creds                                      
-#runas /netonly /user:mydomain\myuser "Powershell ./Get-SQLServerAccess.ps1" #run as another user
 
+
+# Working
 Get-SQLServerAccess # Default output
 # Get-SQLServerAccess -ShowSum Yes | Format-Table -AutoSize # Default output, and pipeable table at end
 # Get-SQLServerAccess -ShowSum Yes | Export-Csv c:\temp\mysqlaccess.csv # Default output, and output to csv
-# Get-SQLServerAccess -ShowSum Yes -ShowStatus Yes  # Default output, and summary table at end, and show status table after every successful SQL Server connection
-# Get-SQLServerAccess -ShowSum Yes -ShowStatus Yes | Export-Csv c:\temp\mysqlaccess.csv  # Default output, results to file, and show status table after every successful SQL Server connection
+# Get-SQLServerAccess -ShowSum Yes -ShowStatus Yes  # Default output, summary table at end, and show status table after every successful SQL Server connection
 # Get-SQLServerAccess -ShowStatus Yes # Default output, and show status table after every successful SQL Server connection
 # Get-SQLServerAccess -query "select @@servername,@@version"  #Default output with custom query
+
+# Fails
+# Get-SQLServerAccess -query "select @@servername" -ShowSum Yes -ShowStatus Yes  # NOTE: Custom query doesnt work in this scenario - needs fix
+
+# Not fully tested
+#Get-SQLServerAccess -DomainController 192.168.1.100 -Credential demo\user -sqluser sa -sqlpass Password1 #Supplied Domain Creds and SQL Creds                                      
+#runas /netonly /user:mydomain\myuser "Powershell ./Get-SQLServerAccess.ps1" #run as another user
 
 
