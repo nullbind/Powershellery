@@ -138,7 +138,46 @@ function Get-SQLServerAccess
         [+] 3 of 5 SQL Server instances could be accessed.        
         [*] End Time: 04/03/2014 10:58:00      
         [*] Total Time: 00:03:00
-        [*] ----------------------------------------------------------------------                   
+        [*] ----------------------------------------------------------------------    
+        
+	.EXAMPLE
+	   Returns a list of SQL Server instances on the current user's domain that they have
+       access to.  This will display the default output, but also display the results of
+       a custom query defined by the user.
+	   
+	   PS C:\Get-SQLServerAccess.ps1 -query "select @@servername"  
+
+        [*] ----------------------------------------------------------------------
+        [*] Start Time: 04/03/2014 10:56:00
+        [*] Getting a list of SQL Server instances from the domain controller...
+        [+] 5 SQL Server instances found.
+        [*] Attempting to login into 5 SQL Server instances...
+        [*] ----------------------------------------------------------------------
+        [-] Failed   - server1.mydomain.com is not responding to pings
+        [-] Failed   - server2.mydomain.com (192.168.1.102) is up, but authentication/query failed
+        [+] SUCCESS! - server3.mydomain.com,1433 (192.168.1.103) - Sysadmin: No - SvcIsDA: No 
+        [+] Query sent: select @@servername
+        [+] Query output:
+                                                                 
+        server3        
+          
+        [+] SUCCESS! - server3.mydomain.com\SQLEXPRESS (192.168.1.103) - Sysadmin: No - SvcIsDA: No
+        [+] Query sent: select @@servername
+        [+] Query output:
+                                                                 
+        server3\SQLEXPRESS                                  
+          
+        [+] SUCCESS! - server4.mydomain.com\AppData (192.168.1.104) - Sysadmin: Yes - SvcIsDA: Yes       
+        [+] Query sent: select @@servername
+        [+] Query output:
+                                                                 
+        server4\AppData                          
+             
+        [*] ----------------------------------------------------------------------
+        [+] 3 of 5 SQL Server instances could be accessed.        
+        [*] End Time: 04/03/2014 10:58:00      
+        [*] Total Time: 00:03:00
+        [*] ----------------------------------------------------------------------                 
 
 	 .LINK
 		http://www.netspi.com
@@ -478,8 +517,8 @@ function Get-SQLServerAccess
                         # Run custom querys                           
                         # Set query
                         if($query){
-                         Write-Host "[*] Query sent: $query" -foreground $LineColor 
-                         Write-Host "[*] Query output:" -foreground $LineColor 
+                         Write-Host "[+] Query sent: $query" -foreground $LineColor 
+                         Write-Host "[+] Query output:" -foreground $LineColor 
                         $sql= @"
 
                         -- custom query 
@@ -491,7 +530,7 @@ function Get-SQLServerAccess
                             $MyTempTable = new-object “System.Data.DataTable”
                             $MyTempTable.Load($results)
                             Write-Host " "
-                            $MyTempTable | Format-Table -AutoSize
+                            $MyTempTable 
                             Write-Host " "
                         }
                         # close connection                            
@@ -558,11 +597,13 @@ function Get-SQLServerAccess
 #Get-SQLServerAccess -DomainController 192.168.1.100 -Credential demo\user -sqluser sa -sqlpass Password1 #Supplied Domain Creds and SQL Creds                                      
 #runas /netonly /user:mydomain\myuser "Powershell ./Get-SQLServerAccess.ps1" #run as another user
 
-Get-SQLServerAccess -query "select @@version" # Default output
-# Get-SQLServerAccess -Query "select @@version"  Default output with custom query
+Get-SQLServerAccess # Default output
+
 # Get-SQLServerAccess -ShowSum Yes | Format-Table -AutoSize # Default output, and pipeable table at end
 # Get-SQLServerAccess -ShowSum Yes | Export-Csv c:\temp\mysqlaccess.csv # Default output, and output to csv
 # Get-SQLServerAccess -ShowSum Yes -ShowStatus Yes  # Default output, and summary table at end, and show status table after every successful SQL Server connection
+# Get-SQLServerAccess -ShowSum Yes -ShowStatus Yes | Export-Csv c:\temp\mysqlaccess.csv  # Default output, results to file, and show status table after every successful SQL Server connection
 # Get-SQLServerAccess -ShowStatus Yes # Default output, and show status table after every successful SQL Server connection
+# Get-SQLServerAccess -query "select @@servername,@@version"  Default output with custom query
 
 
