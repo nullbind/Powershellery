@@ -5,9 +5,8 @@
 # todo
 # ----
 # add switch for providing custom sql user for db auth
-# add switch for a custom query option
+# fix custom query trunction
 # fix pop up = $credential = New-Object System.Management.Automation.PsCredential(".\administrator", (ConvertTo-SecureString "P@ssw0rd" -AsPlainText -Force))
-# consider 3 output views - sho
 # update help
 
 function Get-SQLServerAccess
@@ -177,7 +176,11 @@ function Get-SQLServerAccess
 
         [Parameter(Mandatory=$false,
         HelpMessage="Display a status table after accessing each SQL Server instance successfully.")]
-        [string]$ShowStatus
+        [string]$ShowStatus,
+
+        [Parameter(Mandatory=$false,
+        HelpMessage="Allows users to run a custom query on all accessible SQL Server instances.")]
+        [string]$Query
     )
 
     Begin
@@ -455,7 +458,8 @@ function Get-SQLServerAccess
                             }
 
                             # Add the SQL Server information to the data table
-                            $TableSQL.Rows.Add($SQLServerIP, $SQLServer, $SQLInstance, $SQLVersion,$OSVersion,$DBAaccess,$($MyTempTable.SvcAcct),$IsDA,$IsClustered,$DBLinks) | Out-Null                                                            
+                            $TableSQL.Rows.Add($SQLServerIP, $SQLServer, $SQLInstance, $SQLVersion,$OSVersion,$DBAaccess,$($MyTempTable.SvcAcct),$IsDA,$IsClustered,$DBLinks) | Out-Null     
+                                                                                                             
                         }                                                  
                         
                         # Set status color   
@@ -470,8 +474,28 @@ function Get-SQLServerAccess
                             $TableSQL | Format-Table -Autosize
                         }
 
+
+                        # Run custom querys                           
+                        # Set query
+                        if($query){
+                         Write-Host "[*] Custom query sent: $query" -foreground $LineColor 
+                         Write-Host "[*] Query output:" -foreground $LineColor 
+                        $sql= @"
+
+                        -- Setup reg path 
+                        $query
+"@
+                            $cmd = New-Object System.Data.SqlClient.SqlCommand($sql,$conn)
+                            $cmd.CommandTimeout = 0
+                            $results = $cmd.ExecuteReader()
+                            $MyTempTable = new-object “System.Data.DataTable”
+                            $MyTempTable.Load($results)
+                            $MyTempTable 
+                            Write-Host " "
+                        }
                         # close connection                            
-                        $conn.Close();                      
+                        $conn.Close();                           
+                                           
                     }
                     Catch {
 
@@ -533,7 +557,8 @@ function Get-SQLServerAccess
 #Get-SQLServerAccess -DomainController 192.168.1.100 -Credential demo\user -sqluser sa -sqlpass Password1 #Supplied Domain Creds and SQL Creds                                      
 #runas /netonly /user:mydomain\myuser "Powershell ./Get-SQLServerAccess.ps1" #run as another user
 
-Get-SQLServerAccess # Default output
+Get-SQLServerAccess -query "select @@version" # Default output
+# Get-SQLServerAccess -Query "select @@version"  Default output with custom query
 # Get-SQLServerAccess -ShowSum Yes | Format-Table -AutoSize # Default output, and pipeable table at end
 # Get-SQLServerAccess -ShowSum Yes | Export-Csv c:\temp\mysqlaccess.csv # Default output, and output to csv
 # Get-SQLServerAccess -ShowSum Yes -ShowStatus Yes  # Default output, and summary table at end, and show status table after every successful SQL Server connection
