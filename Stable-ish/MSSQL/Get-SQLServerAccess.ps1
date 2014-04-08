@@ -271,7 +271,7 @@ function Get-SQLServerAccess
         $TableSQL.Columns.Add("SvcAcct") | Out-Null 
         $TableSQL.Columns.Add("SvcIsDA") | Out-Null
         $TableSQL.Columns.Add("IsClustered") | Out-Null
-        $TableSQL.Columns.Add("DBLinks") | Out-Null  
+        $TableSQL.Columns.Add("DBLinks") | Out-Null   
 
         # ----------------------------------------------------------------
         # Get list of Domain Admins from domain controller via LDAP
@@ -419,10 +419,16 @@ function Get-SQLServerAccess
                         N'HKEY_LOCAL_MACHINE', @SQLServerInstance,  
                         N'ObjectName',@ServiceAccountName OUTPUT, N'no_output' 
 
+                        DECLARE @MachineType  SYSNAME
+                        EXECUTE master.dbo.xp_regread
+                        @rootkey      = N'HKEY_LOCAL_MACHINE',
+                        @key          = N'SYSTEM\CurrentControlSet\Control\ProductOptions',
+                        @value_name   = N'ProductType', 
+                        @value        = @MachineType output
                         
-
                         -- Grab more info about the server
                         SELECT @@servername as server,
+                        @MachineType as MachineType,
                         serverproperty('edition') as Edition,
                         SERVERPROPERTY('productversion') as sqlver,
                         RIGHT(SUBSTRING(@@VERSION, CHARINDEX('Windows NT', @@VERSION), 14), 3) as osver,
@@ -454,14 +460,18 @@ function Get-SQLServerAccess
 
                             # Set the Windows version
                             $OSVersioncheck = $MyTempTable.osver.split(".")[0]+"."+$MyTempTable.osver.split(".")[1]
-                            if ( $OSVersioncheck -eq '7' ){ $OSVersion = "7" }
-                            elseif ( $OSVersioncheck -eq '6.3' ){ $OSVersion = "8.1/2012" }
-                            elseif ( $OSVersioncheck -eq '6.2' ){ $OSVersion = "8/2012" }
-                            elseif ( $OSVersioncheck -eq '6.1' ){ $OSVersion = "7/2008 R2" }
-                            elseif ( $OSVersioncheck -eq '6.0' ){ $OSVersion = "Vista/2008" }
-                            elseif ( $OSVersioncheck -eq '5.2' ){ $OSVersion = "2003" }
-                            elseif ( $OSVersioncheck -eq '5.1' ){ $OSVersion = "XP/2003" }
-                            elseif ( $OSVersioncheck -eq '5.0' ){ $OSVersion = "2000" }
+                            if ( $OSVersioncheck -eq '6.3' -and $($MyTempTable.MachineType) -eq "ServerNT"){ $OSVersion = "2012" }                            
+                            elseif ( $OSVersioncheck -eq '6.3' -and $($MyTempTable.MachineType) -eq "WinNT"){ $OSVersion = "8.1" }  
+                            elseif ( $OSVersioncheck -eq '6.2' -and $($MyTempTable.MachineType) -eq "ServerNT"){ $OSVersion = "2012" }
+                            elseif ( $OSVersioncheck -eq '6.2' -and $($MyTempTable.MachineType) -eq "WinNT"){ $OSVersion = "8" }
+                            elseif ( $OSVersioncheck -eq '6.1' -and $($MyTempTable.MachineType) -eq "ServerNT"){ $OSVersion = "2008 R2" }
+                            elseif ( $OSVersioncheck -eq '6.1' -and $($MyTempTable.MachineType) -eq "WinNT"){ $OSVersion = "7" }
+                            elseif ( $OSVersioncheck -eq '6.0' -and $($MyTempTable.MachineType) -eq "ServerNT"){ $OSVersion = "2008" }
+                            elseif ( $OSVersioncheck -eq '6.0' -and $($MyTempTable.MachineType) -eq "WinNT"){ $OSVersion = "Vista" }
+                            elseif ( $OSVersioncheck -eq '5.2' -and $($MyTempTable.MachineType) -eq "ServerNT"){ $OSVersion = "2003" }
+                            elseif ( $OSVersioncheck -eq '5.1' -and $($MyTempTable.MachineType) -eq "ServerNT"){ $OSVersion = "2003" }
+                            elseif ( $OSVersioncheck -eq '5.1' -and $($MyTempTable.MachineType) -eq "WinNT"){ $OSVersion = "XP" }
+                            elseif ( $OSVersioncheck -eq '5.0' -and $($MyTempTable.MachineType) -eq "ServerNT"){ $OSVersion = "2000" }
                             else { $OSVersion = $MyTempTable.osver }
 
                             # Check if user is a sysadmin
@@ -600,11 +610,11 @@ function Get-SQLServerAccess
 
 
 # Working
-Get-SQLServerAccess # Default output
+# Get-SQLServerAccess # Default output
 # Get-SQLServerAccess -ShowSum Yes | Format-Table -AutoSize # Default output, and pipeable table at end
 # Get-SQLServerAccess -ShowSum Yes | Export-Csv c:\temp\mysqlaccess.csv # Default output, and output to csv
 # Get-SQLServerAccess -ShowSum Yes -ShowStatus Yes  # Default output, summary table at end, and show status table after every successful SQL Server connection
-# Get-SQLServerAccess -ShowStatus Yes # Default output, and show status table after every successful SQL Server connection
+Get-SQLServerAccess -ShowStatus Yes # Default output, and show status table after every successful SQL Server connection
 # Get-SQLServerAccess -query "select @@servername,@@version"  #Default output with custom query
 # Get-SQLServerAccess -Credential demo\user # Default output, but use alternative domain creds to auth to dc
 
