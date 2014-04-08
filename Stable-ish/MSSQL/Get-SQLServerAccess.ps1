@@ -50,7 +50,7 @@ function Get-SQLServerAccess
        access to.  This also displays a data table object at the end that is pipeable in 
        PowerShell.  You can make it pretty using the format-table syntax example below.
 	   
-	   PS C:\Get-SQLServerAccess.ps1 -ShowSum Yes | format-table -AutoSize 
+	   PS C:\Get-SQLServerAccess.ps1 -ShowSum | format-table -AutoSize 
 
         [*] ----------------------------------------------------------------------
         [*] Start Time: 04/03/2014 10:56:00
@@ -80,7 +80,7 @@ function Get-SQLServerAccess
        access to.  This will display the default output, but also write the results to a 
        CSV file.
 	   
-	   PS C:\Get-SQLServerAccess.ps1 -ShowSum Yes | export-csv c:\temp\mysqlaccess.csv
+	   PS C:\Get-SQLServerAccess.ps1 -ShowSum | export-csv c:\temp\mysqlaccess.csv
 
         [*] ----------------------------------------------------------------------
         [*] Start Time: 04/03/2014 10:56:00
@@ -104,7 +104,7 @@ function Get-SQLServerAccess
        access to.  This will display the default output, but also display a data table of
        SQL Servers that are accessible every time a successful connection is made.
 	   
-	   PS C:\Get-SQLServerAccess.ps1 -ShowStatus Yes 
+	   PS C:\Get-SQLServerAccess.ps1 -ShowStatus 
 
         [*] ----------------------------------------------------------------------
         [*] Start Time: 04/03/2014 10:56:00
@@ -212,11 +212,11 @@ function Get-SQLServerAccess
 
         [Parameter(Mandatory=$false,
         HelpMessage="At the end of the scan display the results in a pipeable datatable format.")]
-        [string]$ShowSum,
+        [switch]$ShowSum,
 
         [Parameter(Mandatory=$false,
         HelpMessage="Display a status table after accessing each SQL Server instance successfully.")]
-        [string]$ShowStatus,
+        [switch]$ShowStatus,
 
         [Parameter(Mandatory=$false,
         HelpMessage="Allows users to run a custom query on all accessible SQL Server instances.")]
@@ -611,15 +611,15 @@ function Get-SQLServerAccess
 
 # Working
 # Get-SQLServerAccess # Default output
-# Get-SQLServerAccess -ShowSum Yes | Format-Table -AutoSize # Default output, and pipeable table at end
-# Get-SQLServerAccess -ShowSum Yes | Export-Csv c:\temp\mysqlaccess.csv # Default output, and output to csv
-# Get-SQLServerAccess -ShowSum Yes -ShowStatus Yes  # Default output, summary table at end, and show status table after every successful SQL Server connection
-Get-SQLServerAccess -ShowStatus Yes # Default output, and show status table after every successful SQL Server connection
+# Get-SQLServerAccess -ShowSum | Format-Table -AutoSize # Default output, and pipeable table at end
+# Get-SQLServerAccess -ShowSum | Export-Csv c:\temp\mysqlaccess.csv # Default output, and output to csv
+# Get-SQLServerAccess -ShowSum -ShowStatus # Default output, summary table at end, and show status table after every successful SQL Server connection
+Get-SQLServerAccess -ShowStatus -showsum # Default output, and show status table after every successful SQL Server connection
 # Get-SQLServerAccess -query "select @@servername,@@version"  #Default output with custom query
 # Get-SQLServerAccess -Credential demo\user # Default output, but use alternative domain creds to auth to dc
 
 # Need to fix bugs
-# Get-SQLServerAccess -ShowSum Yes -ShowStatus Yes -query "select @@servername"  # output starts out fine, but then order gets out of whack
+# Get-SQLServerAccess -ShowSum -ShowStatus -query "select @@servername"  # output starts out fine, but then order gets out of whack
 
 # Not really tested
 # Get-SQLServerAccess -DomainController 192.168.1.100 -Credential demo\user password -sqluser sa -sqlpass Password1 #Supplied Domain Creds and SQL Creds                                      
