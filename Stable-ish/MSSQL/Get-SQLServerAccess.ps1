@@ -4,6 +4,7 @@
 
 # todo
 # ----
+# consider listing service account name in default output.
 # add switch for providing custom sql user for db auth
 # add switch for additional sql servers
 # fix custom query trunction, and lack of column names after first time
@@ -302,19 +303,25 @@ function Get-SQLServerAccess
         $CurrentDomain = $ObjDomain.distinguishedName
         $ObjSearcher.PageSize = $Limit
         $ObjSearcher.Filter = "(ServicePrincipalName=*MSSQLSvc*)"
-        $ObjSearcher.SearchScope = $SearchScope
-        $CurrentUser = $Credential.UserName
+        $ObjSearcher.SearchScope = $SearchScope        
 
         if ($SearchDN)
         {
             $ObjSearcher.SearchDN = New-Object System.DirectoryServices.DirectoryEntry("LDAP://$($SearchDN)")
-        }
+        }        
 
         # Status user
+        [string]$CurrentUser = $Credential.UserName
+        if ($CurrentUser -eq ""){
+            $LDAPUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+        }else{
+            $LDAPUser = $Credential.UserName            
+        }
+        
         $StartTime = Get-Date
         Write-Host "[*] ----------------------------------------------------------------------"
         Write-Host "[*] Start Time: $StartTime"        
-        Write-Host "[*] Getting a list of SQL Server instances from the domain controller..."         
+        Write-Host "[*] Getting list of SQL Server instances from DC as $LDAPUser..."         
 
         # Get a count of the number of accounts that match the LDAP query
         $Records = $ObjSearcher.FindAll()
@@ -507,6 +514,9 @@ function Get-SQLServerAccess
                                 }                                                                    
                             }
 
+                            # Set service account
+                            $SQLServiceAccount = $($MyTempTable.SvcAcct)
+
                             # Add the SQL Server information to the data table
                             $TableSQL.Rows.Add($SQLServerIP, $SQLServer, $SQLInstance, $SQLVersion,$OSVersion,$DBAaccess,$($MyTempTable.SvcAcct),$IsDA,$IsClustered,$DBLinks) | Out-Null     
                                                                                                              
@@ -610,11 +620,11 @@ function Get-SQLServerAccess
 
 
 # Working
-# Get-SQLServerAccess # Default output
+Get-SQLServerAccess # Default output
 # Get-SQLServerAccess -ShowSum | Format-Table -AutoSize # Default output, and pipeable table at end
 # Get-SQLServerAccess -ShowSum | Export-Csv c:\temp\mysqlaccess.csv # Default output, and output to csv
 # Get-SQLServerAccess -ShowSum -ShowStatus # Default output, summary table at end, and show status table after every successful SQL Server connection
-Get-SQLServerAccess -ShowStatus -showsum # Default output, and show status table after every successful SQL Server connection
+# Get-SQLServerAccess -ShowStatus -showsum # Default output, and show status table after every successful SQL Server connection
 # Get-SQLServerAccess -query "select @@servername,@@version"  #Default output with custom query
 # Get-SQLServerAccess -Credential demo\user # Default output, but use alternative domain creds to auth to dc
 
