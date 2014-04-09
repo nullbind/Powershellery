@@ -317,10 +317,13 @@ function Get-SQLServerAccess
         }else{
             $LDAPUser = $Credential.UserName            
         }
-        
+        $StatusDomain = [system.directoryservices.activedirectory.domain]::GetCurrentDomain().PdcRoleOwner.Domain.Name
+        $StatusDC = [system.directoryservices.activedirectory.domain]::GetCurrentDomain().PdcRoleOwner.Name        
         $StartTime = Get-Date
         Write-Host "[*] ----------------------------------------------------------------------"
         Write-Host "[*] Start Time: $StartTime"        
+        Write-Host "[*] Domain: $StatusDomain"
+        Write-Host "[*] DC: $StatusDC"
         Write-Host "[*] Getting list of SQL Server instances from DC as $LDAPUser..."         
 
         # Get a count of the number of accounts that match the LDAP query
