@@ -4,9 +4,6 @@
 
 # todo
 # ----
-# consider listing service account name in default output.
-# add switch for providing custom sql user for db auth
-# add switch for additional sql servers
 # fix custom query trunction, and lack of column names after first time
 # fix pop up = $credential = New-Object System.Management.Automation.PsCredential(".\administrator", (ConvertTo-SecureString "P@ssw0rd" -AsPlainText -Force))
 # update help
@@ -30,15 +27,43 @@ function Get-SQLServerAccess
 	   PS C:\Get-SQLServerAccess.ps1
 
         [*] ----------------------------------------------------------------------
-        [*] Start Time: 04/03/2014 10:56:00
-        [*] Getting a list of SQL Server instances from the domain controller...
-        [+] 5 SQL Server instances found.
-        [*] Attempting to login into 5 SQL Server instances...
+        [*] Start Time: 04/09/2014 17:02:33
+        [*] Domain: mydomain.com
+        [*] DC: dc1.mydomain.com
+        [*] Getting list of SQL Server instances from DC as mydomain\myuser...
+        [*] 59 SQL Server instances found.
+        [*] Attempting to login into 59 SQL Server instances as mydomain\myuser...
         [*] ----------------------------------------------------------------------
         [-] Failed   - server1.mydomain.com is not responding to pings
         [-] Failed   - server2.mydomain.com (192.168.1.102) is up, but authentication/query failed
         [+] SUCCESS! - server3.mydomain.com,1433 (192.168.1.103) - Sysadmin: No - SvcIsDA: No 
         [+] SUCCESS! - server3.mydomain.com\SQLEXPRESS (192.168.1.103) - Sysadmin: No - SvcIsDA: No
+        [+] SUCCESS! - server4.mydomain.com\AppData (192.168.1.104) - Sysadmin: Yes - SvcIsDA: Yes             
+        [*] ----------------------------------------------------------------------
+        [+] 3 of 5 SQL Server instances could be accessed.        
+        [*] End Time: 04/03/2014 10:58:00      
+        [*] Total Time: 00:03:00
+        [*] ----------------------------------------------------------------------
+
+	.EXAMPLE
+	   Returns a list of SQL Server instances on the current user's domain and 
+       attempt to authenticate using provides SQL Server credentials.  
+       This is the default output.
+	   
+	   PS C:\Get-SQLServerAccess.ps1 -SQLUser test -SQLPass $up3r$3cur3P@$$w0rd
+
+        [*] ----------------------------------------------------------------------
+        [*] Start Time: 04/09/2014 17:02:33
+        [*] Domain: mydomain.com
+        [*] DC: dc1.mydomain.com
+        [*] Getting list of SQL Server instances from DC as mydomain\myuser...
+        [*] 59 SQL Server instances found.
+        [*] Attempting to login into 59 SQL Server instances as test...
+        [*] ----------------------------------------------------------------------
+        [-] Failed   - server1.mydomain.com is not responding to pings
+        [-] Failed   - server2.mydomain.com (192.168.1.102) is up, but authentication/query failed
+        [+] Failed - server3.mydomain.com,1433 (192.168.1.103) - is up, but authentication/query failed
+        [+] Failed - server3.mydomain.com\SQLEXPRESS (192.168.1.103) - is up, but authentication/query failed
         [+] SUCCESS! - server4.mydomain.com\AppData (192.168.1.104) - Sysadmin: Yes - SvcIsDA: Yes             
         [*] ----------------------------------------------------------------------
         [+] 3 of 5 SQL Server instances could be accessed.        
@@ -54,10 +79,12 @@ function Get-SQLServerAccess
 	   PS C:\Get-SQLServerAccess.ps1 -ShowSum | format-table -AutoSize 
 
         [*] ----------------------------------------------------------------------
-        [*] Start Time: 04/03/2014 10:56:00
-        [*] Getting a list of SQL Server instances from the domain controller...
-        [+] 5 SQL Server instances found. 
-        [*] Attempting to login into 5 SQL Server instances...
+        [*] Start Time: 04/09/2014 17:02:33
+        [*] Domain: mydomain.com
+        [*] DC: dc1.mydomain.com
+        [*] Getting list of SQL Server instances from DC as mydomain\myuser...
+        [*] 59 SQL Server instances found.
+        [*] Attempting to login into 59 SQL Server instances as mydomain\myuser...
         [*] ----------------------------------------------------------------------
         [-] Failed   - server1.mydomain.com is not responding to pings
         [-] Failed   - server2.mydomain.com (192.168.1.102) is up, but authentication/query failed
@@ -84,10 +111,12 @@ function Get-SQLServerAccess
 	   PS C:\Get-SQLServerAccess.ps1 -ShowSum | export-csv c:\temp\mysqlaccess.csv
 
         [*] ----------------------------------------------------------------------
-        [*] Start Time: 04/03/2014 10:56:00
-        [*] Getting a list of SQL Server instances from the domain controller...
-        [+] 5 SQL Server instances found.
-        [*] Attempting to login into 5 SQL Server instances...
+        [*] Start Time: 04/09/2014 17:02:33
+        [*] Domain: mydomain.com
+        [*] DC: dc1.mydomain.com
+        [*] Getting list of SQL Server instances from DC as mydomain\myuser...
+        [*] 59 SQL Server instances found.
+        [*] Attempting to login into 59 SQL Server instances as mydomain\myuser...
         [*] ----------------------------------------------------------------------
         [-] Failed   - server1.mydomain.com is not responding to pings
         [-] Failed   - server2.mydomain.com (192.168.1.102) is up, but authentication/query failed
@@ -108,10 +137,12 @@ function Get-SQLServerAccess
 	   PS C:\Get-SQLServerAccess.ps1 -ShowStatus 
 
         [*] ----------------------------------------------------------------------
-        [*] Start Time: 04/03/2014 10:56:00
-        [*] Getting a list of SQL Server instances from the domain controller...
-        [+] 5 SQL Server instances found.
-        [*] Attempting to login into 5 SQL Server instances...
+        [*] Start Time: 04/09/2014 17:02:33
+        [*] Domain: mydomain.com
+        [*] DC: dc1.mydomain.com
+        [*] Getting list of SQL Server instances from DC as mydomain\myuser...
+        [*] 59 SQL Server instances found.
+        [*] Attempting to login into 59 SQL Server instances as mydomain\myuser...
         [*] ----------------------------------------------------------------------
         [-] Failed   - server1.mydomain.com is not responding to pings
         [-] Failed   - server2.mydomain.com (192.168.1.102) is up, but authentication/query failed
@@ -150,10 +181,12 @@ function Get-SQLServerAccess
 	   PS C:\Get-SQLServerAccess.ps1 -query "select @@servername"  
 
         [*] ----------------------------------------------------------------------
-        [*] Start Time: 04/03/2014 10:56:00
-        [*] Getting a list of SQL Server instances from the domain controller...
-        [+] 5 SQL Server instances found.
-        [*] Attempting to login into 5 SQL Server instances...
+        [*] Start Time: 04/09/2014 17:02:33
+        [*] Domain: mydomain.com
+        [*] DC: dc1.mydomain.com
+        [*] Getting list of SQL Server instances from DC as mydomain\myuser...
+        [*] 59 SQL Server instances found.
+        [*] Attempting to login into 59 SQL Server instances as mydomain\myuser...
         [*] ----------------------------------------------------------------------
         [-] Failed   - server1.mydomain.com is not responding to pings
         [-] Failed   - server2.mydomain.com (192.168.1.102) is up, but authentication/query failed
@@ -218,6 +251,14 @@ function Get-SQLServerAccess
         [Parameter(Mandatory=$false,
         HelpMessage="Display a status table after accessing each SQL Server instance successfully.")]
         [switch]$ShowStatus,
+
+        [Parameter(Mandatory=$false,
+        HelpMessage="Set SQL Login username.")]
+        [string]$SQLUser,
+
+        [Parameter(Mandatory=$false,
+        HelpMessage="Set SQL Login password.")]
+        [string]$SQLPass,
 
         [Parameter(Mandatory=$false,
         HelpMessage="Allows users to run a custom query on all accessible SQL Server instances.")]
@@ -373,9 +414,15 @@ function Get-SQLServerAccess
             # ------------------------------------------------------------          
 
             # Status user
+            if($SQLUser -and $SQLPass){
+                $DBUser = $SQLUser
+            }else{
+                $DBUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+            }
+
             $SQLServerCount = $TableLDAP.Rows.Count
             Write-Host "[*] $SQLServerCount SQL Server instances found."    
-            Write-Host "[*] Attempting to login into $SQLServerCount SQL Server instances..."
+            Write-Host "[*] Attempting to login into $SQLServerCount SQL Server instances as $DBUser..."
             Write-Host "[*] ----------------------------------------------------------------------" 
 
             # Display results in list view that can feed into the pipeline
@@ -389,9 +436,16 @@ function Get-SQLServerAccess
                 $SQLServer = $_.server
                 $SQLInstance = $_.instance       
 
-                # Set authentication type                                                    
-                # $conn.ConnectionString = "Server=$SQLInstance;Database=master;User ID=superadmin;Password=superpassword;" # Provided SQL Credentials
-                $conn.ConnectionString = "Server=$SQLInstance;Database=master;Integrated Security=SSPI;" # Trusted Connection                    
+                # Set authentication type      
+                if($SQLUser -and $SQLPass){   
+                                                           
+                    # SQL login
+                    $conn.ConnectionString = "Server=$SQLInstance;Database=master;User ID='$SQLUser';Password='$SQLPass';" 
+                }else{
+
+                    # Trusted connection
+                    $conn.ConnectionString = "Server=$SQLInstance;Database=master;Integrated Security=SSPI;"                     
+                }
 
                 #-------------------------
                 # Test database conection
@@ -584,32 +638,25 @@ function Get-SQLServerAccess
             $EndTime = Get-Date
             $TotalTime = NEW-TIMESPAN –Start $Starttime –End $Endtime   
             $SQLServerLoginCount = $TableSQL.Rows.count
-            if ($SQLServerLoginCount -gt 0) {                        
-            
-                # Display total servers and time                
-                Write-Host "[*] ----------------------------------------------------------------------"  
-                Write-Host "[*] $SQLServerLoginCount of $SQLServerCount SQL Server instances could be accessed."                                             
-                Write-Host "[*] End Time: $Endtime"                
-                Write-Host "[*] Total Time: $TotalTime" 
-                Write-Host "[*] ----------------------------------------------------------------------" 
+                                            
+            #Display total servers and time                
+            Write-Host "[*] ----------------------------------------------------------------------"  
+            Write-Host "[*] $SQLServerLoginCount of $SQLServerCount SQL Server instances could be accessed."                                             
+            Write-Host "[*] End Time: $Endtime"                
+            Write-Host "[*] Total Time: $TotalTime" 
+            Write-Host "[*] ----------------------------------------------------------------------" 
                 
-                # Display final results table                
-                if($ShowSum){
-                    $TableSQL 
-                }
-                
-
-            }else{
-        
-                # Status user
-                Write-Host "[-] No SQL Server instances could be accessed" 
-            }   
-
+            # Display final results table                
+            if($ShowSum){
+                $TableSQL 
+            }      
+                  
         }else{
 
             # Display fail            
             Write-Host "[-] No SQL Servers were found in Active Directory."            
-        } 
+
+        } # End database loop
 
     }  # End process 
 
@@ -623,13 +670,16 @@ function Get-SQLServerAccess
 
 
 # Working
-Get-SQLServerAccess # Default output
+
+
+# Get-SQLServerAccess # Default output
 # Get-SQLServerAccess -ShowSum | Format-Table -AutoSize # Default output, and pipeable table at end
 # Get-SQLServerAccess -ShowSum | Export-Csv c:\temp\mysqlaccess.csv # Default output, and output to csv
 # Get-SQLServerAccess -ShowSum -ShowStatus # Default output, summary table at end, and show status table after every successful SQL Server connection
 # Get-SQLServerAccess -ShowStatus -showsum # Default output, and show status table after every successful SQL Server connection
-# Get-SQLServerAccess -query "select @@servername,@@version"  #Default output with custom query
+# Get-SQLServerAccess -query "select @@servername,@@version"  # Default output with custom query
 # Get-SQLServerAccess -Credential demo\user # Default output, but use alternative domain creds to auth to dc
+# Get-SQLServerAccess -SQLUser test -SQLPass test # Default output, authenticating with sql creds
 
 # Need to fix bugs
 # Get-SQLServerAccess -ShowSum -ShowStatus -query "select @@servername"  # output starts out fine, but then order gets out of whack
