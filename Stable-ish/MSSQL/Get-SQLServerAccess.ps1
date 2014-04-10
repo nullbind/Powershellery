@@ -31,8 +31,35 @@ function Get-SQLServerAccess
         [*] Domain: mydomain.com
         [*] DC: dc1.mydomain.com
         [*] Getting list of SQL Server instances from DC as mydomain\myuser...
-        [*] 59 SQL Server instances found.
-        [*] Attempting to login into 59 SQL Server instances as mydomain\myuser...
+        [*] 5 SQL Server instances found in LDAP.
+        [*] Attempting to login into 5 SQL Server instances as mydomain\myuser...
+        [*] ----------------------------------------------------------------------
+        [-] Failed   - server1.mydomain.com is not responding to pings
+        [-] Failed   - server2.mydomain.com (192.168.1.102) is up, but authentication/query failed
+        [+] SUCCESS! - server3.mydomain.com,1433 (192.168.1.103) - Sysadmin: No - SvcIsDA: No 
+        [+] SUCCESS! - server3.mydomain.com\SQLEXPRESS (192.168.1.103) - Sysadmin: No - SvcIsDA: No
+        [+] SUCCESS! - server4.mydomain.com\AppData (192.168.1.104) - Sysadmin: Yes - SvcIsDA: Yes             
+        [*] ----------------------------------------------------------------------
+        [+] 3 of 5 SQL Server instances could be accessed.        
+        [*] End Time: 04/03/2014 10:58:00      
+        [*] Total Time: 00:03:00
+        [*] ----------------------------------------------------------------------
+
+
+    .EXAMPLE
+	   Returns a list of SQL Server instances imported from a file and on the current 
+       user's domain that they have access to.  This is the default output.
+	   
+	   PS C:\Get-SQLServerAccess.ps1 -File c:\Temp\Servers.txt
+
+        [*] ----------------------------------------------------------------------
+        [*] Start Time: 04/09/2014 17:02:33
+        [*] Domain: mydomain.com
+        [*] DC: dc1.mydomain.com
+        [*] Getting list of SQL Server instances from DC as mydomain\myuser...
+        [*] 2 SQL Server instances found in LDAP.
+        [*] 3 SQL Server instances found in c:\temp\servers.txt.
+        [*] Attempting to login into 5 SQL Server instances as mydomain\myuser...
         [*] ----------------------------------------------------------------------
         [-] Failed   - server1.mydomain.com is not responding to pings
         [-] Failed   - server2.mydomain.com (192.168.1.102) is up, but authentication/query failed
@@ -57,16 +84,16 @@ function Get-SQLServerAccess
         [*] Domain: mydomain.com
         [*] DC: dc1.mydomain.com
         [*] Getting list of SQL Server instances from DC as mydomain\myuser...
-        [*] 59 SQL Server instances found.
-        [*] Attempting to login into 59 SQL Server instances as test...
+        [*] 5 SQL Server instances found in LDAP.
+        [*] Attempting to login into 5 SQL Server instances as test...
         [*] ----------------------------------------------------------------------
         [-] Failed   - server1.mydomain.com is not responding to pings
         [-] Failed   - server2.mydomain.com (192.168.1.102) is up, but authentication/query failed
-        [+] Failed - server3.mydomain.com,1433 (192.168.1.103) - is up, but authentication/query failed
-        [+] Failed - server3.mydomain.com\SQLEXPRESS (192.168.1.103) - is up, but authentication/query failed
+        [+] Failed   - server3.mydomain.com,1433 (192.168.1.103) - is up, but authentication/query failed
+        [+] Failed   - server3.mydomain.com\SQLEXPRESS (192.168.1.103) - is up, but authentication/query failed
         [+] SUCCESS! - server4.mydomain.com\AppData (192.168.1.104) - Sysadmin: Yes - SvcIsDA: Yes             
         [*] ----------------------------------------------------------------------
-        [+] 3 of 5 SQL Server instances could be accessed.        
+        [+] 1 of 5 SQL Server instances could be accessed.        
         [*] End Time: 04/03/2014 10:58:00      
         [*] Total Time: 00:03:00
         [*] ----------------------------------------------------------------------
@@ -83,8 +110,8 @@ function Get-SQLServerAccess
         [*] Domain: mydomain.com
         [*] DC: dc1.mydomain.com
         [*] Getting list of SQL Server instances from DC as mydomain\myuser...
-        [*] 59 SQL Server instances found.
-        [*] Attempting to login into 59 SQL Server instances as mydomain\myuser...
+        [*] 5 SQL Server instances found in LDAP.
+        [*] Attempting to login into 5 SQL Server instances as mydomain\myuser...
         [*] ----------------------------------------------------------------------
         [-] Failed   - server1.mydomain.com is not responding to pings
         [-] Failed   - server2.mydomain.com (192.168.1.102) is up, but authentication/query failed
@@ -115,8 +142,8 @@ function Get-SQLServerAccess
         [*] Domain: mydomain.com
         [*] DC: dc1.mydomain.com
         [*] Getting list of SQL Server instances from DC as mydomain\myuser...
-        [*] 59 SQL Server instances found.
-        [*] Attempting to login into 59 SQL Server instances as mydomain\myuser...
+        [*] 5 SQL Server instances found in LDAP.
+        [*] Attempting to login into 5 SQL Server instances as mydomain\myuser...
         [*] ----------------------------------------------------------------------
         [-] Failed   - server1.mydomain.com is not responding to pings
         [-] Failed   - server2.mydomain.com (192.168.1.102) is up, but authentication/query failed
@@ -141,8 +168,8 @@ function Get-SQLServerAccess
         [*] Domain: mydomain.com
         [*] DC: dc1.mydomain.com
         [*] Getting list of SQL Server instances from DC as mydomain\myuser...
-        [*] 59 SQL Server instances found.
-        [*] Attempting to login into 59 SQL Server instances as mydomain\myuser...
+        [*] 5 SQL Server instances found in LDAP.
+        [*] Attempting to login into 5 SQL Server instances as mydomain\myuser...
         [*] ----------------------------------------------------------------------
         [-] Failed   - server1.mydomain.com is not responding to pings
         [-] Failed   - server2.mydomain.com (192.168.1.102) is up, but authentication/query failed
@@ -185,8 +212,8 @@ function Get-SQLServerAccess
         [*] Domain: mydomain.com
         [*] DC: dc1.mydomain.com
         [*] Getting list of SQL Server instances from DC as mydomain\myuser...
-        [*] 59 SQL Server instances found.
-        [*] Attempting to login into 59 SQL Server instances as mydomain\myuser...
+        [*] 5 SQL Server instances found in LDAP.
+        [*] Attempting to login into 5 SQL Server instances as mydomain\myuser...
         [*] ----------------------------------------------------------------------
         [-] Failed   - server1.mydomain.com is not responding to pings
         [-] Failed   - server2.mydomain.com (192.168.1.102) is up, but authentication/query failed
