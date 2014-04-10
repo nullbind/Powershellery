@@ -745,12 +745,9 @@ function Get-SQLServerAccess
 # Testing commands...
 #
 
-
-
-# Working
-
-Get-SQLServerAccess -file c:\temp\servers.txt # Default output
+# Working Commands
 # Get-SQLServerAccess # Default output
+# Get-SQLServerAccess -file c:\temp\servers.txt # Default output, but pull additional sql server list from file
 # Get-SQLServerAccess -ShowSum | Format-Table -AutoSize # Default output, and pipeable table at end
 # Get-SQLServerAccess -ShowSum | Export-Csv c:\temp\mysqlaccess.csv # Default output, and output to csv
 # Get-SQLServerAccess -ShowSum -ShowStatus # Default output, summary table at end, and show status table after every successful SQL Server connection
@@ -758,12 +755,12 @@ Get-SQLServerAccess -file c:\temp\servers.txt # Default output
 # Get-SQLServerAccess -query "select @@servername,@@version"  # Default output with custom query
 # Get-SQLServerAccess -Credential demo\user # Default output, but use alternative domain creds to auth to dc
 # Get-SQLServerAccess -SQLUser test -SQLPass test # Default output, authenticating with sql creds
+# Get-SQLServerAccess -DomainController 192.168.1.100 -Credential demo\user -sqluser sa -sqlpass Password1 # Default output, Supplied Domain Creds and SQL Creds       
 
 # Need to fix bugs
 # Get-SQLServerAccess -ShowSum -ShowStatus -query "select @@servername"  # output starts out fine, but then order gets out of whack
 
 # Not really tested
-# Get-SQLServerAccess -DomainController 192.168.1.100 -Credential demo\user password -sqluser sa -sqlpass Password1 #Supplied Domain Creds and SQL Creds                                      
 # runas /netonly /user:mydomain\myuser "Powershell ./Get-SQLServerAccess.ps1" #run as another user
 
 
