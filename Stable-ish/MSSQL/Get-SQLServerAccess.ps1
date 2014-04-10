@@ -261,6 +261,10 @@ function Get-SQLServerAccess
         [string]$SQLPass,
 
         [Parameter(Mandatory=$false,
+        HelpMessage="File containing list of SQL servers. Accepts formats: 192.168.1.100 192.168.1.100,1433 192.168.1.100\CVM")]
+        [string]$File,
+
+        [Parameter(Mandatory=$false,
         HelpMessage="Allows users to run a custom query on all accessible SQL Server instances.")]
         [string]$Query
     )
@@ -409,11 +413,12 @@ function Get-SQLServerAccess
                 }                                
             } 
 
+        
             # ------------------------------------------------------------
-            # Test access to each SQL Server instance and grab basic info
-            # ------------------------------------------------------------          
-
             # Status user
+            # ------------------------------------------------------------  
+
+            # Check if SQL credentials were provided
             if($SQLUser -and $SQLPass){
                 $DBUser = $SQLUser
             }else{
@@ -421,9 +426,55 @@ function Get-SQLServerAccess
             }
 
             $SQLServerCount = $TableLDAP.Rows.Count
-            Write-Host "[*] $SQLServerCount SQL Server instances found."    
-            Write-Host "[*] Attempting to login into $SQLServerCount SQL Server instances as $DBUser..."
+            Write-Host "[*] $SQLServerCount SQL Server instances found in LDAP."    
+            
+            # Get list of SQL Servers from a file
+            if($File){
+            
+                # Check if file exists
+                [string]$FileExist = Test-Path $File
+
+                if ($FileExist -eq "True"){
+
+                    # Import list of SQL Server instances from file to TableLDAP
+                    Get-Content $File | ForEach-Object {
+
+                         # Test current item
+                         $TheInstance = $_
+
+                         # Parse server and instance 
+                         If($TheInstance.Contains(",") -eq "True"){
+                            $TheServer = $TheInstance.split(",")[0]
+                         }elseif($TheInstance.Contains("\") -eq "True"){
+                             $TheServer = $TheInstance.split("\")[0]
+                         }else{
+                             $TheServer = $TheInstance
+                         }                                
+
+                        # Add server and instance to TableLDAP datatable
+                        $TableLDAP.Rows.Add($TheServer,$TheInstance) | Out-Null                           
+                    }
+
+                    # Update counters
+                    $SQLServerFinalCount = $TableLDAP.Rows.Count
+                    $SQLServerList = $SQLServerFinalCount-$SQLServerCount
+
+                    Write-Host "[*] $SQLServerList SQL Server instances found in $File"
+
+                }else{
+
+                    # Status user
+                    Write-host "[-] The file provided does not exist."
+                }
+            }
+
+            # Status user
+            Write-Host "[*] Attempting to login into $SQLServerFinalCount SQL Server instances as $DBUser..."
             Write-Host "[*] ----------------------------------------------------------------------" 
+
+            # ------------------------------------------------------------
+            # Test access to each SQL Server instance and grab basic info
+            # ------------------------------------------------------------  
 
             # Display results in list view that can feed into the pipeline
             $TableLDAP |  Sort-Object server,instance| select server,instance -unique | foreach {
@@ -671,7 +722,7 @@ function Get-SQLServerAccess
 
 # Working
 
-
+Get-SQLServerAccess -file c:\temp\servers.txt # Default output
 # Get-SQLServerAccess # Default output
 # Get-SQLServerAccess -ShowSum | Format-Table -AutoSize # Default output, and pipeable table at end
 # Get-SQLServerAccess -ShowSum | Export-Csv c:\temp\mysqlaccess.csv # Default output, and output to csv
