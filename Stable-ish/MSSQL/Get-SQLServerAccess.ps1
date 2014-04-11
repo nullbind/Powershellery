@@ -685,12 +685,10 @@ function Get-SQLServerAccess
 
                             # Display custom query results                  
                             $MyTempTable2 
-                            Write-Host " "
                         }                        
 
                         # Show status table
-                        if($ShowStatus){
-                            Write-Host "[+] Status table output:" -foreground $LineColor 
+                        if($ShowStatus){                            
                             $TableSQL | Format-Table -Autosize
                         }
 
