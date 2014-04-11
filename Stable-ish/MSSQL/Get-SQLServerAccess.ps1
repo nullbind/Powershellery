@@ -4,7 +4,7 @@
 
 # todo
 # ----
-# fix custom query trunction, and lack of column names after first time
+# define sql dependancies
 # fix pop up = $credential = New-Object System.Management.Automation.PsCredential(".\administrator", (ConvertTo-SecureString "P@ssw0rd" -AsPlainText -Force))
 # update help
 
@@ -744,7 +744,7 @@ function Get-SQLServerAccess
 
 #
 # Testing commands...
-#
+# Note: Everything works as a module if it's imported.
 
 # Working Commands
 # Get-SQLServerAccess # Default output
@@ -758,10 +758,11 @@ function Get-SQLServerAccess
 # Get-SQLServerAccess -SQLUser test -SQLPass test # Default output, authenticating with sql creds
 # Get-SQLServerAccess -DomainController 192.168.1.100 -Credential demo\user -sqluser sa -sqlpass Password1 # Default output, Supplied Domain Creds and SQL Creds       
 
-# Need to fix bugs
-Get-SQLServerAccess -ShowSum -ShowStatus -query "select @@servername"  # output starts out fine, but then order gets out of whack
-
-# Not really tested
-# runas /netonly /user:mydomain\myuser "Powershell ./Get-SQLServerAccess.ps1" #run as another user
-
+# Run as domain user on a non domain system - need better option
+# 1 - Use runas command to run powershell as another user
+# runas /user:demo\user powershell.exe 
+# 2 - Import Get-SQLServerAccess.psm1 module
+# import-module Get-SQLServerAccess.psm1
+# Get-SQLServerAccess <args>
+# Note: there seems to be a differant number of databases accessible between running as computer account(more) and runas domain user(less)...look into it
 
