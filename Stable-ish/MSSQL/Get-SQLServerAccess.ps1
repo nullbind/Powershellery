@@ -5,6 +5,7 @@
 # todo
 # ----
 # define sql dependancies
+# finish runas option and help
 # fix pop up = $credential = New-Object System.Management.Automation.PsCredential(".\administrator", (ConvertTo-SecureString "P@ssw0rd" -AsPlainText -Force))
 # update help
 
@@ -205,7 +206,7 @@ function Get-SQLServerAccess
        access to.  This will display the default output, but also display the results of
        a custom query defined by the user.
 	   
-	   PS C:\Get-SQLServerAccess.ps1 -query "select @@servername"  
+	   PS C:\Get-SQLServerAccess -query "select name as 'Databases' from master..sysdatabases where HAS_DBACCESS(name) = 1"
 
         [*] ----------------------------------------------------------------------
         [*] Start Time: 04/09/2014 17:02:33
@@ -221,19 +222,28 @@ function Get-SQLServerAccess
         [+] Query sent: select @@servername
         [+] Query output:
                                                                  
-        server3        
+        master
+        tempdb
+        msdb        
           
         [+] SUCCESS! - server3.mydomain.com\SQLEXPRESS (192.168.1.103) - Sysadmin: No - SvcIsDA: No
         [+] Query sent: select @@servername
         [+] Query output:
                                                                  
-        server3\SQLEXPRESS                                  
+        master
+        tempdb
+        msdb                                 
           
         [+] SUCCESS! - server4.mydomain.com\AppData (192.168.1.104) - Sysadmin: Yes - SvcIsDA: Yes       
         [+] Query sent: select @@servername
         [+] Query output:
                                                                  
-        server4\AppData                          
+        master
+        tempdb
+        msdb
+        PCIDataDB
+        ApplicationDB
+        CompanySecrectsDB
              
         [*] ----------------------------------------------------------------------
         [+] 3 of 5 SQL Server instances could be accessed.        
@@ -753,10 +763,11 @@ function Get-SQLServerAccess
 # Get-SQLServerAccess -ShowSum | Export-Csv c:\temp\mysqlaccess.csv # Default output, and output to csv
 # Get-SQLServerAccess -ShowSum -ShowStatus # Default output, summary table at end, and show status table after every successful SQL Server connection
 # Get-SQLServerAccess -ShowStatus -showsum # Default output, and show status table after every successful SQL Server connection
-# Get-SQLServerAccess -query "select @@servername,@@version"  # Default output with custom query
+# Get-SQLServerAccess -query "select name as 'Databases' from master..sysdatabases where HAS_DBACCESS(name) = 1"  # Default output with custom query - get list of accessible databases
 # Get-SQLServerAccess -Credential demo\user # Default output, but use alternative domain creds to auth to dc
 # Get-SQLServerAccess -SQLUser test -SQLPass test # Default output, authenticating with sql creds
 # Get-SQLServerAccess -DomainController 192.168.1.100 -Credential demo\user -sqluser sa -sqlpass Password1 # Default output, Supplied Domain Creds and SQL Creds       
+
 
 # Run as domain user on a non domain system - need better option
 # 1 - Use runas command to run powershell as another user
@@ -765,4 +776,11 @@ function Get-SQLServerAccess
 # import-module Get-SQLServerAccess.psm1
 # Get-SQLServerAccess <args>
 # Note: there seems to be a differant number of databases accessible between running as computer account(more) and runas domain user(less)...look into it
+
+# runas alts to test
+# C:\Windows\System32\runas.exe /env /noprofile /user:CHANGEME@TEST.LOCAL "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -noprofile -command \"start-process powershell -verb RunAs\""
+# may need to use invoke-command
+# RunAs /u:netspi\svc_join "powershell -file c:\temp\Get-SQLServerAcces.ps1"
+# powershell %windir%\system32\
+# Start-Process powershell.exe -Credential "netspi\svc_join" -NoNewWindow -ArgumentList "Start-Process powershell.exe -Verb runAs"
 
