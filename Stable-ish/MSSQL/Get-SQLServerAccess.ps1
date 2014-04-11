@@ -1,13 +1,11 @@
 # Author: Scott Sutherland 2013, NetSPI
-# Version: Get-SQLServerAccess v.01
+# Version: Get-SQLServerAccess v.1
 # Requirements: Powershell v.3
 
-# todo
+# Todo
 # ----
-# define sql dependancies
-# finish runas option and help
-# fix pop up = $credential = New-Object System.Management.Automation.PsCredential(".\administrator", (ConvertTo-SecureString "P@ssw0rd" -AsPlainText -Force))
-# update help
+# Fix pop up authentication
+# Improve runas options
 
 function Get-SQLServerAccess
 {	
@@ -752,7 +750,8 @@ function Get-SQLServerAccess
 } # End function                
 
 
-# Run default function
+
+# Run default command
 Get-SQLServerAccess
 
 # Working Commands
@@ -769,12 +768,12 @@ Get-SQLServerAccess
 # Get-SQLServerAccess -showsum -showstatus -query "select name as 'Databases' from master..sysdatabases where HAS_DBACCESS(name) = 1"  # Default output with custom query - get list of accessible databases
 
 # Process for running as domain user from non domain system
-#  1.) Use runas command to run powershell as another user in admin console.
-#      runas /user:demo\user powershell.exe 
-#  2.) Import the powershell module.
-#      import-module Get-SQLServerAccess.psm1
-#  3.) Run Get-SQLServerAccess command.
-#      Get-SQLServerAccess -showstatus
-#
-# Alternative for script: RunAs /u:domain\user "powershell -c c:\temp\Get-SQLServerAccess.ps1"
+#  1.) Open a cmd.exe running as administrator
+#  2.) runas /u:domain\user powershell.exe
+#  3.) ./Get-SQLServerAccess.ps1
+#  
+#  Note: The command below also works, but the process terminates when the command completed.
+#        RunAs /u:domain\user "powershell -c c:\temp\Get-SQLServerAccess.ps1"
+  
+
 
