@@ -493,6 +493,8 @@ function Get-SQLServerAccess
                     # Status user
                     Write-host "[-] The file provided does not exist."
                 }
+            }else{
+                $SQLServerFinalCount = $TableLDAP.Rows.Count
             }
 
             # Status user
@@ -680,10 +682,11 @@ function Get-SQLServerAccess
                             $results = $cmd.ExecuteReader()
                             $MyTempTable2 = new-object “System.Data.DataTable”
                             $MyTempTable2.Load($results)
-                            Write-Host " "
+
+                            # Display custom query results                  
                             $MyTempTable2 
                             Write-Host " "
-                        }
+                        }                        
 
                         # Show status table
                         if($ShowStatus){
@@ -758,7 +761,7 @@ function Get-SQLServerAccess
 # Get-SQLServerAccess -DomainController 192.168.1.100 -Credential demo\user -sqluser sa -sqlpass Password1 # Default output, Supplied Domain Creds and SQL Creds       
 
 # Need to fix bugs
-# Get-SQLServerAccess -ShowSum -ShowStatus -query "select @@servername"  # output starts out fine, but then order gets out of whack
+Get-SQLServerAccess -ShowSum -ShowStatus -query "select @@servername"  # output starts out fine, but then order gets out of whack
 
 # Not really tested
 # runas /netonly /user:mydomain\myuser "Powershell ./Get-SQLServerAccess.ps1" #run as another user
