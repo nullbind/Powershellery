@@ -5,7 +5,6 @@
 # todo
 # ----
 # define sql dependancies
-# finish runas option and help
 # fix pop up = $credential = New-Object System.Management.Automation.PsCredential(".\administrator", (ConvertTo-SecureString "P@ssw0rd" -AsPlainText -Force))
 # update help
 
@@ -25,7 +24,7 @@ function Get-SQLServerAccess
 	   Returns a list of SQL Server instances on the current user's domain that they have
        access to.  This is the default output.
 	   
-	   PS C:\Get-SQLServerAccess
+	   PS C:\Get-SQLServerAccess.ps1
 
         [*] ----------------------------------------------------------------------
         [*] Start Time: 04/09/2014 17:02:33
@@ -51,7 +50,7 @@ function Get-SQLServerAccess
 	   Returns a list of SQL Server instances imported from a file and on the current 
        user's domain that they have access to.  This is the default output.
 	   
-	   PS C:\Get-SQLServerAccess -File c:\Temp\Servers.txt
+	   PS C:\Get-SQLServerAccess.ps1 -File c:\Temp\Servers.txt
 
         [*] ----------------------------------------------------------------------
         [*] Start Time: 04/09/2014 17:02:33
@@ -78,7 +77,7 @@ function Get-SQLServerAccess
        attempt to authenticate using provides SQL Server credentials.  
        This is the default output.
 	   
-	   PS C:\Get-SQLServerAccess -SQLUser test -SQLPass $up3r$3cur3P@$$w0rd
+	   PS C:\Get-SQLServerAccess.ps1 -SQLUser test -SQLPass $up3r$3cur3P@$$w0rd
 
         [*] ----------------------------------------------------------------------
         [*] Start Time: 04/09/2014 17:02:33
@@ -104,7 +103,7 @@ function Get-SQLServerAccess
        access to.  This also displays a data table object at the end that is pipeable in 
        PowerShell.  You can make it pretty using the format-table syntax example below.
 	   
-	   PS C:\Get-SQLServerAccess -ShowSum | format-table -AutoSize 
+	   PS C:\Get-SQLServerAccess.ps1 -ShowSum | format-table -AutoSize 
 
         [*] ----------------------------------------------------------------------
         [*] Start Time: 04/09/2014 17:02:33
@@ -136,7 +135,7 @@ function Get-SQLServerAccess
        access to.  This will display the default output, but also write the results to a 
        CSV file.
 	   
-	   PS C:\Get-SQLServerAccess -ShowSum | export-csv c:\temp\mysqlaccess.csv
+	   PS C:\Get-SQLServerAccess.ps1 -ShowSum | export-csv c:\temp\mysqlaccess.csv
 
         [*] ----------------------------------------------------------------------
         [*] Start Time: 04/09/2014 17:02:33
@@ -162,7 +161,7 @@ function Get-SQLServerAccess
        access to.  This will display the default output, but also display a data table of
        SQL Servers that are accessible every time a successful connection is made.
 	   
-	   PS C:\Get-SQLServerAccess -ShowStatus 
+	   PS C:\Get-SQLServerAccess.ps1 -ShowStatus 
 
         [*] ----------------------------------------------------------------------
         [*] Start Time: 04/09/2014 17:02:33
@@ -206,7 +205,7 @@ function Get-SQLServerAccess
        access to.  This will display the default output, but also display the results of
        a custom query defined by the user.
 	   
-	   PS C:\Get-SQLServerAccess -query "select name as 'Databases' from master..sysdatabases where HAS_DBACCESS(name) = 1"
+	   PS C:\Get-SQLServerAccess.ps1 -query "select @@servername"  
 
         [*] ----------------------------------------------------------------------
         [*] Start Time: 04/09/2014 17:02:33
@@ -222,28 +221,19 @@ function Get-SQLServerAccess
         [+] Query sent: select @@servername
         [+] Query output:
                                                                  
-        master
-        tempdb
-        msdb        
+        server3        
           
         [+] SUCCESS! - server3.mydomain.com\SQLEXPRESS (192.168.1.103) - Sysadmin: No - SvcIsDA: No
         [+] Query sent: select @@servername
         [+] Query output:
                                                                  
-        master
-        tempdb
-        msdb                                 
+        server3\SQLEXPRESS                                  
           
         [+] SUCCESS! - server4.mydomain.com\AppData (192.168.1.104) - Sysadmin: Yes - SvcIsDA: Yes       
         [+] Query sent: select @@servername
         [+] Query output:
                                                                  
-        master
-        tempdb
-        msdb
-        PCIDataDB
-        ApplicationDB
-        CompanySecrectsDB
+        server4\AppData                          
              
         [*] ----------------------------------------------------------------------
         [+] 3 of 5 SQL Server instances could be accessed.        
@@ -752,8 +742,9 @@ function Get-SQLServerAccess
 } # End function                
 
 
-# Run default function
-Get-SQLServerAccess
+#
+# Testing commands...
+# note: works as a module
 
 # Working Commands
 # Get-SQLServerAccess # Default output
@@ -762,19 +753,15 @@ Get-SQLServerAccess
 # Get-SQLServerAccess -ShowSum | Export-Csv c:\temp\mysqlaccess.csv # Default output, and output to csv
 # Get-SQLServerAccess -ShowSum -ShowStatus # Default output, summary table at end, and show status table after every successful SQL Server connection
 # Get-SQLServerAccess -ShowStatus -showsum # Default output, and show status table after every successful SQL Server connection
-# Get-SQLServerAccess -query "select name as 'Databases' from master..sysdatabases where HAS_DBACCESS(name) = 1"  # Default output with custom query - get list of accessible databases
+# Get-SQLServerAccess -query "select @@servername,@@version"  # Default output with custom query
 # Get-SQLServerAccess -Credential demo\user # Default output, but use alternative domain creds to auth to dc
 # Get-SQLServerAccess -SQLUser test -SQLPass test # Default output, authenticating with sql creds
 # Get-SQLServerAccess -DomainController 192.168.1.100 -Credential demo\user -sqluser sa -sqlpass Password1 # Default output, Supplied Domain Creds and SQL Creds       
-# Get-SQLServerAccess -showsum -showstatus -query "select name as 'Databases' from master..sysdatabases where HAS_DBACCESS(name) = 1"  # Default output with custom query - get list of accessible databases
 
-# Process for running as domain user from non domain system
-#  1.) Use runas command to run powershell as another user in admin console.
-#      runas /user:demo\user powershell.exe 
-#  2.) Import the powershell module.
-#      import-module Get-SQLServerAccess.psm1
-#  3.) Run Get-SQLServerAccess command.
-#      Get-SQLServerAccess -showstatus
-#
-# Alternative for script: RunAs /u:domain\user "powershell -c c:\temp\Get-SQLServerAccess.ps1"
+# Not really tested
+# running in a admin console 
+# runas /user:netspi\svc_join powershell.exe # runs as domain from non domain system, but not running script for some reason
+# runas /netonly /user:mydomain\myuser "Powershell ./Get-SQLServerAccess.ps1" #run as another user
+# svc_join
+
 
