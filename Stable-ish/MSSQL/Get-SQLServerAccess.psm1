@@ -1,12 +1,11 @@
 # Author: Scott Sutherland 2013, NetSPI
-# Version: Get-SQLServerAccess v.01
+# Version: Get-SQLServerAccess v.1
 # Requirements: Powershell v.3
 
-# todo
+# Todo
 # ----
-# define sql dependancies
-# fix pop up = $credential = New-Object System.Management.Automation.PsCredential(".\administrator", (ConvertTo-SecureString "P@ssw0rd" -AsPlainText -Force))
-# update help
+# Fix pop up authentication
+# Improve runas options
 
 function Get-SQLServerAccess
 {	
@@ -18,7 +17,7 @@ function Get-SQLServerAccess
 	   Sends LDAP queries to the domain controller to query for SQL Servers on the domain using
        the Service Principal Names (SPN). The list is then used to test if the provided user has
        access to login along with some based configuration information.The script currently supports 
-	   trusted connections and provided credentials.
+       trusted connections and provided credentials.
 	
 	.EXAMPLE
 	   Returns a list of SQL Server instances on the current user's domain that they have
