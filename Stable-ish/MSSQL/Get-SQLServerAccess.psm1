@@ -126,11 +126,11 @@ function Get-SQLServerAccess
 	   [*] Total Time: 00:03:00
 	   [*] ----------------------------------------------------------------------
 
-        IpAddress      Server                      Instance                                   SQLVer                 OsVer      Sysadmin SvcAcct                     SvcIsDA IsClustered DBLinks
-        ---------      ------                      --------                                   ------                 -----      -------- -------                     ------- ----------- -------           
-        192.168.1.103  server3.mydomain.com        server3.mydomain.com,1433                  2008 Express Edition   7/2008     No       NT AUTHORITY\NETWORKSERVICE No      No          4      
-        192.168.1.103  server3.mydomain.com        server3.mydomain.com\SQLEXPRESS            2008 Express Edition   7/2008     No       NT AUTHORITY\LocalSystem    No      No          1      
-        192.168.1.104  server4.mydomain.com        server4.mydomain.com\AppData               2005 Standard Edition  2003       Yes      NT AUTHORITY\sql_svc        Yes     No          0   
+	   IpAddress      Server                      Instance                                   SQLVer                 OsVer      Sysadmin SvcAcct                     SvcIsDA IsClustered DBLinks
+	   ---------      ------                      --------                                   ------                 -----      -------- -------                     ------- ----------- -------           
+	   192.168.1.103  server3.mydomain.com        server3.mydomain.com,1433                  2008 Express Edition   7/2008     No       NT AUTHORITY\NETWORKSERVICE No      No          4      
+	   192.168.1.103  server3.mydomain.com        server3.mydomain.com\SQLEXPRESS            2008 Express Edition   7/2008     No       NT AUTHORITY\LocalSystem    No      No          1      
+	   192.168.1.104  server4.mydomain.com        server4.mydomain.com\AppData               2005 Standard Edition  2003       Yes      NT AUTHORITY\sql_svc        Yes     No          0   
 
 	.EXAMPLE
 	   Returns a list of SQL Server instances on the current user's domain that they have
@@ -138,25 +138,24 @@ function Get-SQLServerAccess
 	   CSV file.
 	   
 	   PS C:\Get-SQLServerAccess.ps1 -ShowSum | export-csv c:\temp\mysqlaccess.csv
-
-        [*] ----------------------------------------------------------------------
-        [*] Start Time: 04/09/2014 17:02:33
-        [*] Domain: mydomain.com
-        [*] DC: dc1.mydomain.com
-        [*] Getting list of SQL Server instances from DC as mydomain\myuser...
-        [*] 5 SQL Server instances found in LDAP.
-        [*] Attempting to login into 5 SQL Server instances as mydomain\myuser...
-        [*] ----------------------------------------------------------------------
-        [-] Failed   - server1.mydomain.com is not responding to pings
-        [-] Failed   - server2.mydomain.com (192.168.1.102) is up, but authentication/query failed
-        [+] SUCCESS! - server3.mydomain.com,1433 (192.168.1.103) - Sysadmin: No - SvcIsDA: No 
-        [+] SUCCESS! - server3.mydomain.com\SQLEXPRESS (192.168.1.103) - Sysadmin: No - SvcIsDA: No
-        [+] SUCCESS! - server4.mydomain.com\AppData (192.168.1.104) - Sysadmin: Yes - SvcIsDA: Yes             
-        [*] ----------------------------------------------------------------------
-        [*] 3 of 5 SQL Server instances could be accessed.        
-        [*] End Time: 04/03/2014 10:58:00      
-        [*] Total Time: 00:03:00
-        [*] ----------------------------------------------------------------------
+	   [*] ----------------------------------------------------------------------
+	   [*] Start Time: 04/09/2014 17:02:33
+	   [*] Domain: mydomain.com
+	   [*] DC: dc1.mydomain.com
+	   [*] Getting list of SQL Server instances from DC as mydomain\myuser...
+	   [*] 5 SQL Server instances found in LDAP.
+	   [*] Attempting to login into 5 SQL Server instances as mydomain\myuser...
+	   [*] ----------------------------------------------------------------------
+	   [-] Failed   - server1.mydomain.com is not responding to pings
+	   [-] Failed   - server2.mydomain.com (192.168.1.102) is up, but authentication/query failed
+	   [+] SUCCESS! - server3.mydomain.com,1433 (192.168.1.103) - Sysadmin: No - SvcIsDA: No 
+	   [+] SUCCESS! - server3.mydomain.com\SQLEXPRESS (192.168.1.103) - Sysadmin: No - SvcIsDA: No
+	   [+] SUCCESS! - server4.mydomain.com\AppData (192.168.1.104) - Sysadmin: Yes - SvcIsDA: Yes             
+	   [*] ----------------------------------------------------------------------
+	   [*] 3 of 5 SQL Server instances could be accessed.        
+	   [*] End Time: 04/03/2014 10:58:00      
+	   [*] Total Time: 00:03:00
+	   [*] ----------------------------------------------------------------------
         
 	.EXAMPLE
 	   Returns a list of SQL Server instances on the current user's domain that they have
@@ -176,24 +175,24 @@ function Get-SQLServerAccess
 	   [-] Failed   - server2.mydomain.com (192.168.1.102) is up, but authentication/query failed
 	   [+] SUCCESS! - server3.mydomain.com,1433 (192.168.1.103) - Sysadmin: No - SvcIsDA: No 
 
-        IpAddress      Server                      Instance                                   SQLVer                 OsVer      Sysadmin SvcAcct                     SvcIsDA IsClustered DBLinks
-        ---------      ------                      --------                                   ------                 -----      -------- -------                     ------- ----------- -------           
-        192.168.1.103  server3.mydomain.com        server3.mydomain.com,1433                  2008 Express Edition   7/2008     No       NT AUTHORITY\NETWORKSERVICE No      No          4      
-          
-        [+] SUCCESS! - server3.mydomain.com\SQLEXPRESS (192.168.1.103) - Sysadmin: No - SvcIsDA: No
-
-        IpAddress      Server                      Instance                                   SQLVer                 OsVer      Sysadmin SvcAcct                     SvcIsDA IsClustered DBLinks
-        ---------      ------                      --------                                   ------                 -----      -------- -------                     ------- ----------- -------           
-        192.168.1.103  server3.mydomain.com        server3.mydomain.com,1433                  2008 Express Edition   7/2008     No       NT AUTHORITY\NETWORKSERVICE No      No          4      
-        192.168.1.103  server3.mydomain.com        server3.mydomain.com\SQLEXPRESS            2008 Express Edition   7/2008     No       NT AUTHORITY\LocalSystem    No      No          1                                 
-          
-        [+] SUCCESS! - server4.mydomain.com\AppData (192.168.1.104) - Sysadmin: Yes - SvcIsDA: Yes       
+	   IpAddress      Server                      Instance                                   SQLVer                 OsVer      Sysadmin SvcAcct                     SvcIsDA IsClustered DBLinks
+	   ---------      ------                      --------                                   ------                 -----      -------- -------                     ------- ----------- -------           
+	   192.168.1.103  server3.mydomain.com        server3.mydomain.com,1433                  2008 Express Edition   7/2008     No       NT AUTHORITY\NETWORKSERVICE No      No          4                
         
-        IpAddress      Server                      Instance                                   SQLVer                 OsVer      Sysadmin SvcAcct                     SvcIsDA IsClustered DBLinks
-        ---------      ------                      --------                                   ------                 -----      -------- -------                     ------- ----------- -------           
-        192.168.1.103  server3.mydomain.com        server3.mydomain.com,1433                  2008 Express Edition   7/2008     No       NT AUTHORITY\NETWORKSERVICE No      No          4      
-        192.168.1.103  server3.mydomain.com        server3.mydomain.com\SQLEXPRESS            2008 Express Edition   7/2008     No       NT AUTHORITY\LocalSystem    No      No          1      
-        192.168.1.104  server4.mydomain.com        server4.mydomain.com\AppData               2005 Standard Edition  2003       Yes      NT AUTHORITY\sql_svc        Yes     No          0                              
+	   [+] SUCCESS! - server3.mydomain.com\SQLEXPRESS (192.168.1.103) - Sysadmin: No - SvcIsDA: No
+
+	   IpAddress      Server                      Instance                                   SQLVer                 OsVer      Sysadmin SvcAcct                     SvcIsDA IsClustered DBLinks
+	   ---------      ------                      --------                                   ------                 -----      -------- -------                     ------- ----------- -------           
+	   192.168.1.103  server3.mydomain.com        server3.mydomain.com,1433                  2008 Express Edition   7/2008     No       NT AUTHORITY\NETWORKSERVICE No      No          4      
+	   192.168.1.103  server3.mydomain.com        server3.mydomain.com\SQLEXPRESS            2008 Express Edition   7/2008     No       NT AUTHORITY\LocalSystem    No      No          1                                 
+          
+	   [+] SUCCESS! - server4.mydomain.com\AppData (192.168.1.104) - Sysadmin: Yes - SvcIsDA: Yes       
+        
+	   IpAddress      Server                      Instance                                   SQLVer                 OsVer      Sysadmin SvcAcct                     SvcIsDA IsClustered DBLinks
+	   ---------      ------                      --------                                   ------                 -----      -------- -------                     ------- ----------- -------           
+	   192.168.1.103  server3.mydomain.com        server3.mydomain.com,1433                  2008 Express Edition   7/2008     No       NT AUTHORITY\NETWORKSERVICE No      No          4      
+	   192.168.1.103  server3.mydomain.com        server3.mydomain.com\SQLEXPRESS            2008 Express Edition   7/2008     No       NT AUTHORITY\LocalSystem    No      No          1      
+	   192.168.1.104  server4.mydomain.com        server4.mydomain.com\AppData               2005 Standard Edition  2003       Yes      NT AUTHORITY\sql_svc        Yes     No          0                              
              
 	   [*] ----------------------------------------------------------------------
 	   [*] 3 of 5 SQL Server instances could be accessed.        
@@ -220,29 +219,35 @@ function Get-SQLServerAccess
 	   [+] SUCCESS! - server3.mydomain.com,1433 (192.168.1.103) - Sysadmin: No - SvcIsDA: No 
 	   [+] Query sent: select @@servername
 	   [+] Query output:
-                                                                 
-        master
-        tempdb
-        msdb      
+       
+	   Databases
+	   ---------                                                          
+	   master
+	   tempdb
+	   msdb      
           
 	   [+] SUCCESS! - server3.mydomain.com\SQLEXPRESS (192.168.1.103) - Sysadmin: No - SvcIsDA: No
 	   [+] Query sent: select @@servername
 	   [+] Query output:
                                                                  
-        master
-        tempdb
-        msdb                                  
+	   Databases
+	   ---------                                                          
+	   master
+	   tempdb
+	   msdb                                 
           
 	   [+] SUCCESS! - server4.mydomain.com\AppData (192.168.1.104) - Sysadmin: Yes - SvcIsDA: Yes       
 	   [+] Query sent: select @@servername
 	   [+] Query output:
                                                                  
-        master
-        tempdb
-        msdb
-        PCIDataDB
-        ApplicationDB
-        CompanySecrectsD                      
+	   Databases
+	   ---------                                                          
+	   master
+	   tempdb
+	   msdb
+	   PCIDataDB
+	   ApplicationDB
+	   CompanySecrectsD                      
              
 	   [*] ----------------------------------------------------------------------
 	   [*] 3 of 5 SQL Server instances could be accessed.        
