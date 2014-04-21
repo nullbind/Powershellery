@@ -6,7 +6,7 @@ function Get-SQLServerAccess
 {	
 	<#
 	.SYNOPSIS
-	   This module obtains a list of all of the SQL Server instances registered on
+	   This script obtains a list of all of the SQL Server instances registered on
 	   the domain by querying a domain controller for MSSQLsvc Service Principle
 	   Names.  Then it checks if the current or provided user has access to the SQL
 	   Server instances found. Finally, it queries accessible SQL Server instances 
@@ -31,7 +31,7 @@ function Get-SQLServerAccess
 	   Returns a list of SQL Server instances on the current user's domain that they have
 	   access to.  This is the default output.
 	   
-	   PS C:\Get-SQLServerAccess.ps1
+	   PS C:\Get-SQLServerAccess
 	   [*] ----------------------------------------------------------------------
 	   [*] Start Time: 04/09/2014 17:02:33
 	   [*] Domain: mydomain.com
@@ -53,16 +53,16 @@ function Get-SQLServerAccess
 
     .EXAMPLE
 	   Returns a list of SQL Server instances imported from a file and on the current 
-	   user's domain that they have access to.  This is the default output.
+	   user's domain that they have access to.
 	   
-	   PS C:\Get-SQLServerAccess.ps1 -File c:\Temp\Servers.txt
+	   PS C:\Get-SQLServerAccess -File c:\Temp\Servers.txt
 	   [*] ----------------------------------------------------------------------
 	   [*] Start Time: 04/09/2014 17:02:33
 	   [*] Domain: mydomain.com
 	   [*] DC: dc1.mydomain.com
 	   [*] Getting list of SQL Server instances from DC as mydomain\myuser...
 	   [*] 2 SQL Server instances found in LDAP.
-	   [*] 3 SQL Server instances found in c:\temp\servers.txt.
+	   [*] 3 SQL Server instances found in c:\Temp\Servers.txt.
 	   [*] Attempting to login into 5 SQL Server instances as mydomain\myuser...
 	   [*] ----------------------------------------------------------------------
 	   [-] Failed   - server1.mydomain.com is not responding to pings
@@ -78,10 +78,9 @@ function Get-SQLServerAccess
 
 	.EXAMPLE
 	   Returns a list of SQL Server instances on the current user's domain and 
-	   attempt to authenticate using provides SQL Server credentials.  
-	   This is the default output.
+	   attempts to authenticate to them using provided SQL Server credentials.
 	   
-	   PS C:\Get-SQLServerAccess.ps1 -SQLUser test -SQLPass $up3r$3cur3P@$$w0rd
+	   PS C:\Get-SQLServerAccess -SQLUser test -SQLPass $up3r$3cur3P@$$w0rd
 	   [*] ----------------------------------------------------------------------
 	   [*] Start Time: 04/09/2014 17:02:33
 	   [*] Domain: mydomain.com
@@ -103,10 +102,10 @@ function Get-SQLServerAccess
 
 	.EXAMPLE
 	   Returns a list of SQL Server instances on the current user's domain that they have
-	   access to.  This also displays a data table object at the end that is pipeable in 
-	   PowerShell.  You can make it pretty using the format-table syntax example below.
+	   access to.  This also displays a data table object at the end that can feed the 
+	   pipeline.  You can make it pretty using the format-table syntax example below.
 	   
-	   PS C:\Get-SQLServerAccess.ps1 -ShowSum | format-table -AutoSize 
+	   PS C:\Get-SQLServerAccess -ShowSum | format-table -AutoSize 
  	   [*] ----------------------------------------------------------------------
 	   [*] Start Time: 04/09/2014 17:02:33
  	   [*] Domain: mydomain.com
@@ -137,7 +136,7 @@ function Get-SQLServerAccess
 	   access to.  This will display the default output, but also write the results to a 
 	   CSV file.
 	   
-	   PS C:\Get-SQLServerAccess.ps1 -ShowSum | export-csv c:\temp\mysqlaccess.csv
+	   PS C:\Get-SQLServerAccess -ShowSum | export-csv c:\temp\mysqlaccess.csv
 	   [*] ----------------------------------------------------------------------
 	   [*] Start Time: 04/09/2014 17:02:33
 	   [*] Domain: mydomain.com
@@ -162,7 +161,7 @@ function Get-SQLServerAccess
 	   access to.  This will display the default output, but also display a data table of
 	   SQL Servers that are accessible every time a successful connection is made.
 	   
-	   PS C:\Get-SQLServerAccess.ps1 -ShowStatus 
+	   PS C:\Get-SQLServerAccess -ShowStatus 
 	   [*] ----------------------------------------------------------------------
 	   [*] Start Time: 04/09/2014 17:02:33
 	   [*] Domain: mydomain.com
@@ -205,7 +204,7 @@ function Get-SQLServerAccess
 	   access to.  This will display the default output, but also display the results of
 	   a custom query defined by the user.
 	   
-	   PS C:\Get-SQLServerAccess.ps1 -query "select name as 'Databases' from master..sysdatabases where HAS_DBACCESS(name) = 1"
+	   PS C:\Get-SQLServerAccess -query "select name as 'Databases' from master..sysdatabases where HAS_DBACCESS(name) = 1"
  	   [*] ----------------------------------------------------------------------
 	   [*] Start Time: 04/09/2014 17:02:33
 	   [*] Domain: mydomain.com
@@ -217,7 +216,7 @@ function Get-SQLServerAccess
 	   [-] Failed   - server1.mydomain.com is not responding to pings
 	   [-] Failed   - server2.mydomain.com (192.168.1.102) is up, but authentication/query failed
 	   [+] SUCCESS! - server3.mydomain.com,1433 (192.168.1.103) - Sysadmin: No - SvcIsDA: No 
-	   [+] Query sent: select @@servername
+	   [+] Query sent: select name as 'Databases' from master..sysdatabases where HAS_DBACCESS(name) = 1
 	   [+] Query output:
        
 	   Databases
@@ -227,7 +226,7 @@ function Get-SQLServerAccess
 	   msdb      
           
 	   [+] SUCCESS! - server3.mydomain.com\SQLEXPRESS (192.168.1.103) - Sysadmin: No - SvcIsDA: No
-	   [+] Query sent: select @@servername
+	   [+] Query sent: select name as 'Databases' from master..sysdatabases where HAS_DBACCESS(name) = 1
 	   [+] Query output:
                                                                  
 	   Databases
@@ -237,7 +236,7 @@ function Get-SQLServerAccess
 	   msdb                                 
           
 	   [+] SUCCESS! - server4.mydomain.com\AppData (192.168.1.104) - Sysadmin: Yes - SvcIsDA: Yes       
-	   [+] Query sent: select @@servername
+	   [+] Query sent: select name as 'Databases' from master..sysdatabases where HAS_DBACCESS(name) = 1
 	   [+] Query output:
                                                                  
 	   Databases
@@ -247,7 +246,7 @@ function Get-SQLServerAccess
 	   msdb
 	   PCIDataDB
 	   ApplicationDB
-	   CompanySecrectsD                      
+	   CompanySecrects                      
              
 	   [*] ----------------------------------------------------------------------
 	   [*] 3 of 5 SQL Server instances could be accessed.        
@@ -538,7 +537,7 @@ function Get-SQLServerAccess
         #-------------------------
         
         # Check if the server is up via ping
-        if((Test-Connection -Cn $SQLServer -BufferSize 16 -Count 1 -ea 0 -quiet)) 
+        if((Test-Connection -Cn $SQLServer -BufferSize 32 -Count 2 -ea 0 -quiet)) 
         {
           
           # Attempt to authenticate and query remote SQL Server instance
