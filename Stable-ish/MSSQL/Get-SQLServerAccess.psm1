@@ -252,7 +252,39 @@ function Get-SQLServerAccess
 	   [*] 3 of 5 SQL Server instances could be accessed.        
 	   [*] End Time: 04/03/2014 10:58:00      
 	   [*] Total Time: 00:03:00
-	   [*] ----------------------------------------------------------------------                 
+	   [*] ----------------------------------------------------------------------  
+
+	.EXAMPLE
+	   Only return a list of SQL Servers found in Active Directory.
+	   
+	   PS C:\Get-SQLServerAccess -listonly 
+	   [*] ----------------------------------------------------------------------
+	   [*] Start Time: 04/09/2014 17:02:33
+	   [*] Domain: mydomain.com
+	   [*] DC: dc1.mydomain.com
+	   [*] Getting list of SQL Server instances from DC as mydomain\myuser...
+	   [*] 5 SQL Server instances found in LDAP.
+	   [*] listing SQL Server instances...
+	   Server                                  Instance
+	   ------                                  --------
+	   server1.mydomain.com                    server1.mydomain.com,1433
+	   server2.mydomain.com                    server2.mydomain.com,1433
+	   server3.mydomain.com                    server3.mydomain.com,1433
+	   server3.mydomain.com                    server3.mydomain.com\SQLEXPRESS
+	   server4.mydomain.com                    server4.mydomain.com\AppData
+
+	.EXAMPLE
+	   Only return a list of SQL Servers found in Active Directory and write them to a csv file.
+	   
+	   PS C:\Get-SQLServerAccess -listonly | export-csv c:\temp\SQLServers.csv
+	   [*] ----------------------------------------------------------------------
+	   [*] Start Time: 04/09/2014 17:02:33
+	   [*] Domain: mydomain.com
+	   [*] DC: dc1.mydomain.com
+	   [*] Getting list of SQL Server instances from DC as mydomain\myuser...
+	   [*] 5 SQL Server instances found in LDAP.
+	   [*] listing SQL Server instances...
+	   PS C:\
 
 	 .LINK
 	   http://www.netspi.com
