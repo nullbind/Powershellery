@@ -283,6 +283,10 @@ function Get-SQLServerAccess
     [Parameter(Mandatory=$false,
     HelpMessage='Distinguished Name Path to limit search to.')]
     [string]$SearchDN,
+	
+	[Parameter(Mandatory=$false,
+    HelpMessage='Only display a list of SQL Servers found in Active Directory.')]
+    [switch]$ListOnly,
     
     [Parameter(Mandatory=$false,
     HelpMessage='At the end of the scan display the results in a pipeable datatable format.')]
@@ -456,7 +460,7 @@ function Get-SQLServerAccess
       
       # Status user
       $SQLServerCount = $TableLDAP.Rows.Count
-      Write-Host "[*] $SQLServerCount SQL Server instances found in LDAP."      
+      Write-Host "[*] $SQLServerCount SQL Server instances found in LDAP."      	  
       
       # ------------------------------------------------------------
       # Get list of SQL Servers from a file (if one was provided)
@@ -501,6 +505,15 @@ function Get-SQLServerAccess
       }else{
         $SQLServerFinalCount = $TableLDAP.Rows.Count
       }
+
+      # ------------------------------------------------------------
+      # Only List SQL Servers Found
+      # ------------------------------------------------------------
+	  if ($ListOnly) {
+		Write-Host "[*] Listing SQL Server instances..."		
+		$TableLDAP | sort server,instance
+        Break
+	  }
       
       # ------------------------------------------------------------
       # Test access to each SQL Server instance and grab basic info
