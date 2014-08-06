@@ -78,14 +78,15 @@ if ($TableDatabases.rows.count -ne 0){
 		# Query the databases and load the results into the TableDatabase data table object
 		$cmd = New-Object System.Data.SqlClient.SqlCommand($QueryProcedures,$conn)
 		$results = $cmd.ExecuteReader()
-		$TableSP.Load($results)
-		
-		# Status user
-		$SpCount = $TableSP.rows.count 
-		write-host "[+] $CurrentDatabase is being reviewed - $spCount total procedures have been found"			
+		$TableSP.Load($results).count	
+		write-host "[+] Checking $CurrentDatabase for custom stored procedures..."	
+	
 	}
 }
 
+# Status user	
+$SpCount = $TableSP.rows.count 
+write-host "[+] $spCount procedures were found across $DbCount databases."
 
 # -------------------------------------------------
 # Output source code to txt files in folder structure
@@ -115,19 +116,3 @@ write-host "[*] Exporting source code to custom_stored_procedures_source.csv..."
 $TableSP | Export-CSV .\custom_stored_procedures_source.csv
 
 write-host "[*] All done - Enjoy! :)"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
