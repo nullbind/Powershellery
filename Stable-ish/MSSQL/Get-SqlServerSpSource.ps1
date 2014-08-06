@@ -78,7 +78,7 @@ if ($TableDatabases.rows.count -ne 0){
 		# Query the databases and load the results into the TableDatabase data table object
 		$cmd = New-Object System.Data.SqlClient.SqlCommand($QueryProcedures,$conn)
 		$results = $cmd.ExecuteReader()
-		$TableSP.Load($results).count	
+		$TableSP.Load($results)	
 		write-host "[+] Checking $CurrentDatabase for custom stored procedures..."	
 	
 	}
