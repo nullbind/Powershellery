@@ -31,7 +31,7 @@ write-host "[*] Connecting to the database server..."
 
 # Connect to the database
 $conn = New-Object System.Data.SqlClient.SqlConnection
-$conn.ConnectionString = "Server=127.0.0.1;Database=master;User ID=netspi;Password=netspi;"
+$conn.ConnectionString = "Server=127.0.0.1;Database=master;User ID=user;Password=password;"
 $conn.Open()
 
 # Setup query to grab a list of databases
@@ -78,41 +78,68 @@ if ($TableDatabases.rows.count -ne 0){
 		# Query the databases and load the results into the TableDatabase data table object
 		$cmd = New-Object System.Data.SqlClient.SqlCommand($QueryProcedures,$conn)
 		$results = $cmd.ExecuteReader()
-		$TableSP.Load($results)	
-		write-host "[+] Checking $CurrentDatabase for custom stored procedures..."	
+		$TableSP.Load($results)
+		write-host "[*] Checking $CurrentDatabase for custom stored procedures..."	
 	
 	}
 }
 
 # Status user	
 $SpCount = $TableSP.rows.count 
-write-host "[+] $spCount procedures were found across $DbCount databases."
+write-host "[*] $spCount procedures were found across $DbCount databases."
 
-# -------------------------------------------------
-# Output source code to txt files in folder structure
-# -------------------------------------------------
-write-host "[*] Exporting source code to files in the sp_source_output folder..."	
-mkdir sp_source_output | Out-Null
-$TableDatabases | foreach {
-	
-	[string]$DirDb = $_.name
-	mkdir sp_source_output\$DirDb | Out-Null
-	
-	write-host "[+] Exporting stored procedures from $DirDb..."
+if ($SpCount -ne 0) {
+	# -------------------------------------------------
+	# Output source code to txt files in folder structure
+	# -------------------------------------------------
+	write-host "[*] Exporting source code to files in the sp_source_output folder..."	
+	mkdir sp_source_output | Out-Null
+	$TableDatabases | foreach {
+		
+		[string]$DirDb = $_.name
+		mkdir sp_source_output\$DirDb | Out-Null
+		
+		write-host "[*] Exporting stored procedures from $DirDb..."
 
-	$TableSP | where {$_.ROUTINE_CATALOG -eq $DirDb} | 
-	foreach {			
-		[string]$ProcName = $_.ROUTINE_NAME
-		$_.ROUTINE_DEFINITION |
-		Out-File .\sp_source_output\$DirDb\$ProcName.sql		
+		$TableSP | where {$_.ROUTINE_CATALOG -eq $DirDb} | 
+		foreach {			
+			[string]$ProcName = $_.ROUTINE_NAME
+			$_.ROUTINE_DEFINITION |
+			Out-File .\sp_source_output\$DirDb\$ProcName.sql		
+		}
 	}
+
+	# -------------------------------------------------
+	# Output source code to CSV file
+	# -------------------------------------------------
+	write-host "[*] Exporting source code to custom_stored_procedures_source.csv..."
+	$TableSP | Export-CSV .\custom_stored_procedures_source.csv
+
+	# -------------------------------------------------
+	# Output source code to CSV file
+	# -------------------------------------------------
+	mkdir keywords_results | Out-Null
+	write-host "[*] Searching for interesting keywords in files..."
+	write-host "[*] Searching for string encr..."
+	Get-ChildItem -Recurse .\sp_source_output\ | Select-String -pattern "encr" >>.\keywords_results\encr.txt
+	write-host "[*] Searching for string password..."
+	Get-ChildItem -Recurse .\sp_source_output\ | Select-String -pattern "password" >>.\keywords_results\password.txt
+	write-host "[*] Searching for string execute..."
+	Get-ChildItem -Recurse .\sp_source_output\ | Select-String -pattern "pass">>.\keywords_results\pass.txt
+	write-host "[*] Searching for string with execute..."
+	Get-ChildItem -Recurse .\sp_source_output\ | Select-String -pattern "with execute as">>.\keywords_results\execute.txt
+	write-host "[*] Searching for string trigger..."
+	Get-ChildItem -Recurse .\sp_source_output\ | Select-String -pattern "trigger">>.\keywords_results\trigger.txt
+	write-host "[*] Searching for string xp_cmdshell..."
+	Get-ChildItem -Recurse .\sp_source_output\ | Select-String -pattern "xp_cmdshell">>.\keywords_results\xp_cmdshell.txt
+	write-host "[*] Searching for string cmd..."
+	Get-ChildItem -Recurse .\sp_source_output\ | Select-String -pattern "cmd">>.\keywords_results\cmd.txt
+	write-host "[*] Searching for string openquery..."
+	Get-ChildItem -Recurse .\sp_source_output\ | Select-String -pattern "openquery">>.\keywords_results\openquery.txt
+	write-host "[*] Searching for string openrowset..."
+	Get-ChildItem -Recurse .\sp_source_output\ | Select-String -pattern "openrowset">>.\keywords_results\openrowset.txt
+	write-host "[*] Searching for string connect..."
+	Get-ChildItem -Recurse .\sp_source_output\ | Select-String -pattern "connect">>.\keywords_results\connect.txt
+
+	write-host "[*] All done - Enjoy! :)"
 }
-
-
-# -------------------------------------------------
-# Output source code to CSV file
-# -------------------------------------------------
-write-host "[*] Exporting source code to custom_stored_procedures_source.csv..."
-$TableSP | Export-CSV .\custom_stored_procedures_source.csv
-
-write-host "[*] All done - Enjoy! :)"
