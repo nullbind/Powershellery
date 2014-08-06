@@ -140,6 +140,9 @@ if ($SpCount -ne 0) {
 	Get-ChildItem -Recurse .\sp_source_output\ | Select-String -pattern "openrowset">>.\keywords_results\openrowset.txt
 	write-host "[*] Searching for string connect..."
 	Get-ChildItem -Recurse .\sp_source_output\ | Select-String -pattern "connect">>.\keywords_results\connect.txt
-
+	write-host "[*] Searching for triple ticks..."
+	Get-ChildItem -Recurse .\sp_source_output\ | Select-String -pattern "'''">>.\keywords_results\sqli-likely.txt
+	# http://technet.microsoft.com/en-us/library/ms161953%28v=sql.105%29.aspx
+	# http://blogs.msdn.com/b/brian_swan/archive/2011/02/16/do-stored-procedures-protect-against-sql-injection.aspx
 	write-host "[*] All done - Enjoy! :)"
 }
