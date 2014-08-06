@@ -82,7 +82,7 @@ if ($TableDatabases.rows.count -ne 0){
 		
 		# Status user
 		$SpCount = $TableSP.rows.count 
-		write-host "[+] $spCount procedures were found in the $CurrentDatabase"			
+		write-host "[+] $CurrentDatabase is being reviewed - $spCount total procedures have been found"			
 	}
 }
 
