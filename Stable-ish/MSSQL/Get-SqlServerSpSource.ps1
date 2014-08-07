@@ -113,36 +113,59 @@ if ($SpCount -ne 0) {
 	# Output source code to CSV file
 	# -------------------------------------------------
 	write-host "[*] Exporting source code to custom_stored_procedures_source.csv..."
-	$TableSP | Export-CSV .\custom_stored_procedures_source.csv
+	$TableSP | Export-CSV .\sp_source_output\custom_stored_procedures_source.csv
 
 	# -------------------------------------------------
-	# Output source code to CSV file
+	# Search source code for interesting keywords
 	# -------------------------------------------------
-	mkdir keywords_results | Out-Null
+	
+	# Create output file
+	mkdir .\sp_source_output\keywords_results | Out-Null
+	$KeywordPath = ".\sp_source_output\keywords_results\"
+	
+	# Create keywords array
+	$Keywords =@("encr",
+				  "password",
+				  "with execute as",
+				  "trigger",
+				  "xp_cmdshell",
+				  "cmd",
+				  "openquery",
+				  "openrowset",
+				  "connect",
+				  "osql"
+					)
+					
 	write-host "[*] Searching for interesting keywords in files..."
-	write-host "[*] Searching for string encr..."
-	Get-ChildItem -Recurse .\sp_source_output\ | Select-String -pattern "encr" >>.\keywords_results\encr.txt
-	write-host "[*] Searching for string password..."
-	Get-ChildItem -Recurse .\sp_source_output\ | Select-String -pattern "password" >>.\keywords_results\password.txt
-	write-host "[*] Searching for string execute..."
-	Get-ChildItem -Recurse .\sp_source_output\ | Select-String -pattern "pass">>.\keywords_results\pass.txt
-	write-host "[*] Searching for string with execute..."
-	Get-ChildItem -Recurse .\sp_source_output\ | Select-String -pattern "with execute as">>.\keywords_results\execute.txt
-	write-host "[*] Searching for string trigger..."
-	Get-ChildItem -Recurse .\sp_source_output\ | Select-String -pattern "trigger">>.\keywords_results\trigger.txt
-	write-host "[*] Searching for string xp_cmdshell..."
-	Get-ChildItem -Recurse .\sp_source_output\ | Select-String -pattern "xp_cmdshell">>.\keywords_results\xp_cmdshell.txt
-	write-host "[*] Searching for string cmd..."
-	Get-ChildItem -Recurse .\sp_source_output\ | Select-String -pattern "cmd">>.\keywords_results\cmd.txt
-	write-host "[*] Searching for string openquery..."
-	Get-ChildItem -Recurse .\sp_source_output\ | Select-String -pattern "openquery">>.\keywords_results\openquery.txt
-	write-host "[*] Searching for string openrowset..."
-	Get-ChildItem -Recurse .\sp_source_output\ | Select-String -pattern "openrowset">>.\keywords_results\openrowset.txt
-	write-host "[*] Searching for string connect..."
-	Get-ChildItem -Recurse .\sp_source_output\ | Select-String -pattern "connect">>.\keywords_results\connect.txt
-	write-host "[*] Searching for triple ticks..."
-	Get-ChildItem -Recurse .\sp_source_output\ | Select-String -pattern "'''">>.\keywords_results\sqli-likely.txt
+	$Keywords | foreach {
+		
+		write-host "[*] Searching for string $_..."	
+		$KeywordFilePath = "$KeywordPath$_.txt"		
+		Get-ChildItem -Recurse .\sp_source_output\ | Select-String -pattern "$_" >> $KeywordFilePath
+	}
+		
+	# -------------------------------------------------
+	# Search source code for potential sqli
+	# -------------------------------------------------
+	
+	# Create output file
+	mkdir .\sp_source_output\sqli_results | Out-Null
+	$SQLPath = ".\sp_source_output\sqli_results\"
+	
+	# Create keywords array
+	$SQLs =@("'''")
+					
+	write-host "[*] Searching for potential sqli..."
+	$SQLs | foreach {
+		
+		write-host "[*] Searching for string $_..."	
+		$SqlFilePath = "$SQLPathpotential-sqli"		
+		Get-ChildItem -Recurse .\sp_source_output\ | Select-String -pattern "$_" >> $SqlFilePath
+	}
+	
+		
 	# http://technet.microsoft.com/en-us/library/ms161953%28v=sql.105%29.aspx
 	# http://blogs.msdn.com/b/brian_swan/archive/2011/02/16/do-stored-procedures-protect-against-sql-injection.aspx
+	
 	write-host "[*] All done - Enjoy! :)"
 }
