@@ -3,8 +3,8 @@
 #Description: This script dumps all of the custom 
 #stored procedures on an SQL Server from all
 #accessible database so they can be analyzed
-#offline for things like hardcode password,
-#crypto keys, elevated status, and sql injection
+#offline for things like hardcoded passwords,
+#crypto keys, elevated execution, and sql injection
 
 # -----------------------------------------------
 # Create database tables
@@ -27,11 +27,16 @@ $TableSP.Columns.Add('ROUTINE_DEFINITION') | Out-Null
 # -----------------------------------------------
 
 # Status user
-write-host "[*] Connecting to the database server..."
+
 
 # Connect to the database
 $conn = New-Object System.Data.SqlClient.SqlConnection
-$conn.ConnectionString = "Server=127.0.0.1;Database=master;User ID=user;Password=password;"
+$SqlServerInstance = "server\SQLEXPRESS"
+$SqlUsername = "user"
+$SqlPassword = "password"
+$conn.ConnectionString = "Server=$SqlServerInstance;Database=master;User ID=$SqlUsername;Password=$SqlPassword;"
+
+write-host "[*] Connecting to $SqlServerInstance as $SqlUsername..."
 $conn.Open()
 
 # Setup query to grab a list of databases
@@ -64,9 +69,7 @@ if ($TableDatabases.rows.count -eq 0){
 # Get list of custom stored procedures for each db
 # -------------------------------------------------
 
-if ($TableDatabases.rows.count -ne 0){
-	
-	write-host "[*] Enumerating custom stored procedures..."
+if ($TableDatabases.rows.count -ne 0){	
 
 	$TableDatabases | foreach {
 
@@ -79,27 +82,27 @@ if ($TableDatabases.rows.count -ne 0){
 		$cmd = New-Object System.Data.SqlClient.SqlCommand($QueryProcedures,$conn)
 		$results = $cmd.ExecuteReader()
 		$TableSP.Load($results)
-		write-host "[*] Checking $CurrentDatabase for custom stored procedures..."	
+		write-host "[*] Checking database $CurrentDatabase for custom stored procedures..."	
 	
 	}
 }
 
 # Status user	
 $SpCount = $TableSP.rows.count 
-write-host "[*] $spCount procedures were found across $DbCount databases."
+write-host "[*] $SpCount procedures were found across $DbCount databases."
+write-host "[*] Exporting source code:"
 
 if ($SpCount -ne 0) {
 	# -------------------------------------------------
 	# Output source code to txt files in folder structure
 	# -------------------------------------------------
-	write-host "[*] Exporting source code to files in the sp_source_output folder..."	
 	mkdir sp_source_output | Out-Null
 	$TableDatabases | foreach {
 		
 		[string]$DirDb = $_.name
 		mkdir sp_source_output\$DirDb | Out-Null
 		
-		write-host "[*] Exporting stored procedures from $DirDb..."
+		write-host "[*]  - Exporting stored procedures from database $DirDb to .\sp_source_output folder......"
 
 		$TableSP | where {$_.ROUTINE_CATALOG -eq $DirDb} | 
 		foreach {			
@@ -112,11 +115,14 @@ if ($SpCount -ne 0) {
 	# -------------------------------------------------
 	# Output source code to CSV file
 	# -------------------------------------------------
-	write-host "[*] Exporting source code to custom_stored_procedures_source.csv..."
-	$TableSP | Export-CSV .\sp_source_output\custom_stored_procedures_source.csv
+	write-host "[*]  - Exporting stored procedures to .\sp_source_output\stored_procedures_source.csv..."
+	$TableSP | Export-CSV .\sp_source_output\stored_procedures_source.csv
 
 	# -------------------------------------------------
 	# Search source code for interesting keywords
+	# Goal = 
+	# - custom sp with execute as sysadmin and sqli :)
+	# - custom sp with command execution
 	# -------------------------------------------------
 	
 	# Create output file
@@ -124,7 +130,7 @@ if ($SpCount -ne 0) {
 	$KeywordPath = ".\sp_source_output\keywords_results\"
 	
 	# Create keywords array
-	$Keywords =@("encr",
+	$InterestingKeywords =@("encr",
 				  "password",
 				  "with execute as",
 				  "trigger",
@@ -133,15 +139,17 @@ if ($SpCount -ne 0) {
 				  "openquery",
 				  "openrowset",
 				  "connect",
+				  "grant",
+				  "proxy",
 				  "osql"
 					)
 					
 	write-host "[*] Searching for interesting keywords in files..."
-	$Keywords | foreach {
+	$InterestingKeywords | foreach {
 		
-		write-host "[*] Searching for string $_..."	
+		write-host "[*]  - Searching for string $_..."	
 		$KeywordFilePath = "$KeywordPath$_.txt"		
-		Get-ChildItem -Recurse .\sp_source_output\ | Select-String -pattern "$_" >> $KeywordFilePath
+		Get-ChildItem -Recurse .\sp_source_output\ | Select-String "$_" >> $KeywordFilePath
 	}
 		
 	# -------------------------------------------------
@@ -152,17 +160,25 @@ if ($SpCount -ne 0) {
 	mkdir .\sp_source_output\sqli_results | Out-Null
 	$SQLPath = ".\sp_source_output\sqli_results\"
 	
-	# Create keywords array
-	$SQLs =@("'''")
+	# Create potential sqli keywords array
+	$SQLiKeywords =@("sp_executesql",
+				  "sp_sqlexec",
+				  "exec",				  
+				  "execute"
+					)
 					
 	write-host "[*] Searching for potential sqli..."
-	$SQLs | foreach {
+	$SQLiKeywords | foreach {
 		
-		write-host "[*] Searching for string $_..."	
+		write-host "[*]  - Searching for string $_..."	
 		$SqlFilePath = "$SQLPathpotential-sqli"		
-		Get-ChildItem -Recurse .\sp_source_output\ | Select-String -pattern "$_" >> $SqlFilePath
+		Get-ChildItem -Recurse .\sp_source_output\ | Select-String "$_"  >> $SqlFilePath
 	}
 	
+	# Run a scan for three ticks in a row '''
+	write-host "[*]  - Searching for string '''..."	
+	$SqlFilePath = "$SQLPathpotential-sqli-tripticks"
+	Get-ChildItem -Recurse .\sp_source_output\ | Select-String "'''" >> $SqlFilePath
 		
 	# http://technet.microsoft.com/en-us/library/ms161953%28v=sql.105%29.aspx
 	# http://blogs.msdn.com/b/brian_swan/archive/2011/02/16/do-stored-procedures-protect-against-sql-injection.aspx
