@@ -69,7 +69,7 @@
 	   Author: Scott Sutherland - 2014, NetSPI
 	   Version: Get-SqlServerSpSource v1.1
 	   Comments: Should work on SQL Server 2005 and Above.
-	   TODO: Fix sqli strings - had trouble escaping @ and (
+	   TODO: Add keywords instances found across x files to verbose output, update help
     #>
 
   [CmdletBinding()]
@@ -191,6 +191,7 @@
     if ($TableDatabases.rows.count -ne 0){	
 
         write-host "[*] Searching for custom stored procedures..."
+        $x = 0
 	    $TableDatabases | foreach {
 
 		    [string]$CurrentDatabase = $_.name
@@ -202,8 +203,18 @@
 		    $cmd = New-Object System.Data.SqlClient.SqlCommand($QueryProcedures,$conn)
 		    $results = $cmd.ExecuteReader()
 		    $TableSP.Load($results)
-		    write-verbose "[*]  - Checking $CurrentDatabase database..."	
-	
+
+            # Get sp count for each database
+            if ($x -eq 0){
+                $x = $TableSP.rows.count 
+                write-verbose "[*]  - Found $x in $CurrentDatabase"               
+            }else{
+                $CurrNumRows = $TableSP.rows.count 
+                $PrevNumRows = $x
+                $FoundNumRows = $CurrNumRows-$PrevNumRows
+                write-verbose "[*]  - Found $FoundNumRows in $CurrentDatabase"
+                $x = $TableSP.rows.count 
+            }            		
 	    }
     }
 
@@ -217,7 +228,6 @@
             $LineColor = 'red'
     }
     write-host "[*] $SpCount custom stored procedures found across $DbCount databases." -foreground $LineColor
-    write-host "[*] Exporting source code..."
 
     if ($SpCount -ne 0) {
 
@@ -240,15 +250,20 @@
             Break
         }
 
+        
+
 	    # -------------------------------------------------
 	    # Output source code to txt files in folder structure
 	    # -------------------------------------------------
+        
+        write-host "[*] Exporting source code to $OutPutDir..."
+
 	    $TableDatabases | foreach {
 		
 		    [string]$DirDb = $_.name
 		    mkdir $OutPutDir\$DirDb | Out-Null
 		
-		    write-host "[*]  - Exporting stored procedures from $DirDb database to $OutPutDir..."
+		    write-verbose "[*]  - Exporting from $DirDb..."
 
 		    $TableSP | where {$_.ROUTINE_CATALOG -eq $DirDb} | 
 		    foreach {			
@@ -262,7 +277,7 @@
 	    # Output source code to CSV file
 	    # -------------------------------------------------
 
-	    write-host "[*]  - Exporting stored procedures to $OutPutDir\stored_procedures_source.csv..."
+	    write-verbose "[*]  - Exporting stored procedures to $OutPutDir\stored_procedures_source.csv..."
 	    $TableSP | Export-CSV $OutPutDir\stored_procedures_source.csv
 
 	    # -------------------------------------------------
@@ -296,7 +311,7 @@
 		    Get-ChildItem -Recurse $OutPutDir | Select-String -SimpleMatch "$_" >> $KeywordFilePath
 	    }
 
-        write-host "[*]  - Results can be found in $OutPutDir\search-results-keywords\"
+        write-verbose "[*]  - Results can be found in $OutPutDir\search-results-keywords\"
 		
 	    # -------------------------------------------------
 	    # Search source code for potential sqli keywords
@@ -330,7 +345,8 @@
 	    write-verbose "[*]  - Searching for string '''..."	
 	    Get-ChildItem -Recurse $OutPutDir\ | Select-String "'''" >> $SQLPath
 		
-        write-host "[*]  - Results can be found in $OutPutDir\search-results-sqli\"
-	
+        write-verbose "[*]  - Results can be found in $OutPutDir\search-results-sqli\"
+
+	    write-verbose "[*] All results can be found in $OutPutDir\"
 	    write-host "[*] All done - Enjoy! :)" -foreground "green"
     }
