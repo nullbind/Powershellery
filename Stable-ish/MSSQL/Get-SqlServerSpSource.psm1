@@ -71,7 +71,7 @@ function Get-SqlServerSpSource
 	   Author: Scott Sutherland - 2014, NetSPI
 	   Version: Get-SqlServerSpSource v1.1
 	   Comments: Should work on SQL Server 2005 and Above.
-	   TODO: add total to each db,add keywords instances found across x files to verbose, update help
+	   TODO: Add keywords instances found across x files to verbose output, update help
     #>
 
   [CmdletBinding()]
