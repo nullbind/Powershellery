@@ -1,8 +1,6 @@
-
     <#
 	.SYNOPSIS
 	   This script can be used to export custom stored procedures from all accessible databases on a SQL Server.
-
 
 	.DESCRIPTION
 	   This script can be used to export custom stored procedures from all accessible databases on a SQL Server to
@@ -24,7 +22,7 @@
 	   [*]  - Checking Appliction3DB database...
 	   [*]  - Checking Appliction4DB database...
 	   [*] 400 custom stored procedures found across 4 databases.
-	   [*] Exporting source code:
+	   [*] Exporting source code...
 	   [*]  - Exporting stored procedures from Appliction1DB database to .\sp_source_output...
 	   [*]  - Exporting stored procedures from Appliction2DB database to .\sp_source_output...
 	   [*]  - Exporting stored procedures from Appliction3DB database to .\sp_source_output...
@@ -50,7 +48,7 @@
 	   [*]  - Checking Appliction3DB database...
 	   [*]  - Checking Appliction4DB database...
 	   [*] 400 custom stored procedures found across 4 databases.
-	   [*] Exporting source code:
+	   [*] Exporting source code...
 	   [*]  - Exporting stored procedures from Appliction1DB database to .\myfolder\sp_source_output...
 	   [*]  - Exporting stored procedures from Appliction2DB database to .\myfolder\sp_source_output...
 	   [*]  - Exporting stored procedures from Appliction3DB database to .\myfolder\sp_source_output...
@@ -69,8 +67,9 @@
 
 	.NOTES
 	   Author: Scott Sutherland - 2014, NetSPI
-	   Version: Get-SqlServerSpSource v1.0
+	   Version: Get-SqlServerSpSource v1.1
 	   Comments: Should work on SQL Server 2005 and Above.
+	   TODO: Fix sqli strings - had trouble escaping @ and (
     #>
 
   [CmdletBinding()]
@@ -95,29 +94,13 @@
   )
 
     # -----------------------------------------------
-    # Create database tables
+    # Connect to the sql server
     # -----------------------------------------------
-
-    # Create data table to house list of non default databases  
-    $TableDatabases = New-Object System.Data.DataTable 
-    $TableDatabases.Columns.Add('name') | Out-Null
-
-    # Create data table to house list of stored procedures
-    $TableSP = New-Object System.Data.DataTable 
-    $TableSP.Columns.Add('ROUTINE_CATALOG') | Out-Null
-    $TableSP.Columns.Add('SPECIFIC_SCHEMA') | Out-Null
-    $TableSP.Columns.Add('ROUTINE_NAME') | Out-Null
-    $TableSP.Columns.Add('ROUTINE_DEFINITION') | Out-Null
-
-
-    # -----------------------------------------------
-    # Get list of dateabases
-    # -----------------------------------------------       
-
-    # Connect to the database
+    
+    # Create fun connection object
     $conn = New-Object System.Data.SqlClient.SqlConnection
     
-    # Set authentication type      
+    # Set authentication type and create connection string    
     if($SqlUser -and $SqlPass){   
           
         # SQL login
@@ -133,7 +116,6 @@
        
     }
 
-
     # Status User
     write-host "[*] Attempting to Connect to $SqlServerInstance as $ConnectUser..."
 
@@ -148,7 +130,27 @@
         Break
     }
 
-    # Setup query to grab a list of databases
+    # -----------------------------------------------
+    # Create data tables
+    # -----------------------------------------------
+
+    # Create data table to house list of non default databases  
+    $TableDatabases = New-Object System.Data.DataTable 
+    $TableDatabases.Columns.Add('name') | Out-Null
+
+    # Create data table to house list of stored procedures
+    $TableSP = New-Object System.Data.DataTable 
+    $TableSP.Columns.Add('ROUTINE_CATALOG') | Out-Null
+    $TableSP.Columns.Add('SPECIFIC_SCHEMA') | Out-Null
+    $TableSP.Columns.Add('ROUTINE_NAME') | Out-Null
+    $TableSP.Columns.Add('ROUTINE_DEFINITION') | Out-Null
+
+
+    # -----------------------------------------------
+    # Get list of accessible non default dateabases
+    # -----------------------------------------------       
+
+    # Setup query to grab a list of accessible databases
     $QueryDatabases = "SELECT name from master..sysdatabases 
 	    where has_dbaccess(name)=1 and 
 	    name not like 'master' and
@@ -159,15 +161,16 @@
     # User status
     write-host "[*] Enumerating accessible databases..."
 
-    # Query the databases and load the results into the TableDatabase data table object
+    # Query the databases and load the results into the TableDatabases data table object
     $cmd = New-Object System.Data.SqlClient.SqlCommand($QueryDatabases,$conn)
     $results = $cmd.ExecuteReader()
     $TableDatabases.Load($results)
 
-    # Check if any accessible database where found and print them out
+    # Check if any accessible databases where found 
     if ($TableDatabases.rows.count -eq 0){
 
 	    write-host "No accessible databases found."
+        Break
     }else{
 	    $DbCount = $TableDatabases.rows.count
         
@@ -181,13 +184,13 @@
 	    write-host "[*] $DbCount accessible databases found." -foreground $LineColor
     }
 
-
     # -------------------------------------------------
     # Get list of custom stored procedures for each db
     # -------------------------------------------------
 
     if ($TableDatabases.rows.count -ne 0){	
 
+        write-host "[*] Searching for custom stored procedures..."
 	    $TableDatabases | foreach {
 
 		    [string]$CurrentDatabase = $_.name
@@ -199,13 +202,12 @@
 		    $cmd = New-Object System.Data.SqlClient.SqlCommand($QueryProcedures,$conn)
 		    $results = $cmd.ExecuteReader()
 		    $TableSP.Load($results)
-            write-host "[*] Searching for custom stored procedures..."
-		    write-host "[*]  - Checking $CurrentDatabase database..."	
+		    write-verbose "[*]  - Checking $CurrentDatabase database..."	
 	
 	    }
     }
 
-    # Status user	
+    # Get number of custom stored procedures found
     $SpCount = $TableSP.rows.count 
     
     # Set status color   
@@ -215,7 +217,7 @@
             $LineColor = 'red'
     }
     write-host "[*] $SpCount custom stored procedures found across $DbCount databases." -foreground $LineColor
-    write-host "[*] Exporting source code:"
+    write-host "[*] Exporting source code..."
 
     if ($SpCount -ne 0) {
 
@@ -225,7 +227,6 @@
         }else{
             $OutPutDir = ".\sp_source_output"
         }
-
 
         # Attempt to create output directory
         write-verbose "[*] Attempting to create output directory..."
@@ -260,6 +261,7 @@
 	    # -------------------------------------------------
 	    # Output source code to CSV file
 	    # -------------------------------------------------
+
 	    write-host "[*]  - Exporting stored procedures to $OutPutDir\stored_procedures_source.csv..."
 	    $TableSP | Export-CSV $OutPutDir\stored_procedures_source.csv
 
@@ -291,7 +293,7 @@
 		
 		    write-verbose  "[*]  - Searching for string $_..."	
 		    $KeywordFilePath = "$KeywordPath$_.txt"		
-		    Get-ChildItem -Recurse $OutPutDir | Select-String "$_" >> $KeywordFilePath
+		    Get-ChildItem -Recurse $OutPutDir | Select-String -SimpleMatch "$_" >> $KeywordFilePath
 	    }
 
         write-host "[*]  - Results can be found in $OutPutDir\search-results-keywords\"
@@ -302,27 +304,31 @@
 	
 	    # Create output file
 	    mkdir $OutPutDir\search-results-sqli | Out-Null
-	    $SQLPath = "$OutPutDir\search-results-sqli\"
+	    $SQLPath = "$OutPutDir\search-results-sqli\sqli.txt"
 	
 	    # Create potential sqli keywords array
+        $SymAt = "@"
+        [string]$SymOpen = "("
 	    $SQLiKeywords =@("sp_executesql",
 				      "sp_sqlexec",
-				      "exec",				  
-				      "execute"
+				      "exec @",	
+				      "exec (",	
+				      "exec(",			  
+				      "execute @",	
+				      "execute (",	
+				      "execute("
 					    )
 					
 	    write-host "[*] Searching for potential SQLi keywords..."
 	    $SQLiKeywords | foreach {
 		
-		    write-verbose "[*]  - Searching for string $_..."	
-		    $SqlFilePath = "$SQLPathpotential-sqli"		
-		    Get-ChildItem -Recurse $OutPutDir\ | Select-String "$_"  >> $SqlFilePath
+		    write-verbose "[*]  - Searching for string $_..."		
+		    Get-ChildItem -Recurse $OutPutDir\ | Select-String -SimpleMatch "$_"  >> $SQLPath
 	    }
 	
 	    # Run a scan for three ticks in a row '''
 	    write-verbose "[*]  - Searching for string '''..."	
-	    $SqlFilePath = "$SQLPathpotential-sqli-tripticks"
-	    Get-ChildItem -Recurse $OutPutDir\ | Select-String "'''" >> $SqlFilePath
+	    Get-ChildItem -Recurse $OutPutDir\ | Select-String "'''" >> $SQLPath
 		
         write-host "[*]  - Results can be found in $OutPutDir\search-results-sqli\"
 	
