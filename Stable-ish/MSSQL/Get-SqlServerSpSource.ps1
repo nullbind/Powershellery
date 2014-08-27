@@ -11,54 +11,34 @@
 	.EXAMPLE
 	   Exporting custom stored procedures from a remote SQL Server using a trusted connection.
 
-	   PS C:\> .\Get-SqlServerSpSource.ps1 -SQLServerInstance SQLSERVER1\SQLEXPRESS
-	   [*] Attempting to Connect to SQLSERVER1\SQLEXPRESS as domain\user...
-	   [*] Connected.
-	   [*] Enumerating accessible databases...
-	   [*] 4 accessible databases found.
-	   [*] Searching for custom stored procedures...
-	   [*]  - Checking Appliction1DB database...
-	   [*]  - Checking Appliction2DB database...
-	   [*]  - Checking Appliction3DB database...
-	   [*]  - Checking Appliction4DB database...
-	   [*] 400 custom stored procedures found across 4 databases.
-	   [*] Exporting source code...
-	   [*]  - Exporting stored procedures from Appliction1DB database to .\sp_source_output...
-	   [*]  - Exporting stored procedures from Appliction2DB database to .\sp_source_output...
-	   [*]  - Exporting stored procedures from Appliction3DB database to .\sp_source_output...
-	   [*]  - Exporting stored procedures from Appliction4DB database to .\sp_source_output...
-	   [*]  - Exporting stored procedures to .\sp_source_output\stored_procedures_source.csv...
-	   [*] Searching for interesting keywords...
-	   [*]  - Results can be found in .\sp_source_output\search-results-keywords\
-	   [*] Searching for potential SQLi keywords...
-	   [*]  - Results can be found in .\sp_source_output\search-results-sqli\
-	   [*] All done - Enjoy! :)
+	   PS C:\> Get-SqlServerSpSource -SQLServerInstance SQLSERVER1\SQLEXPRESS
 
 	.EXAMPLE
-	   Exporting custom stored procedures from a remote SQL Server using a provided SQL Login and export directory.
+	   Exporting custom stored procedures from a remote SQL Server using a SQL Login.
 
-	   PS C:\> .\Get-SqlServerSpSource.ps1 -SQLServerInstance SQLSERVER1\SQLEXPRESS -sqluser MyUser -SQLPass MyPassword! -OutDir .\myfolder
-	   [*] Attempting to Connect to SQLSERVER1\SQLEXPRESS as MyUser...
-	   [*] Connected.
-	   [*] Enumerating accessible databases...
-	   [*] 4 accessible databases found.
-	   [*] Searching for custom stored procedures...
-	   [*]  - Checking Appliction1DB database...
-	   [*]  - Checking Appliction2DB database...
-	   [*]  - Checking Appliction3DB database...
-	   [*]  - Checking Appliction4DB database...
-	   [*] 400 custom stored procedures found across 4 databases.
-	   [*] Exporting source code...
-	   [*]  - Exporting stored procedures from Appliction1DB database to .\myfolder\sp_source_output...
-	   [*]  - Exporting stored procedures from Appliction2DB database to .\myfolder\sp_source_output...
-	   [*]  - Exporting stored procedures from Appliction3DB database to .\myfolder\sp_source_output...
-	   [*]  - Exporting stored procedures from Appliction4DB database to .\myfolder\sp_source_output...
-	   [*]  - Exporting stored procedures to .\myfolder\sp_source_output\stored_procedures_source.csv...
-	   [*] Searching for interesting keywords...
-	   [*]  - Results can be found in .\myfolder\sp_source_output\search-results-keywords\
-	   [*] Searching for potential SQLi keywords...
-	   [*]  - Results can be found in .\myfolder\sp_source_output\search-results-sqli\
-	   [*] All done - Enjoy! :)
+	   PS C:\> Get-SqlServerSpSource -SQLServerInstance SQLSERVER1\SQLEXPRESS -SqlUser MyUser -SqlPass MyPass
+
+	.EXAMPLE
+	   Exporting custom stored procedures from a remote SQL Server using a trusted connection,
+	   and set a custom output directory.
+
+	   PS C:\> Get-SqlServerSpSource -SqlServerInstance SQLSERVER1\SQLEXPRESS -OutDir .\myfolder\
+
+	.EXAMPLE
+	   Exporting custom stored procedures from a remote SQL Server using a trusted connection.
+	   The command below also checks the exported stored procedures interesting keywords they
+ 	   may indiciate things like hardcoded passwords, elevated execution, and SQL injection.
+
+	   PS C:\> Get-SqlServerSpSource -SqlServerInstance SQLSERVER1\SQLEXPRESS -RunChecks 
+
+	.EXAMPLE
+	   Exporting custom stored procedures from a remote SQL Server using a trusted connection.
+	   The command below also checks the exported stored procedures interesting keywords they
+ 	   may indiciate things like hardcoded passwords, elevated execution, and SQL injection.
+ 	   The -verbose flag will display the current keyword being search for as well as some
+ 	   additional information about the script's operation.
+
+	   PS C:\> Get-SqlServerSpSource -SqlServerInstance SQLSERVER1\SQLEXPRESS -RunChecks -verbose
 
 	.LINK
 	   http://www.netspi.com
@@ -67,9 +47,8 @@
 
 	.NOTES
 	   Author: Scott Sutherland - 2014, NetSPI
-	   Version: Get-SqlServerSpSource v1.1
+	   Version: Get-SqlServerSpSource v1.2
 	   Comments: Should work on SQL Server 2005 and Above.
-	   TODO: Add keywords instances found across x files to verbose output, update help
     #>
 
   [CmdletBinding()]
@@ -89,7 +68,11 @@
     
     [Parameter(Mandatory=$false,
     HelpMessage='Output directory.')]
-    [string]$OutDir
+    [string]$OutDir,
+
+    [Parameter(Mandatory=$false,
+    HelpMessage='Search stored procedures for interesting strings.')]
+    [switch]$RunChecks
     
   )
 
@@ -207,12 +190,12 @@
             # Get sp count for each database
             if ($x -eq 0){
                 $x = $TableSP.rows.count 
-                write-verbose "[*]  - Found $x in $CurrentDatabase"               
+                write-host "[*]  - Found $x in $CurrentDatabase"               
             }else{
                 $CurrNumRows = $TableSP.rows.count 
                 $PrevNumRows = $x
                 $FoundNumRows = $CurrNumRows-$PrevNumRows
-                write-verbose "[*]  - Found $FoundNumRows in $CurrentDatabase"
+                write-host "[*]  - Found $FoundNumRows in $CurrentDatabase"
                 $x = $TableSP.rows.count 
             }            		
 	    }
@@ -251,7 +234,6 @@
         }
 
         
-
 	    # -------------------------------------------------
 	    # Output source code to txt files in folder structure
 	    # -------------------------------------------------
@@ -263,7 +245,7 @@
 		    [string]$DirDb = $_.name
 		    mkdir $OutPutDir\$DirDb | Out-Null
 		
-		    write-verbose "[*]  - Exporting from $DirDb..."
+		    write-host "[*]  - Exporting from $DirDb"
 
 		    $TableSP | where {$_.ROUTINE_CATALOG -eq $DirDb} | 
 		    foreach {			
@@ -279,74 +261,70 @@
 
 	    write-verbose "[*]  - Exporting stored procedures to $OutPutDir\stored_procedures_source.csv..."
 	    $TableSP | Export-CSV $OutPutDir\stored_procedures_source.csv
-
-	    # -------------------------------------------------
-	    # Search source code for interesting keywords
-	    # -------------------------------------------------
+        
+        if ($RunChecks){
+	        # -------------------------------------------------
+	        # Search source code for interesting keywords
+	        # -------------------------------------------------
 	
-	    # Create output file
-	    mkdir $OutPutDir\search-results-keywords | Out-Null
-	    $KeywordPath = "$OutPutDir\search-results-keywords\"
+	        # Create output file
+	        mkdir $OutPutDir\search-results-keywords | Out-Null
+	        $KeywordPath = "$OutPutDir\search-results-keywords\"
 	
-	    # Create keywords array
-	    $InterestingKeywords =@("encr",
-				      "password",
-				      "with execute as",
-				      "trigger",
-				      "xp_cmdshell",
-				      "cmd",
-				      "openquery",
-				      "openrowset",
-				      "connect",
-				      "grant",
-				      "proxy",
-				      "osql"
-					    )
+	        # Create keywords array
+	        $InterestingKeywords =@("encr",
+				          "password",
+				          "with execute as",
+				          "trigger",
+				          "xp_cmdshell",
+				          "cmd",
+				          "openquery",
+				          "openrowset",
+				          "connect",
+				          "grant",
+				          "proxy",
+				          "osql"
+					        )
 					
-	    write-host "[*] Searching for interesting keywords..."
-	    $InterestingKeywords | foreach {
+	        write-host "[*] Searching for interesting keywords..."
+            write-host "[*] NOTE: THIS CAN TAKE A WHILE IF THERE ARE THOUSANDS OF PROCEDURES"
+	        $InterestingKeywords | foreach {
 		
-		    write-verbose  "[*]  - Searching for string $_..."	
-		    $KeywordFilePath = "$KeywordPath$_.txt"		
-		    Get-ChildItem -Recurse $OutPutDir | Select-String -SimpleMatch "$_" >> $KeywordFilePath
-	    }
-
-        write-verbose "[*]  - Results can be found in $OutPutDir\search-results-keywords\"
+		        write-verbose  "[*]  - Searching for string $_..."	
+		        $KeywordFilePath = "$KeywordPath$_.txt"		
+		        Get-ChildItem -Recurse $OutPutDir | Select-String -SimpleMatch "$_" >> $KeywordFilePath
+	        }
 		
-	    # -------------------------------------------------
-	    # Search source code for potential sqli keywords
-	    # -------------------------------------------------
+	        # -------------------------------------------------
+	        # Search source code for potential sqli keywords
+	        # -------------------------------------------------
 	
-	    # Create output file
-	    mkdir $OutPutDir\search-results-sqli | Out-Null
-	    $SQLPath = "$OutPutDir\search-results-sqli\sqli.txt"
+	        # Create output file
+	        mkdir $OutPutDir\search-results-sqli | Out-Null
+	        $SQLPath = "$OutPutDir\search-results-sqli\sqli.txt"
 	
-	    # Create potential sqli keywords array
-        $SymAt = "@"
-        [string]$SymOpen = "("
-	    $SQLiKeywords =@("sp_executesql",
-				      "sp_sqlexec",
-				      "exec @",	
-				      "exec (",	
-				      "exec(",			  
-				      "execute @",	
-				      "execute (",	
-				      "execute("
-					    )
-					
-	    write-host "[*] Searching for potential SQLi keywords..."
-	    $SQLiKeywords | foreach {
+	        # Create potential sqli keywords array
+            $SymAt = "@"
+            [string]$SymOpen = "("
+	        $SQLiKeywords =@("sp_executesql",
+				          "sp_sqlexec",
+				          "exec @",	
+				          "exec (",	
+				          "exec(",			  
+				          "execute @",	
+				          "execute (",	
+				          "execute("
+					        )
+					           
+	        $SQLiKeywords | foreach {
 		
-		    write-verbose "[*]  - Searching for string $_..."		
-		    Get-ChildItem -Recurse $OutPutDir\ | Select-String -SimpleMatch "$_"  >> $SQLPath
-	    }
+		        write-verbose "[*]  - Searching for string $_..."		
+		        Get-ChildItem -Recurse $OutPutDir\ | Select-String -SimpleMatch "$_"  >> $SQLPath
+	        }
 	
-	    # Run a scan for three ticks in a row '''
-	    write-verbose "[*]  - Searching for string '''..."	
-	    Get-ChildItem -Recurse $OutPutDir\ | Select-String "'''" >> $SQLPath
-		
-        write-verbose "[*]  - Results can be found in $OutPutDir\search-results-sqli\"
-
-	    write-verbose "[*] All results can be found in $OutPutDir\"
-	    write-host "[*] All done - Enjoy! :)" -foreground "green"
+	        # Run a scan for three ticks in a row '''	        
+	        Get-ChildItem -Recurse $OutPutDir\ | Select-String "'''" >> $SQLPath       
+        }
     }
+    
+	write-host "[*] All done, results can be found in $OutPutDir\" -foreground "green"
