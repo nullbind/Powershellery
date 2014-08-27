@@ -224,23 +224,20 @@ function Get-SqlServerSpSource
         }
 
         # Attempt to create output directory
+        write-host "[*] Exporting source code to $OutPutDir..."
         write-verbose "[*] Attempting to create output directory..."
-        try{
+        $CheckOutDir = Test-Path $OutPutDir
+        if($CheckOutDir){
+            write-host "[*] Error: Can't create directory `"$OutPutDir`", it already exists." -ForegroundColor Red
+            break
+        }else{
             mkdir $OutPutDir | Out-Null
-            write-verbose "[*] $OutPutDir created." 
-        }catch{
-            $ErrorMessage = $_.Exception.Message
-            write-host "[*] Failed to create output directory." -foreground "red"
-            write-host "[*] Error: $ErrorMessage" -foreground "red"   
-            Break
+            write-verbose "[*] $OutPutDir created."
         }
-
         
 	    # -------------------------------------------------
 	    # Output source code to txt files in folder structure
 	    # -------------------------------------------------
-        
-        write-host "[*] Exporting source code to $OutPutDir..."
 
 	    $TableDatabases | foreach {
 		
@@ -294,7 +291,7 @@ function Get-SqlServerSpSource
 		
 		        write-verbose  "[*]  - Searching for string $_..."	
 		        $KeywordFilePath = "$KeywordPath$_.txt"		
-		        Get-ChildItem -Recurse $OutPutDir | Select-String -SimpleMatch "$_" >> $KeywordFilePath
+		        Get-ChildItem -Recurse $OutPutDir | Select-String -SimpleMatch "$_" | Out-File -Append $KeywordFilePath
 	        }
 		
 	        # -------------------------------------------------
@@ -325,7 +322,7 @@ function Get-SqlServerSpSource
 	        }
 	
 	        # Run a scan for three ticks in a row '''	        
-	        Get-ChildItem -Recurse $OutPutDir\ | Select-String "'''" >> $SQLPath       
+	        Get-ChildItem -Recurse $OutPutDir\ | Select-String "'''" | Out-File -Append $SQLPath       
         }
     }
     
