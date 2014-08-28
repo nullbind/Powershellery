@@ -1,3 +1,4 @@
+
     <#
 	.SYNOPSIS
 	   This script can be used to export custom stored procedures from all accessible databases on a SQL Server.
@@ -71,6 +72,14 @@
     [string]$OutDir,
 
     [Parameter(Mandatory=$false,
+    HelpMessage='Database to target.')]
+    [string]$Database,
+
+    [Parameter(Mandatory=$false,
+    HelpMessage='Procedure to target.')]
+    [string]$Procedure,
+
+    [Parameter(Mandatory=$false,
     HelpMessage='Search stored procedures for interesting strings.')]
     [switch]$RunChecks
     
@@ -133,13 +142,20 @@
     # Get list of accessible non default dateabases
     # -----------------------------------------------       
 
+    # Check for user supplied database
+    if ($Database) {
+        $SqlDatabase = "and name like '$Database'"
+    }else{
+        $SqlDatabase = ""
+    }
+
     # Setup query to grab a list of accessible databases
     $QueryDatabases = "SELECT name from master..sysdatabases 
 	    where has_dbaccess(name)=1 and 
 	    name not like 'master' and
 	    name not like 'tempdb' and
 	    name not like 'model' and
-	    name not like 'msdb'"
+	    name not like 'msdb' $SqlDatabase"
 
     # User status
     write-host "[*] Enumerating accessible databases..."
@@ -178,9 +194,16 @@
 	    $TableDatabases | foreach {
 
 		    [string]$CurrentDatabase = $_.name
+
+            # Check for user supplied stored procedure name
+            if ($Procedure) {
+                $SqlProcedure = "WHERE ROUTINE_NAME like '$Procedure'"
+            }else{
+                $SqlProcedure = ""
+            }
 		
 		    # Setup query to grab a list of databases
-		    $QueryProcedures = "SELECT ROUTINE_CATALOG,SPECIFIC_SCHEMA,ROUTINE_NAME,ROUTINE_DEFINITION FROM $CurrentDatabase.INFORMATION_SCHEMA.ROUTINES order by ROUTINE_NAME"		
+		    $QueryProcedures = "SELECT ROUTINE_CATALOG,SPECIFIC_SCHEMA,ROUTINE_NAME,ROUTINE_DEFINITION FROM $CurrentDatabase.INFORMATION_SCHEMA.ROUTINES $SqlProcedure order by ROUTINE_NAME"		
 
 		    # Query the databases and load the results into the TableDatabase data table object
 		    $cmd = New-Object System.Data.SqlClient.SqlCommand($QueryProcedures,$conn)
@@ -222,23 +245,20 @@
         }
 
         # Attempt to create output directory
+        write-host "[*] Exporting source code to $OutPutDir..."
         write-verbose "[*] Attempting to create output directory..."
-        try{
+        $CheckOutDir = Test-Path $OutPutDir
+        if($CheckOutDir){
+            write-host "[*] Error: Can't create directory `"$OutPutDir`", it already exists." -ForegroundColor Red
+            break
+        }else{
             mkdir $OutPutDir | Out-Null
-            write-verbose "[*] $OutPutDir created." 
-        }catch{
-            $ErrorMessage = $_.Exception.Message
-            write-host "[*] Failed to create output directory." -foreground "red"
-            write-host "[*] Error: $ErrorMessage" -foreground "red"   
-            Break
+            write-verbose "[*] $OutPutDir created."
         }
-
         
 	    # -------------------------------------------------
 	    # Output source code to txt files in folder structure
 	    # -------------------------------------------------
-        
-        write-host "[*] Exporting source code to $OutPutDir..."
 
 	    $TableDatabases | foreach {
 		
@@ -292,7 +312,7 @@
 		
 		        write-verbose  "[*]  - Searching for string $_..."	
 		        $KeywordFilePath = "$KeywordPath$_.txt"		
-		        Get-ChildItem -Recurse $OutPutDir | Select-String -SimpleMatch "$_" >> $KeywordFilePath
+		        Get-ChildItem -Recurse $OutPutDir | Select-String -SimpleMatch "$_" | Out-File -Append $KeywordFilePath
 	        }
 		
 	        # -------------------------------------------------
@@ -323,7 +343,7 @@
 	        }
 	
 	        # Run a scan for three ticks in a row '''	        
-	        Get-ChildItem -Recurse $OutPutDir\ | Select-String "'''" >> $SQLPath       
+	        Get-ChildItem -Recurse $OutPutDir\ | Select-String "'''" | Out-File -Append $SQLPath       
         }
     }
     
