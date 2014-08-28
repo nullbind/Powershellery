@@ -1,4 +1,3 @@
-
     <#
 	.SYNOPSIS
 	   This script can be used to export custom stored procedures from all accessible databases on a SQL Server.
@@ -31,6 +30,14 @@
  	   may indiciate things like hardcoded passwords, elevated execution, and SQL injection.
 
 	   PS C:\> Get-SqlServerSpSource -SqlServerInstance SQLSERVER1\SQLEXPRESS -RunChecks 
+
+	.EXAMPLE
+	   Exporting custom stored procedures from a remote SQL Server using a trusted connection.
+	   The -RunChecks switch checks the exported stored procedures for interesting keywords that
+ 	   may indiciate hardcoded passwords, elevated execution, and SQL injection.
+ 	   This syntax also targets a specific database and store procedure.
+
+	   PS C:\> Get-SqlServerSpSource -SqlServerInstance SQLSERVER1\SQLEXPRESS -RunChecks -Database mydb -Procedure mysp
 
 	.EXAMPLE
 	   Exporting custom stored procedures from a remote SQL Server using a trusted connection.
