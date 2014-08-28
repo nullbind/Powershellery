@@ -270,7 +270,7 @@
 	    $TableDatabases | foreach {
 		
 		    [string]$DirDb = $_.name
-		    mkdir $OutPutDir\$DirDb | Out-Null
+		    mkdir $OutPutDir\exported_sp_tsql_files\$DirDb | Out-Null
 		
 		    write-host "[*]  - Exporting from $DirDb"
 
@@ -278,7 +278,7 @@
 		    foreach {			
 			    [string]$ProcName = $_.ROUTINE_NAME
 			    $_.ROUTINE_DEFINITION |
-			    Out-File $OutPutDir\$DirDb\$ProcName.sql		
+			    Out-File $OutPutDir\exported_sp_tsql_files\$DirDb\$ProcName.sql		
 		    }
 	    }
 
@@ -286,8 +286,8 @@
 	    # Output source code to CSV file
 	    # -------------------------------------------------
 
-	    write-verbose "[*]  - Exporting stored procedures to $OutPutDir\stored_procedures_source.csv..."
-	    $TableSP | Export-CSV $OutPutDir\stored_procedures_source.csv
+	    write-verbose "[*]  - Exporting stored procedures to $OutPutDir\exported_stored_procedures_source.csv..."
+	    $TableSP | Export-CSV $OutPutDir\exported_stored_procedures_source.csv
         
         if ($RunChecks){
 	        # -------------------------------------------------
@@ -319,7 +319,7 @@
 		
 		        write-verbose  "[*]  - Searching for string $_..."	
 		        $KeywordFilePath = "$KeywordPath$_.txt"		
-		        Get-ChildItem -Recurse $OutPutDir | Select-String -SimpleMatch "$_" | Out-File -Append $KeywordFilePath
+		        Get-ChildItem -Recurse $OutPutDir\exported_sp_tsql_files\ | Select-String -SimpleMatch "$_" | Out-File -Append $KeywordFilePath
 	        }
 		
 	        # -------------------------------------------------
@@ -350,7 +350,7 @@
 	        }
 	
 	        # Run a scan for three ticks in a row '''	        
-	        Get-ChildItem -Recurse $OutPutDir\ | Select-String "'''" | Out-File -Append $SQLPath       
+	        Get-ChildItem -Recurse $OutPutDir\exported_sp_tsql_files\ | Select-String "'''" | Out-File -Append $SQLPath       
         }
     }
     
