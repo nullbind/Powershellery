@@ -1,0 +1,30 @@
+Use the powershell cmd-let to get for authenticode signing
+Get-AuthenticodeSignature.
+http://technet.microsoft.com/en-us/library/hh849805.aspx
+
+Example:
+Get-ChildItem .\ | select fullname | foreach { Get-AuthenticodeSignature $_.fullname } | where {$_.status -eq "NotSigned"} | select status,path
+
+Example for current directory:
+Get-ChildItem -file -Recurse  .\ | select fullname | foreach { Get-AuthenticodeSignature $_.fullname } | where {$_.status -eq "NotSigned"} |  select status,path|Export-CSV .\NoAuthenticode.csv
+
+Example of a differant directory:
+Get-ChildItem -file -Recurse .\ | select fullname | foreach { Get-AuthenticodeSignature $_.fullname } | where { $_.status -eq "NotSigned"} | select status,path | sort status | Export-CSV .\NoAuthenticode.csv
+
+
+
+Use the powershell function below to check for strong naming:
+http://www.pvle.be/2010/04/getting-an-assemblys-strong-name-with-powershell/
+
+powershell
+function Get-AssemblyStrongName($assemblyPath)
+{
+	[System.Reflection.AssemblyName]::GetAssemblyName($assemblyPath).FullName
+}
+Get-AssemblyStrongName "c:\file.dll"
+
+return only strong named files:
+Get-ChildItem *.dll,*.exe | foreach { try {Get-AssemblyStrongName $_.fullname}catch{ }}
+
+return only non strong names files:
+Get-ChildItem *.dll,*.exe | foreach { try {Get-AssemblyStrongName $_.fullname | out-null}catch{}}
