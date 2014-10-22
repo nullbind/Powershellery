@@ -1,3 +1,15 @@
+ <#
+	.SYNOPSIS
+	This script can be used to query sql servers and view the results.
+
+	.DESCRIPTION
+	This script can be used to query sql servers and view the results.
+
+	.EXAMPLE
+	Exporting custom stored procedures from a remote SQL Server using a trusted connection.
+	PS C:\> Get-SqlServerSpSource -SQLServerInstance SQLSERVER1\SQLEXPRESS -query "select name from master..sysdatabases"
+#>
+
 [CmdletBinding()]
     Param(
     [Parameter(Mandatory=$false,
@@ -17,7 +29,6 @@
 # -----------------------------------------------
 # Connect to the sql server
 # -----------------------------------------------
-
 # Create fun connection object
 $conn = New-Object System.Data.SqlClient.SqlConnection
 
@@ -47,9 +58,11 @@ write-host "[*] Error: $ErrorMessage" -foreground "red"
 Break
 }
 
-# Query
+# -----------------------------------------------
+# Send query to server and process results
+# -----------------------------------------------
 $cmd = New-Object System.Data.SqlClient.SqlCommand($query,$conn)
 $results = $cmd.ExecuteReader()
-$IsSysAdmin = New-Object System.Data.DataTable
-$IsSysAdmin.Load($results)
-$IsSysAdmin
+$MyQueryResults = New-Object System.Data.DataTable
+$MyQueryResults.Load($results)
+$MyQueryResults
