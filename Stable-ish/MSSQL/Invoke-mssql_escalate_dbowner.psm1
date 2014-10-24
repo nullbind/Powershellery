@@ -1,4 +1,4 @@
-function Invoke-SqlServerDbElevateDbOwner
+function Invoke-mssql_escalate_dbowner
 {
     <#
 	.SYNOPSIS
