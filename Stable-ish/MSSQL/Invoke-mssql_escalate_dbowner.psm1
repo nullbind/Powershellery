@@ -171,7 +171,7 @@ function Invoke-MssqlEscalateDbowner
     # -------------------------------------------------
     if ($TableDatabases.rows.count -ne 0){	
 
-        write-host "[*] Checking if $ConnectUser the has db_owner role in any of them..."
+        write-host "[*] Checking if $ConnectUser has the db_owner role in any of them..."
 	    $TableDatabases | foreach {
 
 		[string]$CurrentDatabase = $_.databasename                    
