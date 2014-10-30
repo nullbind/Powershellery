@@ -19,6 +19,7 @@
 	an sql server on a trusted domain with altenative domain credentials.
 	cmdkey /add:acmedomain.sqlsrv1.com:51785 /user:acmedomain\user2 /pass:MyPassword!
 	.\sqlcmd.ps1 -SqlServerInstance "acmedomain.sqlsrv1.com,51785" -query "select SYSTEM_USER"
+	.\sqlcmd.ps1 -SqlServerInstance "acmedomain.sqlsrv1.com\myinstance" -query "select SYSTEM_USER"
 	cmdkey /del:acmedomain.sqlsrv1.com:51785
 
 #>
