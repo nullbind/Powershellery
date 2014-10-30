@@ -6,8 +6,21 @@
 	This script can be used to query sql servers and view the results.
 
 	.EXAMPLE
-	Exporting custom stored procedures from a remote SQL Server using a trusted connection.
-	PS C:\> Get-SqlServerSpSource -SQLServerInstance SQLSERVER1\SQLEXPRESS -query "select name from master..sysdatabases"
+	Below is the basic usage.
+	PS C:\> Get-SqlServerSpSource -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -query "select name from master..sysdatabases"
+    
+    	.EXAMPLE
+	Below is the basic usage.
+	PS C:\> Get-SqlServerSpSource -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -query "select name from master..sysdatabases"
+
+	.EXAMPLE
+	Run query against remote sql server that is on an untrusted domain with credentials from the same untrusted domain.  I'll
+	update the script to switches to automatically generate the credential manager entries later.  This can also be used to connect
+	an sql server on a trusted domain with altenative domain credentials.
+	cmdkey /add:acmedomain.sqlsrv1.com:51785 /user:acmedomain\user2 /pass:MyPassword!
+	.\sqlcmd.ps1 -SqlServerInstance "acmedomain.sqlsrv1.com,51785" -query "select SYSTEM_USER"
+	cmdkey /del:acmedomain.sqlsrv1.com:51785
+
 #>
 
 [CmdletBinding()]
