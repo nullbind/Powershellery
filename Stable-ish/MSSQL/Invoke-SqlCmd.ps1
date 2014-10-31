@@ -4,8 +4,8 @@
 
 	.DESCRIPTION
 	This script can be used to query SQL Servers and view the results without needing the binaries that ship with SQL Server.
-    It can be used with trusted connections, SQL Server logins, and alter domain credentials.  Authentication is supported
-    for both trusted and untrusted domains.
+	It can be used with trusted connections, SQL Server logins, and alter domain credentials.  Authentication is supported
+	for both trusted and untrusted domains.
 
 	.EXAMPLE
 	Below is an example of how to query a SQL Server using the current Windows user context or "trusted connection".
@@ -39,84 +39,89 @@
 
 Begin
 {
-    # -----------------------------------------------
-    # Connect to the sql server
-    # -----------------------------------------------
-    # Create fun connection object
-    $conn = New-Object System.Data.SqlClient.SqlConnection
+	# -----------------------------------------------
+	# Connect to the sql server
+	# -----------------------------------------------
 
-    # Check for domain credentials
-    if($SqlUser){
-        $DomainUserCheck = $SqlUser.Contains("\")
-    }
+	# Create fun connection object
+	$conn = New-Object System.Data.SqlClient.SqlConnection
 
-    # Set authentication type and create connection string
-    if($SqlUser -and $SqlPassword -and !$DomainUserCheck){
+	# Check if domain domain credentials were provided
+	if($SqlUser){
+		$DomainUserCheck = $SqlUser.Contains("\")
+	}
+
+	# Set authentication type and create connection string
+	if($SqlUser -and $SqlPassword -and !$DomainUserCheck){
     
-        # SQL login / alternative domain credentials
-        $conn.ConnectionString = "Server=$SqlServerInstance;Database=master;User ID=$SqlUser;Password=$SqlPass;"
-        [string]$ConnectUser = $SqlUser
-    }else{
+		# Setup connection to use SQL Server login
+		$conn.ConnectionString = "Server=$SqlServerInstance;Database=master;User ID=$SqlUser;Password=$SqlPass;"
+		[string]$ConnectUser = $SqlUser
+	}else{
 
-        # Create credentials management entry if a domain user is used
-        if ($DomainUserCheck -and (Test-Path  ("C:\Windows\System32\cmdkey.exe"))){   
+		# Create entry in Credential Manager if a domain user is used
+		if ($DomainUserCheck -and (Test-Path  ("C:\Windows\System32\cmdkey.exe"))){   
      		
-            Write-Output "[*] Attempting to authenticate to $SqlServerInstance with domain account $SqlUser..."
-            $SqlServerInstanceCol = $SqlServerInstance -replace ',', ':'
-	        $CredManCmd = 'cmdkey /add:'+$SqlServerInstanceCol+' /user:'+$SqlUser+' /pass:'+$SqlPass 
-            Write-Verbose "Command: $CredManCmd"
-            $ExecManCmd = invoke-expression $CredManCmd
-        }else{
+			# Status user
+			Write-Output "[*] Attempting to authenticate to $SqlServerInstance with domain account $SqlUser..."
+		
+			# Add entry so trusted connection with use alternative domain credentials
+			$SqlServerInstanceCol = $SqlServerInstance -replace ',', ':'
+			$CredManCmd = 'cmdkey /add:'+$SqlServerInstanceCol+' /user:'+$SqlUser+' /pass:'+$SqlPass 
+			Write-Verbose "Command: $CredManCmd"
+			$ExecManCmd = invoke-expression $CredManCmd
+        	}else{
+        		
+			# Status user
+			Write-Output "[*] Attempting to authenticate to $SqlServerInstance as the current Windows user..."
+        	}
 
-            Write-Output "[*] Attempting to authenticate to $SqlServerInstance as the current Windows user..."
-        }
+	        # Setup Trusted Connection
+	        $conn.ConnectionString = "Server=$SqlServerInstance;Database=master;Integrated Security=SSPI;"   
+	        $UserDomain = [Environment]::UserDomainName
+	        $Username = [Environment]::UserName
+	        $ConnectUser = "$UserDomain\$Username"
+    	}
 
-        # Trusted connection
-        $conn.ConnectionString = "Server=$SqlServerInstance;Database=master;Integrated Security=SSPI;"   
-        $UserDomain = [Environment]::UserDomainName
-        $Username = [Environment]::UserName
-        $ConnectUser = "$UserDomain\$Username"
-    }
-
-    # Attempt database connection
-    try{
-        $conn.Open()
-        write-host "[*] Connected." -foreground "green"
-    }catch{
-        $ErrorMessage = $_.Exception.Message
-        write-host "[*] Connection failed" -foreground "red"
-        write-host "[*] Error: $ErrorMessage" -foreground "red"
-        Break
-    }
+	# Attempt database connection
+	try{
+		$conn.Open()
+		write-host "[*] Connected." -foreground "green"
+	}catch{
+	        $ErrorMessage = $_.Exception.Message
+	        write-host "[*] Connection failed" -foreground "red"
+	        write-host "[*] Error: $ErrorMessage" -foreground "red"
+	        Break
+	}
 }
 Process
 {
 
-    # -----------------------------------------------
-    # Send query to server and process results
-    # -----------------------------------------------
-    $cmd = New-Object System.Data.SqlClient.SqlCommand($query,$conn)
-    $results = $cmd.ExecuteReader()
-    $MyQueryResults = New-Object System.Data.DataTable
-    $MyQueryResults.Load($results)
-    $MyQueryResults
+	# -----------------------------------------------
+   	# Send query to server and process results
+    	# -----------------------------------------------
+    	$cmd = New-Object System.Data.SqlClient.SqlCommand($query,$conn)
+    	$results = $cmd.ExecuteReader()
+    	$MyQueryResults = New-Object System.Data.DataTable
+    	$MyQueryResults.Load($results)
+    	$MyQueryResults
 
-    # Disconnect from database
-    $conn.Close()
+    	# Disconnect from database
+    	$conn.Close()
 }
 
 End
 {
-    # -----------------------------------------------
-    # Clean up 
-    # -----------------------------------------------
+	# -----------------------------------------------
+	# Clean up 
+	# -----------------------------------------------
 
-    # Remove credentials manager entry
-    if ($DomainUserCheck){
-        $CredManDel = 'cmdkey /delete:'+$SqlServerInstanceCol   
-        $ExecManDel = invoke-expression $CredManDel
-    }
+	# Remove credentials manager entry
+	if ($DomainUserCheck){
+		$CredManDel = 'cmdkey /delete:'+$SqlServerInstanceCol   
+		$ExecManDel = invoke-expression $CredManDel
+	}
 
-    # Status user
-    Write-Output "[*] Done." 
+	# Status user
+	Write-Output "[*] Done." 
  }
