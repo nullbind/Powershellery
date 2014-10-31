@@ -4,8 +4,7 @@
 
 	.DESCRIPTION
 	This script can be used to query SQL Servers and view the results without needing the binaries that ship with SQL Server.
-    It can be used with trusted connections, SQL Server logins, and alter domain credentials.  Authentication is supported
-    for both trusted and untrusted domains.
+	It can be used with trusted connections, SQL Server logins, and alter domain credentials.  Authentication is supported for both trusted and untrusted domains.
 
 	.EXAMPLE
 	Below is an example of how to query a SQL Server using the current Windows user context or "trusted connection".
