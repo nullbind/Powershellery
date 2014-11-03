@@ -27,8 +27,6 @@
 	Author: Scott Sutherland - 2014, NetSPI
 	Version: Invoke-SqlCmd.ps1 v1.0
 	Comments: This should work on SQL Server 2005 and Above.
-    #>
-
 #>
 
 [CmdletBinding()]
