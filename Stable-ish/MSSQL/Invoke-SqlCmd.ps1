@@ -18,6 +18,16 @@
 	.EXAMPLE
 	Below is an example of how to query a SQL Server using a SQL Server login".
 	PS C:\> Invoke-SQLCmd -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -query "select name from master..sysdatabases" -SqlUser MyUser -SqlPass MyPassword!
+	
+	.LINK
+	http://msdn.microsoft.com/en-us/library/system.data.sqlclient.sqlconnection%28v=vs.110%29.aspx
+	http://msdn.microsoft.com/en-us/library/system.data.sqlclient.sqlcommand%28v=vs.110%29.aspx
+	
+	.NOTES
+	Author: Scott Sutherland - 2014, NetSPI
+	Version: Invoke-SqlCmd.ps1 v1.0
+	Comments: This should work on SQL Server 2005 and Above.
+    #>
 
 #>
 
