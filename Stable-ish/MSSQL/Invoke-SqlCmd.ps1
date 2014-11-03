@@ -63,6 +63,7 @@ Begin
 	if($SqlUser -and $SqlPass -and !$DomainUserCheck){
     
 		# Setup connection to use SQL Server login
+		Write-Output "[*] Attempting to authenticate to $SqlServerInstance with SQL login $SqlUser..."
 		$conn.ConnectionString = "Server=$SqlServerInstance;Database=master;User ID=$SqlUser;Password=$SqlPass;"
 		[string]$ConnectUser = $SqlUser
 	}else{
