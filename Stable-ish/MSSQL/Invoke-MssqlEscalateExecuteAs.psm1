@@ -193,7 +193,9 @@ function Invoke-MssqlEscalateExecuteAs
     # Check if any users can be impersonated
     if ($TableImpUsers.rows.count -eq 0){
 
-	    Write-Host "[*] The current user doesn't have permissions to impersonate anyone." -foreground "red"
+	    Write-Host "[*] Sorry, the current user doesn't have permissions to impersonate anyone." -foreground "red"
+        Write-Host "[*] All done." 
+        break
     }else{
 	    $ImpUserCount = $TableImpUsers.rows.count      
 	    Write-Host "[*] Found $ImpUserCount users that can be impersonated:" 
@@ -319,9 +321,9 @@ function Invoke-MssqlEscalateExecuteAs
         }  
 
         # Close db connection
-        $conn.Close()                
+        $conn.Close()                        
     }else{
-         Write-Host "[*] Sorry, the $ConnectUser account can't impersonate anyone that is a sysadmin ." -foreground "red" 
+         Write-Host "[*] Sorry, the $ConnectUser account can't impersonate any sysadmins." -foreground "red" 
          Write-Host "[*] All done." 
     }    	
 }
