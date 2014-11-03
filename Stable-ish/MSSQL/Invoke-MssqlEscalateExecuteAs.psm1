@@ -1,9 +1,8 @@
 # TODO
-# - add alternative domain creds feature
-# - add arbitrary query feature
 # - make pretty
 # - update description and links
 # - fix double run bug
+# - fix alternative creds connection
 
 function Invoke-MssqlEscalateExecuteAs
 {
