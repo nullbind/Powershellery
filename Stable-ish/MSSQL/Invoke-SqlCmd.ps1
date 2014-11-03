@@ -60,7 +60,7 @@ Begin
 	}
 
 	# Set authentication type and create connection string
-	if($SqlUser -and $SqlPassword -and !$DomainUserCheck){
+	if($SqlUser -and $SqlPass -and !$DomainUserCheck){
     
 		# Setup connection to use SQL Server login
 		$conn.ConnectionString = "Server=$SqlServerInstance;Database=master;User ID=$SqlUser;Password=$SqlPass;"
