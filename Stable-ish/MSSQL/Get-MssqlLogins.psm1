@@ -21,6 +21,10 @@ function Get-MssqlLogins
 	    .EXAMPLE
 	    Below is an example of how to enumerate logins from a SQL Server using a SQL Server login".
 	    PS C:\> Invoke-SQLCmd -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -SqlUser MyUser -SqlPass MyPassword!
+
+	    .EXAMPLE
+	    Below is an example of how to enumerate logins from a SQL Server using a SQL Server login with non default fuzznum".
+	    PS C:\> Invoke-SQLCmd -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -SqlUser MyUser -SqlPass MyPassword! -FuzzNum 500
     
 	    .NOTES
 	    Author: Scott Sutherland - 2014, NetSPI
