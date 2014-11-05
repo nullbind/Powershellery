@@ -6,9 +6,9 @@ function Get-MssqlLogins
 
 	    .DESCRIPTION
 	    This script can be used to obtain a list of all logins from a SQL Server as a sysadmin or user with the PUBLIC role.
-      Selecting all of the logins from the master..syslogins table is not possible using a login with only the PUBLIC role.
-      However, it is possible to quickly enumerate SQL Server logins using the SUSER_SNAME function by fuzzing the principal_id
-      number parameter, because the principal ids assigned to logins are incremental.
+        Selecting all of the logins from the master..syslogins table is not possible using a login with only the PUBLIC role.
+        However, it is possible to quickly enumerate SQL Server logins using the SUSER_SNAME function by fuzzing the principal_id
+        number parameter, because the principal ids assigned to logins are incremental.
 
 	    .EXAMPLE
 	    Below is an example of how to enumerate logins from a SQL Server using the current Windows user context or "trusted connection".
@@ -161,7 +161,7 @@ function Get-MssqlLogins
 
     # Display initial login count
     $SqlLoginCount = $MyQueryResultsClean.Rows.Count
-    Write-Host "[*] Inital login count:$SqlLoginCount"
+    Write-Host "[*] $SqlLoginCount initial logins were found." -foreground "green"
 
     # ----------------------------------------------------
     # Validate sql login with sp_defaultdb error ananlysis
@@ -178,7 +178,8 @@ function Get-MssqlLogins
     $SqlLoginCheck.Columns.Add('name') | Out-Null 
     $SqlLoginCheck.Columns.Add('errormsg') | Out-Null 
 
-    # Check if sql logins are valid
+    # Check if sql logins are valid 
+    $MyQueryResultsClean | Sort-Object name
     #$MyQueryResultsClean | Sort-Object name | ForEach-Object {
 
         # Get sql login name
