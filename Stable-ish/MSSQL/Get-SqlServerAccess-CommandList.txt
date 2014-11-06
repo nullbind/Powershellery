@@ -1,4 +1,5 @@
-﻿# Working Commands
+# This is just a command shorcut list for the Get-SqlServerAccess script.
+# Working Commands
 
 Get-SQLServerAccess                                                                                         # Default output
 Get-SQLServerAccess -file c:\temp\servers.txt                                                               # Default output, but pull additional sql server list from file
