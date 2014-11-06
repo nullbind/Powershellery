@@ -1,4 +1,4 @@
-function Get-MssqlLogins
+function Get-SqlServerLogins
 {
     <#
         .SYNOPSIS
@@ -13,27 +13,27 @@ function Get-MssqlLogins
 
         .EXAMPLE
         Below is an example of how to enumerate logins from a SQL Server using the current Windows user context or "trusted connection".
-        PS C:\> Invoke-SQLCmd -SQLServerInstance "SQLSERVER1\SQLEXPRESS"
+        PS C:\> Get-SqlServerLogins -SQLServerInstance "SQLSERVER1\SQLEXPRESS"
     
         .EXAMPLE
         Below is an example of how to enumerate logins from a SQL Server using alternative domain credentials.
-        PS C:\> Invoke-SQLCmd -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -SqlUser domain\user -SqlPass MyPassword!
+        PS C:\> Get-SqlServerLogins -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -SqlUser domain\user -SqlPass MyPassword!
 
         .EXAMPLE
         Below is an example of how to enumerate logins from a SQL Server using a SQL Server login".
-        PS C:\> Invoke-SQLCmd -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -SqlUser MyUser -SqlPass MyPassword!
+        PS C:\> Get-SqlServerLogins -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -SqlUser MyUser -SqlPass MyPassword!
 
         .EXAMPLE
         Below is an example of how to enumerate logins from a SQL Server using a SQL Server login".
-        PS C:\> Invoke-SQLCmd -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -SqlUser MyUser -SqlPass MyPassword! | Export-Csv c:\temp\sqllogins.csv -NoTypeInformation
+        PS C:\> Get-SqlServerLogins -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -SqlUser MyUser -SqlPass MyPassword! | Export-Csv c:\temp\sqllogins.csv -NoTypeInformation
 
         .EXAMPLE
         Below is an example of how to enumerate logins from a SQL Server using a SQL Server login with non default fuzznum".
-        PS C:\> Invoke-SQLCmd -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -SqlUser MyUser -SqlPass MyPassword! -FuzzNum 500
+        PS C:\> Get-SqlServerLogins -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -SqlUser MyUser -SqlPass MyPassword! -FuzzNum 500
     
         .NOTES
         Author: Scott Sutherland - 2014, NetSPI
-        Version: Get-MssqlLogins v1.0
+        Version: Get-SqlServerLogins v1.0
         Comments: This should work on SQL Server 2005 and Above.
 
     #>
