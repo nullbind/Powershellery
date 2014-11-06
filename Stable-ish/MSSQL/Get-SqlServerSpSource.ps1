@@ -14,7 +14,7 @@
 	   PS C:\> Get-SqlServerSpSource -SQLServerInstance SQLSERVER1\SQLEXPRESS
 
 	.EXAMPLE
-	   Exporting custom stored procedures from a remote SQL Server using a SQL Login.
+	   Exporting custom stored procedures from a remote SQL Server using a SQL Login. 
 
 	   PS C:\> Get-SqlServerSpSource -SQLServerInstance SQLSERVER1\SQLEXPRESS -SqlUser MyUser -SqlPass MyPass
 
