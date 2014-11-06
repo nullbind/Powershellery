@@ -2,7 +2,7 @@ function Invoke-SqlServerEscalateDbowner
 {
     <#
 	.SYNOPSIS
-	   This script can be used escalate privileges from a db_owner to a sysadmin on SQL Server.
+	   This script can be used escalate privileges from a db_owner to a sysadmin on SQL Server. 
 
 	.DESCRIPTION
 	   This script can be used escalate privileges from a db_owner to a sysadmin on SQL Server.This is 
