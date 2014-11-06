@@ -9,15 +9,15 @@
 
     .EXAMPLE
     Below is an example of how to query a SQL Server using the current Windows user context or "trusted connection".
-    PS C:\> Invoke-SQLCmd -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -query "select name from master..sysdatabases"
+    PS C:\> .\Invoke-SqlServerCmd.ps1 -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -query "select name from master..sysdatabases"
     
     .EXAMPLE
     Below is an example of how to query a SQL Server using alternative domain credentials.
-    PS C:\> Invoke-SQLCmd -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -query "select name from master..sysdatabases" -SqlUser domain\user -SqlPass MyPassword!
+    PS C:\> .\Invoke-SqlServerCmd.ps1 -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -query "select name from master..sysdatabases" -SqlUser domain\user -SqlPass MyPassword!
 
     .EXAMPLE
     Below is an example of how to query a SQL Server using a SQL Server login".
-    PS C:\> Invoke-SQLCmd -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -query "select name from master..sysdatabases" -SqlUser MyUser -SqlPass MyPassword!
+    PS C:\> .\Invoke-SqlServerCmd.ps1 -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -query "select name from master..sysdatabases" -SqlUser MyUser -SqlPass MyPassword!
 
     .LINK
     http://msdn.microsoft.com/en-us/library/system.data.sqlclient.sqlconnection%28v=vs.110%29.aspx
