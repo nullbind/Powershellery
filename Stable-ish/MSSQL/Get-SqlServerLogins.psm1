@@ -13,7 +13,7 @@ function Get-SqlServerLogins
 
         .EXAMPLE
         Below is an example of how to enumerate logins from a SQL Server using the current Windows user context or "trusted connection".
-        PS C:\> Get-SqlServerLogins -SQLServerInstance "SQLSERVER1\SQLEXPRESS"
+        PS C:\> Get-SqlServerLogins -SQLServerInstance "SQLSERVER1\SQLEXPRESS" 
     
         .EXAMPLE
         Below is an example of how to enumerate logins from a SQL Server using alternative domain credentials.
