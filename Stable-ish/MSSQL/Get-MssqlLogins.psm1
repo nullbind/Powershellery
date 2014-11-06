@@ -6,9 +6,10 @@ function Get-MssqlLogins
 
 	    .DESCRIPTION
 	    This script can be used to obtain a list of all logins from a SQL Server as a sysadmin or user with the PUBLIC role.
-        Selecting all of the logins from the master..syslogins table is not possible using a login with only the PUBLIC role.
-        However, it is possible to quickly enumerate SQL Server logins using the SUSER_SNAME function by fuzzing the principal_id
-        number parameter, because the principal ids assigned to logins are incremental.
+	    Selecting all of the logins from the master..syslogins table is not possible using a login with only the PUBLIC role.
+	    However, it is possible to quickly enumerate SQL Server logins using the SUSER_SNAME function by fuzzing the principal_id
+	    number parameter, because the principal ids assigned to logins are incremental.  Once a user list is enumerated they can 
+	    be verified via sp_defaultdb error ananlysis.  This is important, because not all of sid resolved will be SQL logins.
 
 	    .EXAMPLE
 	    Below is an example of how to enumerate logins from a SQL Server using the current Windows user context or "trusted connection".
@@ -21,6 +22,10 @@ function Get-MssqlLogins
 	    .EXAMPLE
 	    Below is an example of how to enumerate logins from a SQL Server using a SQL Server login".
 	    PS C:\> Invoke-SQLCmd -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -SqlUser MyUser -SqlPass MyPassword!
+
+	    .EXAMPLE
+	    Below is an example of how to enumerate logins from a SQL Server using a SQL Server login".
+	    PS C:\> Invoke-SQLCmd -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -SqlUser MyUser -SqlPass MyPassword! | Export-Csv c:\temp\sqllogins.csv -NoTypeInformation
 
 	    .EXAMPLE
 	    Below is an example of how to enumerate logins from a SQL Server using a SQL Server login with non default fuzznum".
@@ -119,8 +124,8 @@ function Get-MssqlLogins
     # -----------------------------------------------
     # Enumerate sql server logins with SUSER_NAME()
     # -----------------------------------------------
-    write-host "[*] FuzzNum set to $FuzzNum." 
-    write-host "[*] Enumerating users..."
+    write-host "[*] Setting up to fuzz $FuzzNum SQL Server logins." 
+    write-host "[*] Enumerating logins..."
 
     # Open database connection
     $conn.Open()
@@ -148,7 +153,7 @@ function Get-MssqlLogins
         $results = $cmd.ExecuteReader()
         $MyQueryResults.Load($results)
     }
-    while ($PrincipalID -le $FuzzNum)    
+    while ($PrincipalID -le $FuzzNum-1)    
 
     # Filter list of sql logins
     $MyQueryResults | select name -Unique | Where-Object {$_.name -notlike "*##*"} | Where-Object {$_.name -notlike ""} | ForEach-Object {
@@ -165,7 +170,7 @@ function Get-MssqlLogins
 
     # Display initial login count
     $SqlLoginCount = $MyQueryResultsClean.Rows.Count
-    Write-Host "[*] $SqlLoginCount initial logins were found." -foreground "green"
+    Write-Verbose "[*] $SqlLoginCount initial logins were found." 
 
     # ----------------------------------------------------
     # Validate sql login with sp_defaultdb error ananlysis
@@ -178,30 +183,43 @@ function Get-MssqlLogins
     $conn.Open()
 
     # Create table to store results
-    $SqlLoginCheck = New-Object System.Data.DataTable
-    $SqlLoginCheck.Columns.Add('name') | Out-Null 
-    $SqlLoginCheck.Columns.Add('errormsg') | Out-Null 
+    $SqlLoginVerified = New-Object System.Data.DataTable
+    $SqlLoginVerified.Columns.Add('name') | Out-Null 
 
     # Check if sql logins are valid 
-    $MyQueryResultsClean | Sort-Object name
-    #$MyQueryResultsClean | Sort-Object name | ForEach-Object {
+    #$MyQueryResultsClean | Sort-Object name
+    $MyQueryResultsClean | Sort-Object name | ForEach-Object {
 
         # Get sql login name
-        #$SqlLoginNameTest = $_.name
+        $SqlLoginNameTest = $_.name
     
         # Setup query
-        #$query = "EXEC sp_defaultdb '$SqlLoginNameTest', 'NOTAREALDATABASE1234ABCD'"
+        $query = "EXEC sp_defaultdb '$SqlLoginNameTest', 'NOTAREALDATABASE1234ABCD'"
 
         # Execute query
-        #$cmd = New-Object System.Data.SqlClient.SqlCommand($query,$conn)
+        $cmd = New-Object System.Data.SqlClient.SqlCommand($query,$conn)
 
-        # Parse results
-        #$results = $cmd.ExecuteReader()
-        #SqlLoginCheck.Load($results)
-    #}
+        try{
+            $results = $cmd.ExecuteReader()
+        }catch{
+            $ErrorMessage = $_.Exception.Message    
+            if ($ErrorMessage -like "*alter the login*"){
+                $SqlLoginVerified.Rows.Add($SqlLoginNameTest) | Out-Null 
+            }                    
+        }
+    }
 
     # Close database connection
     $conn.Close()
+
+    # Display verified logins
+    $SqlLoginVerifiedCount = $SqlLoginVerified.Rows.Count
+    if ($SqlLoginVerifiedCount){
+        Write-Host "[*] $SqlLoginVerifiedCount logins verified:" -ForegroundColor "green"
+        $SqlLoginVerified | select name -Unique| Sort-Object name 
+    }else{
+        Write-Host "[*] No verified logins found." -ForegroundColor "red" 
+    }
 
     # -----------------------------------------------
     # Clean up credentials manager entry
