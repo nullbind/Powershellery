@@ -1,7 +1,3 @@
-# Author: Scott Sutherland 2013, NetSPI
-# Version: Get-SQLServerAccess v.1
-# Requirements: Powershell v.3
-
 function Get-SQLServerAccess
 {	
 	<#
@@ -290,6 +286,11 @@ function Get-SQLServerAccess
 	   http://www.netspi.com
 	   http://support.microsoft.com/?kbid=304721 to figure out workstation vs server
 	   http://msdn.microsoft.com/en-us/library/windows/desktop/ms724832(v=vs.85).aspx
+	   
+	 .NOTES
+	   Author: Scott Sutherland - 2014, NetSPI
+	   Version: Get-SqlServerAccess.psm1 v1.0
+	   Comments: Should work on SQL Server 2005 and Above.   Requires PowerShell v3.
 	
 	#>
   [CmdletBinding()]
