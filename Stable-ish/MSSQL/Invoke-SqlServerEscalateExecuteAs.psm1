@@ -1,6 +1,3 @@
-# - fix double run bug
-# - fix alternative creds connection
-
 function Invoke-SqlServerEscalateExecuteAs
 {
     <#
@@ -61,6 +58,10 @@ function Invoke-SqlServerEscalateExecuteAs
 	   Author: Scott Sutherland - 2014, NetSPI
 	   Version: Invoke-SqlServerEscalateExecuteAs.psm1 v1.0
 	   Comments: This should work on SQL Server 2005 and Above.
+	   
+	.TODO
+	fix double run bug
+	fix alternative creds connection use
     #>
 
   [CmdletBinding()]
