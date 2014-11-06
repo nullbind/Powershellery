@@ -1,10 +1,7 @@
-# TODO
-# - make pretty
-# - update description and links
 # - fix double run bug
 # - fix alternative creds connection
 
-function Invoke-MssqlEscalateExecuteAs
+function Invoke-SqlServerEscalateExecuteAs
 {
     <#
 	.SYNOPSIS
@@ -19,7 +16,7 @@ function Invoke-MssqlEscalateExecuteAs
 	.EXAMPLE
 	Adding the current user to the syadmin role if the user has permissions to impersonate the sa account.
 
-	PS C:\> Invoke-MssqlEscalateExecuteAs -SqlUser myappuser -SqlPass MyPassword! -SqlServerInstance SQLServer1\SQLEXPRESS
+	PS C:\> Invoke-SqlServerEscalateExecuteAs -SqlUser myappuser -SqlPass MyPassword! -SqlServerInstance SQLServer1\SQLEXPRESS
 	[*] Attempting to Connect to SQLServer\SQLEXPRESS as myappuser...
 	[*] Connected.
 	[*] Enumerating users that myappuser can impersonate...
@@ -39,7 +36,7 @@ function Invoke-MssqlEscalateExecuteAs
 	.EXAMPLE
 	Creating a new sysadmin as a user with permissions to impersonate the sa account.
 
-	PS C:\> Invoke-MssqlEscalateExecuteAs -SqlUser myappuser -SqlPass MyPassword! -SqlServerInstance SQLServer1\SQLEXPRESS -NewUser eviladmin -NewPass MyPassword!
+	PS C:\> Invoke-SqlServerEscalateExecuteAs -SqlUser myappuser -SqlPass MyPassword! -SqlServerInstance SQLServer1\SQLEXPRESS -NewUser eviladmin -NewPass MyPassword!
 	[*] Attempting to Connect to SQLServer\SQLEXPRESS as myappuser...
 	[*] Connected.
 	[*] Enumerating users that myappuser can impersonate...
@@ -62,7 +59,7 @@ function Invoke-MssqlEscalateExecuteAs
 
 	.NOTES
 	   Author: Scott Sutherland - 2014, NetSPI
-	   Version: Invoke-MssqlEscalateExecuteAs v1.0
+	   Version: Invoke-SqlServerEscalateExecuteAs.psm1 v1.0
 	   Comments: This should work on SQL Server 2005 and Above.
     #>
 
