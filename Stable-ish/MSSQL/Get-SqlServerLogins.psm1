@@ -5,11 +5,14 @@ function Get-SqlServerLogins
         This script can be used to obtain a list of all logins from a SQL Server as a sysadmin or user with the PUBLIC role.
 
         .DESCRIPTION
-        This script can be used to obtain a list of all logins from a SQL Server as a sysadmin or user with the PUBLIC role.
-        Selecting all of the logins from the master..syslogins table is not possible using a login with only the PUBLIC role.
-        However, it is possible to quickly enumerate SQL Server logins using the SUSER_SNAME function by fuzzing the principal_id
-        number parameter, because the principal ids assigned to logins are incremental.  Once a user list is enumerated they can 
-        be verified via sp_defaultdb error ananlysis.  This is important, because not all of sid resolved will be SQL logins.
+        This module can be used to obtain a list of all logins from a SQL Server with any
+        login. Selecting all of the logins from the master..syslogins table is restricted 
+        to sysadmins.  However, logins with the PUBLIC role (everyone) can quickly enumerate
+        all SQL Server logins using the SUSER_SNAME function by fuzzing the principal_id parameter. 
+        This is pretty simple, because the principal ids assigned to logins are incremental.  Once 
+        logins have been enumerated they can be verified via sp_defaultdb error ananlysis.  
+        This is important, because not all of the principal ids resolve to SQL logins.  Some resolve
+        to roles etc.
 
         .EXAMPLE
         Below is an example of how to enumerate logins from a SQL Server using the current Windows user context or "trusted connection".
@@ -31,6 +34,10 @@ function Get-SqlServerLogins
         Below is an example of how to enumerate logins from a SQL Server using a SQL Server login with non default fuzznum".
         PS C:\> Get-SqlServerLogins -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -SqlUser MyUser -SqlPass MyPassword! -FuzzNum 500
     
+        .LINKS
+        www.netspi.com
+        http://msdn.microsoft.com/en-us/library/ms174427.aspx
+        
         .NOTES
         Author: Scott Sutherland - 2014, NetSPI
         Version: Get-SqlServerLogins v1.0
