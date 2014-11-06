@@ -11,7 +11,7 @@ function Get-SqlServerSpSource
 	   This script can accept SQL Credentials or use the current user's trusted connection.
 
 	.EXAMPLE
-	   Exporting custom stored procedures from a remote SQL Server using a trusted connection.
+	   Exporting custom stored procedures from a remote SQL Server using a trusted connection. 
 
 	   PS C:\> Get-SqlServerSpSource -SQLServerInstance SQLSERVER1\SQLEXPRESS
 
