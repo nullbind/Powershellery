@@ -21,7 +21,7 @@
 
     .LINK
     http://msdn.microsoft.com/en-us/library/system.data.sqlclient.sqlconnection%28v=vs.110%29.aspx
-    http://msdn.microsoft.com/en-us/library/system.data.sqlclient.sqlcommand%28v=vs.110%29.aspx
+    http://msdn.microsoft.com/en-us/library/system.data.sqlclient.sqlcommand%28v=vs.110%29.aspx 
 
     .NOTES
     Author: Scott Sutherland - 2014, NetSPI
