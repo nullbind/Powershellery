@@ -767,7 +767,7 @@ function Get-SQLServerAccess
       # Display final results
       #-------------------------
       $EndTime = Get-Date
-      $TotalTime = NEW-TIMESPAN –Start $Starttime –End $Endtime   
+      $TotalTime = NEW-TIMESPAN Â–Start $Starttime Â–End $Endtime   
       $SQLServerLoginCount = $TableSQL.Rows.count
       
       #Display total servers and time                
