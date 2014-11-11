@@ -185,7 +185,7 @@ function Get-WindowsLogins
     $GetDaSid | ForEach-Object { [byte[]]$DaSid = $_.dasid}
     $DaSidDirty = [System.BitConverter]::ToString($DaSid)
     $DaSidNoTrunct = $DaSidDirty.Replace("-","")
-    $DaSidTrunct = $DaSidNoTrunct.Substring(0,48)
+    $DaSidTrunct = $DaSidNoTrunct.Substring(0,47)
 
     # Status user 
     Write-Host  -Object "[*] Domain SID found: $DaSidTrunct"
@@ -217,10 +217,10 @@ function Get-WindowsLogins
         $PrincipalID++
 
         # Convert to $PrincipalID to hex
-        $PrincipalIDHex = [System.BitConverter]::ToString($PrincipalID)
+        $PrincipalIDHex = '{0:x}' -f $PrincipalID
 
         # Pad to 8 bytes
-        $PrincipalIDPad = $PrincipalIDHex.PadRight(8,'0')
+        $PrincipalIDPad = $PrincipalIDHex.PadRight(9,'0')
 
         # Create users rid
         #[byte[]]$Rid = "0x$DaSidTrunct$PrincipalIDPad"  
