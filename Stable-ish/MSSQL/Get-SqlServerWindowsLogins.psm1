@@ -219,6 +219,12 @@ function Get-WindowsLogins
         # incrememt number
         $PrincipalID++
 
+        # Convert to hex
+
+        # Pad to 000020000 .padright
+
+        # Add domain sid
+
         # Setup query
         $query = "SELECT SUSER_NAME($PrincipalID) as name"
 
