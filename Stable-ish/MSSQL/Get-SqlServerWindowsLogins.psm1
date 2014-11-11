@@ -183,11 +183,9 @@ function Get-WindowsLogins
     $GetDaSid = New-Object System.Data.DataTable
     $GetDaSid.Load($results)
     $GetDaSid | ForEach-Object { [byte[]]$DaSid = $_.dasid}
-
     $DaSidDirty = [System.BitConverter]::ToString($DaSid)
     $DaSidNoTrunct = $DaSidDirty.Replace("-","")
-    $DaSidTrunct = $DaSidNoTrunct.Substring(0,47)
-
+    $DaSidTrunct = $DaSidNoTrunct.Substring(0,48)
 
     # Status user 
     Write-Host  -Object "[*] Domain SID found: $DaSidTrunct"
@@ -211,22 +209,26 @@ function Get-WindowsLogins
     $null = $MyQueryResultsClean.Columns.Add('name') 
 
     # Creat loop to fuzz principal_id number
-    # [System.Convert]::ToUInt16(0x0a) to decimal from hex
-    $PrincipalID = 0
+    $PrincipalID = 0    
 
     do 
     {
         # incrememt number
         $PrincipalID++
 
-        # Convert to hex
+        # Convert to $PrincipalID to hex
+        $PrincipalIDHex = [System.BitConverter]::ToString($PrincipalID)
 
-        # Pad to 000020000 .padright
+        # Pad to 8 bytes
+        $PrincipalIDPad = $PrincipalIDHex.PadRight(8,'0')
 
-        # Add domain sid
+        # Create users rid
+        #[byte[]]$Rid = "0x$DaSidTrunct$PrincipalIDPad"  
+        $Rid = "0x$DaSidTrunct$PrincipalIDPad"  
+        $Rid      
 
         # Setup query
-        $query = "SELECT SUSER_NAME($PrincipalID) as name"
+        $query = "SELECT SUSER_NAME($Rid) as name"
 
         # Execute query
         $cmd = New-Object  -TypeName System.Data.SqlClient.SqlCommand -ArgumentList ($query, $conn)
