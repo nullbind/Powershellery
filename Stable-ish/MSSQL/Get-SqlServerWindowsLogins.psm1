@@ -182,11 +182,15 @@ function Get-WindowsLogins
     # Parse query
     $GetDaSid = New-Object System.Data.DataTable
     $GetDaSid.Load($results)
-    $GetDaSid | ForEach-Object { $DaSid = $_.dasid}
-    #$DaSidDec = [System.Convert]::ToInt32($DaSid,16)
+    $GetDaSid | ForEach-Object { [byte[]]$DaSid = $_.dasid}
+
+    $DaSidDirty = [System.BitConverter]::ToString($DaSid)
+    $DaSidNoTrunct = $DaSidDirty.Replace("-","")
+    $DaSidTrunct = $DaSidNoTrunct.Substring(0,47)
+
 
     # Status user 
-    Write-Host  -Object "[*] SID found: $DaSid"
+    Write-Host  -Object "[*] Domain SID found: $DaSidTrunct"
     
     # Close database connection
     $conn.Close()
@@ -207,8 +211,7 @@ function Get-WindowsLogins
     $null = $MyQueryResultsClean.Columns.Add('name') 
 
     # Creat loop to fuzz principal_id number
-    # [System.Convert]::ToUInt16(0x0a) todecimal
-    # [System.Convert]::ToInt32('0x0a',16) tohex
+    # [System.Convert]::ToUInt16(0x0a) to decimal from hex
     $PrincipalID = 0
 
     do 
