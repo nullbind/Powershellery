@@ -38,6 +38,7 @@ function Get-DomainAccounts
         .LINKS
         www.netspi.com
         http://technet.microsoft.com/en-us/library/cc778824%28v=ws.10%29.aspx
+        http://msdn.microsoft.com/en-us/library/ms174427.aspx
         
         .NOTES
         Author: Scott Sutherland - 2014, NetSPI
