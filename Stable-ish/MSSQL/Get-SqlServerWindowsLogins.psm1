@@ -225,7 +225,7 @@ function Get-WindowsLogins
         # Create users rid
         #[byte[]]$Rid = "0x$DaSidTrunct$PrincipalIDPad"  
         $Rid = "0x$DaSidTrunct$PrincipalIDPad"  
-        $Rid      
+        Write-Verbose "TESTING RID: $Rid"
 
         # Setup query
         $query = "select SUSER_SNAME($Rid) as name"
@@ -236,6 +236,7 @@ function Get-WindowsLogins
         # Parse results
         $results = $cmd.ExecuteReader()
         $MyQueryResults.Load($results)
+        $MyQueryResults | select name -Unique
     }
     while ($PrincipalID -le $FuzzNum-1)    
 
