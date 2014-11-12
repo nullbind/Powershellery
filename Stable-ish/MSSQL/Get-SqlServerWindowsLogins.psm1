@@ -236,7 +236,10 @@ function Get-WindowsLogins
         # Parse results
         $results = $cmd.ExecuteReader()
         $MyQueryResults.Load($results)
-        $MyQueryResults | select name -Unique
+        $EnumUser = $MyQueryResults | select name -Unique -Last 1 
+        if($EnumUser -like "*\*"){
+            $EnumUser
+        }
     }
     while ($PrincipalID -le $FuzzNum-1)    
 
