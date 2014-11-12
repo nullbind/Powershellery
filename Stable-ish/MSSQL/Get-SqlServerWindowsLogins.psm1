@@ -269,7 +269,7 @@ function Get-DomainAccounts
 
     # Display initial login count
     $SqlLoginCount = $MyQueryResultsClean.Rows.Count
-    Write-Verbose  -Message "[*] $SqlLoginCount initial logins were found." 
+    Write-Host "[*] $SqlLoginCount domain accounts / groups were found." -ForegroundColor Green
 
     $MyQueryResultsClean | Select-Object name -Unique|Sort-Object  -Property name
 
