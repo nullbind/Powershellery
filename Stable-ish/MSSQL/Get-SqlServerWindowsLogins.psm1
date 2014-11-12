@@ -185,7 +185,7 @@ function Get-WindowsLogins
     $GetDaSid | ForEach-Object { [byte[]]$DaSid = $_.dasid}
     $DaSidDirty = [System.BitConverter]::ToString($DaSid)
     $DaSidNoTrunct = $DaSidDirty.Replace("-","")
-    $DaSidTrunct = $DaSidNoTrunct.Substring(0,47)
+    $DaSidTrunct = $DaSidNoTrunct.Substring(0,48)
 
     # Status user 
     Write-Host  -Object "[*] Domain SID found: $DaSidTrunct"
@@ -220,7 +220,7 @@ function Get-WindowsLogins
         $PrincipalIDHex = '{0:x}' -f $PrincipalID
 
         # Pad to 8 bytes
-        $PrincipalIDPad = $PrincipalIDHex.PadRight(9,'0')
+        $PrincipalIDPad = $PrincipalIDHex.PadRight(8,'0')
 
         # Create users rid
         #[byte[]]$Rid = "0x$DaSidTrunct$PrincipalIDPad"  
@@ -228,7 +228,7 @@ function Get-WindowsLogins
         $Rid      
 
         # Setup query
-        $query = "SELECT SUSER_NAME($Rid) as name"
+        $query = "select SUSER_SNAME($Rid) as name"
 
         # Execute query
         $cmd = New-Object  -TypeName System.Data.SqlClient.SqlCommand -ArgumentList ($query, $conn)
