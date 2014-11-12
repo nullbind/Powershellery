@@ -39,6 +39,7 @@ function Get-DomainAccounts
         www.netspi.com
         http://technet.microsoft.com/en-us/library/cc778824%28v=ws.10%29.aspx
         http://msdn.microsoft.com/en-us/library/ms174427.aspx
+        http://msdn.microsoft.com/en-us/library/ms186271.aspx
         
         .NOTES
         Author: Scott Sutherland - 2014, NetSPI
@@ -270,67 +271,7 @@ function Get-DomainAccounts
     $SqlLoginCount = $MyQueryResultsClean.Rows.Count
     Write-Verbose  -Message "[*] $SqlLoginCount initial logins were found." 
 
-
-    # ----------------------------------------------------
-    # Validate sql login with sp_defaultdb error ananlysis
-    # ----------------------------------------------------
-
-    # Status user
-    Write-Host  -Object '[*] Verifying the logins...'
-
-    # Open database connection
-    $conn.Open()
-
-    # Create table to store results
-    $SqlLoginVerified = New-Object  -TypeName System.Data.DataTable
-    $null = $SqlLoginVerified.Columns.Add('name') 
-
-    # Check if sql logins are valid 
-    #$MyQueryResultsClean | Sort-Object name
-    $MyQueryResultsClean |
-    Sort-Object  -Property name |
-    ForEach-Object  -Process {
-        # Get sql login name
-        $SqlLoginNameTest = $_.name
-    
-        # Setup query
-        $query = "EXEC sp_defaultdb '$SqlLoginNameTest', 'NOTAREALDATABASE1234ABCD'"
-
-        # Execute query
-        $cmd = New-Object  -TypeName System.Data.SqlClient.SqlCommand -ArgumentList ($query, $conn)
-
-        try
-        {
-            $results = $cmd.ExecuteReader()
-        }
-        catch
-        {
-            $ErrorMessage = $_.Exception.Message  
-
-            # Check the error message for a signature that means the login is real
-            if (($ErrorMessage -like '*NOTAREALDATABASE*') -or ($ErrorMessage -like '*alter the login*'))
-            {
-                $null = $SqlLoginVerified.Rows.Add($SqlLoginNameTest)
-            }                  
-        }
-    }
-
-    # Close database connection
-    $conn.Close()
-
-    # Display verified logins
-    $SqlLoginVerifiedCount = $SqlLoginVerified.Rows.Count
-    if ($SqlLoginVerifiedCount -ge 1)
-    {
-        Write-Host  -Object "[*] $SqlLoginVerifiedCount logins verified:" -ForegroundColor 'green'
-        $SqlLoginVerified |
-        Select-Object name -Unique|
-        Sort-Object  -Property name 
-    }
-    else
-    {
-        Write-Host  -Object '[*] No verified Windows accounts found.' -ForegroundColor 'red'
-    }
+    $MyQueryResultsClean | Select-Object name -Unique|Sort-Object  -Property name
 
     # Clean up credentials manager entry
     if ($DomainUserCheck)
