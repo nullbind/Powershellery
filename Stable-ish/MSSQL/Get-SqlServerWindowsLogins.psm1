@@ -1,12 +1,12 @@
-function Get-WindowsLogins
+function Get-DomainAccounts
 {
     <#
         .SYNOPSIS
-        This script can be used to obtain a list of Windows accounts associated with the domain of the SQL Server
+        This script can be used to obtain a list of Windows domain accounts associated with the domain of the SQL Server
         as any user with the PUBLIC role.
 
         .DESCRIPTION
-        This module can be used to obtain a list of all Windows accounts associated with the domain of the 
+        This module can be used to obtain a list of all Windows domain accounts associated with the domain of the 
         SQL Server using any login. Selecting that information is typically restricted 
         to sysadmins.  However, logins with the PUBLIC role (everyone) can enumerate
         all Windows accounts using the SUSER_SNAME function by fuzzing the principal_id parameter. 
@@ -17,31 +17,31 @@ function Get-WindowsLogins
 
         .EXAMPLE
         Below is an example of how to enumerate windows accounts from a SQL Server using the current Windows user context or "trusted connection".
-        PS C:\> Get-SqlServerLogins -SQLServerInstance "SQLSERVER1\SQLEXPRESS" 
+        PS C:\> Get-DomainAccounts -SQLServerInstance "SQLSERVER1\SQLEXPRESS" 
     
         .EXAMPLE
         Below is an example of how to enumerate windows accounts from a SQL Server using alternative domain credentials.
-        PS C:\> Get-SqlServerLogins -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -SqlUser domain\user -SqlPass MyPassword!
+        PS C:\> Get-DomainAccounts -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -SqlUser domain\user -SqlPass MyPassword!
 
         .EXAMPLE
         Below is an example of how to enumerate windows accounts from a SQL Server using a SQL Server login".
-        PS C:\> Get-SqlServerLogins -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -SqlUser MyUser -SqlPass MyPassword!
+        PS C:\> Get-DomainAccounts -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -SqlUser MyUser -SqlPass MyPassword!
 
         .EXAMPLE
         Below is an example of how to enumerate windows accounts from a SQL Server using a SQL Server login".
-        PS C:\> Get-SqlServerLogins -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -SqlUser MyUser -SqlPass MyPassword! | Export-Csv c:\temp\sqllogins.csv -NoTypeInformation
+        PS C:\> Get-DomainAccounts -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -SqlUser MyUser -SqlPass MyPassword! | Export-Csv c:\temp\DomainAccounts.csv -NoTypeInformation
 
         .EXAMPLE
         Below is an example of how to enumerate windows accounts from a SQL Server using a SQL Server login with non default fuzznum".
-        PS C:\> Get-SqlServerLogins -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -SqlUser MyUser -SqlPass MyPassword! -FuzzNum 500
+        PS C:\> Get-DomainAccounts -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -SqlUser MyUser -SqlPass MyPassword! -FuzzNum 10000
     
         .LINKS
         www.netspi.com
-        http://msdn.microsoft.com/en-us/library/ms174427.aspx
+        http://technet.microsoft.com/en-us/library/cc778824%28v=ws.10%29.aspx
         
         .NOTES
         Author: Scott Sutherland - 2014, NetSPI
-        Version: Get-WindowsLogins v1.0
+        Version: Get-DomainAccounts v1.0
         Comments: This should work on SQL Server 2005 and Above.
 
     #>
@@ -197,7 +197,7 @@ function Get-WindowsLogins
     # -----------------------------------------------
     # Enumerate windows accounts with SUSER_NAME()
     # -----------------------------------------------
-    Write-Host  -Object "[*] Setting up to fuzz $FuzzNum SQL Server logins." 
+    Write-Host  -Object "[*] Setting up to fuzz $FuzzNum Windows domain accounts." 
     Write-Host  -Object '[*] Enumerating logins...'
 
     # Open database connection
@@ -328,7 +328,7 @@ function Get-WindowsLogins
     }
     else
     {
-        Write-Host  -Object '[*] No verified logins found.' -ForegroundColor 'red'
+        Write-Host  -Object '[*] No verified Windows accounts found.' -ForegroundColor 'red'
     }
 
     # Clean up credentials manager entry
