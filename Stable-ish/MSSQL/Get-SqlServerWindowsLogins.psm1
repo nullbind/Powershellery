@@ -11,9 +11,7 @@ function Get-DomainAccounts
         to sysadmins.  However, logins with the PUBLIC role (everyone) can enumerate
         all Windows accounts using the SUSER_SNAME function by fuzzing the principal_id parameter. 
         In the domain user context the principal_id = rid.  So it can be fuzzed by getting the domain sid
-        and fuzzing the last few bytes to enumerate domain users. Once accounts have been enumerated they 
-        can be verified via sp_defaultdb error ananlysis.  This is important, because not all of the principal
-         ids resolve to Windows accounts.  Some resolve to groups etc.
+        and fuzzing the last few bytes to enumerate domain users, computers, and groups. 
 
         .EXAMPLE
         Below is an example of how to enumerate windows accounts from a SQL Server using the current Windows user context or "trusted connection".
