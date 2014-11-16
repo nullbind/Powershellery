@@ -209,7 +209,7 @@ function Get-DomainAccounts
     $null = $MyQueryResultsClean.Columns.Add('name') 
 
     # Creat loop to fuzz principal_id number
-    $PrincipalID = 0    
+    $PrincipalID = 499    
 
     do 
     {
@@ -219,11 +219,24 @@ function Get-DomainAccounts
         # Convert to $PrincipalID to hex
         $PrincipalIDHex = '{0:x}' -f $PrincipalID
 
-        # Pad to 8 bytes
-        $PrincipalIDPad = $PrincipalIDHex.PadRight(8,'0')
+        # Get number of characters
+        $PrincipalIDHexPad1 = $PrincipalIDHex | Measure-Object -Character         
+        $PrincipalIDHexPad2 = $PrincipalIDHexPad1.Characters
 
-        # Create users rid
-        #[byte[]]$Rid = "0x$DaSidTrunct$PrincipalIDPad"  
+        # Check if number is even and fix leading 0 if needed
+        If([bool]($PrincipalIDHexPad2%2)){
+             $PrincipalIDHexFix = "0$PrincipalIDHex"
+        }
+
+        # Reverse the order of the hex   
+        $GroupsOfTwo = $PrincipalIDHexFix -split '(..)' | ? { $_ }
+        $GroupsOfTwoR = $GroupsOfTwo | sort -Descending
+        $PrincipalIDHexFix2 = $GroupsOfTwoR -join ''
+        
+        # Pad to 8 bytes
+        $PrincipalIDPad = $PrincipalIDHexFix2.PadRight(8,'0')        
+
+        # Create users rid  
         $Rid = "0x$DaSidTrunct$PrincipalIDPad"  
         Write-Verbose "TESTING RID: $Rid"
 
