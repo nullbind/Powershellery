@@ -1,4 +1,4 @@
-function Get-DomainAccounts
+function Get-SqlServer-Enum-WinAccounts
 {
     <#
         .SYNOPSIS
@@ -15,23 +15,23 @@ function Get-DomainAccounts
 
         .EXAMPLE
         Below is an example of how to enumerate windows accounts from a SQL Server using the current Windows user context or "trusted connection".
-        PS C:\> Get-DomainAccounts -SQLServerInstance "SQLSERVER1\SQLEXPRESS" 
+        PS C:\> Get-SqlServer-Enum-WinAccounts -SQLServerInstance "SQLSERVER1\SQLEXPRESS" 
     
         .EXAMPLE
         Below is an example of how to enumerate windows accounts from a SQL Server using alternative domain credentials.
-        PS C:\> Get-DomainAccounts -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -SqlUser domain\user -SqlPass MyPassword!
+        PS C:\> Get-SqlServer-Enum-WinAccounts -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -SqlUser domain\user -SqlPass MyPassword!
 
         .EXAMPLE
         Below is an example of how to enumerate windows accounts from a SQL Server using a SQL Server login".
-        PS C:\> Get-DomainAccounts -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -SqlUser MyUser -SqlPass MyPassword!
+        PS C:\> Get-SqlServer-Enum-WinAccounts -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -SqlUser MyUser -SqlPass MyPassword!
 
         .EXAMPLE
         Below is an example of how to enumerate windows accounts from a SQL Server using a SQL Server login".
-        PS C:\> Get-DomainAccounts -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -SqlUser MyUser -SqlPass MyPassword! | Export-Csv c:\temp\DomainAccounts.csv -NoTypeInformation
+        PS C:\> Get-SqlServer-Enum-WinAccounts -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -SqlUser MyUser -SqlPass MyPassword! | Export-Csv c:\temp\DomainAccounts.csv -NoTypeInformation
 
         .EXAMPLE
         Below is an example of how to enumerate windows accounts from a SQL Server using a SQL Server login with non default fuzznum".
-        PS C:\> Get-DomainAccounts -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -SqlUser MyUser -SqlPass MyPassword! -FuzzNum 10000
+        PS C:\> Get-SqlServer-Enum-WinAccounts -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -SqlUser MyUser -SqlPass MyPassword! -FuzzNum 10000
     
         .LINKS
         www.netspi.com
@@ -41,7 +41,7 @@ function Get-DomainAccounts
         
         .NOTES
         Author: Scott Sutherland - 2014, NetSPI
-        Version: Get-DomainAccounts v1.0
+        Version: Get-SqlServer-Enum-WinAccounts v1.0
         Comments: This should work on SQL Server 2005 and Above.
 
     #>
