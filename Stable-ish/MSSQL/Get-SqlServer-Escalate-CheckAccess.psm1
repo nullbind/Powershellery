@@ -1,4 +1,4 @@
-function Get-SQLServerAccess
+function Get-SqlServer-Escalate-CheckAccess
 {	
 	<#
 	.SYNOPSIS
@@ -27,7 +27,7 @@ function Get-SQLServerAccess
 	   Returns a list of SQL Server instances on the current user's domain that they have
 	   access to.  This is the default output.
 	   
-	   PS C:\Get-SQLServerAccess
+	   PS C:\Get-SqlServer-Escalate-CheckAccess
 	   [*] ----------------------------------------------------------------------
 	   [*] Start Time: 04/09/2014 17:02:33
 	   [*] Domain: mydomain.com
@@ -51,7 +51,7 @@ function Get-SQLServerAccess
 	   Returns a list of SQL Server instances imported from a file and on the current 
 	   user's domain that they have access to.
 	   
-	   PS C:\Get-SQLServerAccess -File c:\Temp\Servers.txt
+	   PS C:\Get-SqlServer-Escalate-CheckAccess -File c:\Temp\Servers.txt
 	   [*] ----------------------------------------------------------------------
 	   [*] Start Time: 04/09/2014 17:02:33
 	   [*] Domain: mydomain.com
@@ -76,7 +76,7 @@ function Get-SQLServerAccess
 	   Returns a list of SQL Server instances on the current user's domain and 
 	   attempts to authenticate to them using provided SQL Server credentials.
 	   
-	   PS C:\Get-SQLServerAccess -SQLUser test -SQLPass $up3r$3cur3P@$$w0rd
+	   PS C:\Get-SqlServer-Escalate-CheckAccess -SQLUser test -SQLPass $up3r$3cur3P@$$w0rd
 	   [*] ----------------------------------------------------------------------
 	   [*] Start Time: 04/09/2014 17:02:33
 	   [*] Domain: mydomain.com
@@ -101,7 +101,7 @@ function Get-SQLServerAccess
 	   access to.  This also displays a data table object at the end that can feed the 
 	   pipeline.  You can make it pretty using the format-table syntax example below.
 	   
-	   PS C:\Get-SQLServerAccess -ShowSum | format-table -AutoSize 
+	   PS C:Get-SqlServer-Escalate-CheckAccess -ShowSum | format-table -AutoSize 
  	   [*] ----------------------------------------------------------------------
 	   [*] Start Time: 04/09/2014 17:02:33
  	   [*] Domain: mydomain.com
@@ -132,7 +132,7 @@ function Get-SQLServerAccess
 	   access to.  This will display the default output, but also write the results to a 
 	   CSV file.
 	   
-	   PS C:\Get-SQLServerAccess -ShowSum | export-csv c:\temp\mysqlaccess.csv
+	   PS C:\Get-SqlServer-Escalate-CheckAccess -ShowSum | export-csv c:\temp\mysqlaccess.csv
 	   [*] ----------------------------------------------------------------------
 	   [*] Start Time: 04/09/2014 17:02:33
 	   [*] Domain: mydomain.com
@@ -157,7 +157,7 @@ function Get-SQLServerAccess
 	   access to.  This will display the default output, but also display a data table of
 	   SQL Servers that are accessible every time a successful connection is made.
 	   
-	   PS C:\Get-SQLServerAccess -ShowStatus 
+	   PS C:\Get-SqlServer-Escalate-CheckAccess -ShowStatus 
 	   [*] ----------------------------------------------------------------------
 	   [*] Start Time: 04/09/2014 17:02:33
 	   [*] Domain: mydomain.com
@@ -200,7 +200,7 @@ function Get-SQLServerAccess
 	   access to.  This will display the default output, but also display the results of
 	   a custom query defined by the user.
 	   
-	   PS C:\Get-SQLServerAccess -query "select name as 'Databases' from master..sysdatabases where HAS_DBACCESS(name) = 1"
+	   PS C:\Get-SqlServer-Escalate-CheckAccess -query "select name as 'Databases' from master..sysdatabases where HAS_DBACCESS(name) = 1"
  	   [*] ----------------------------------------------------------------------
 	   [*] Start Time: 04/09/2014 17:02:33
 	   [*] Domain: mydomain.com
@@ -253,7 +253,7 @@ function Get-SQLServerAccess
 	.EXAMPLE
 	   Only return a list of SQL Servers found in Active Directory.
 	   
-	   PS C:\Get-SQLServerAccess -listonly 
+	   PS C:\Get-SqlServer-Escalate-CheckAccess -listonly 
 	   [*] ----------------------------------------------------------------------
 	   [*] Start Time: 04/09/2014 17:02:33
 	   [*] Domain: mydomain.com
@@ -272,7 +272,7 @@ function Get-SQLServerAccess
 	.EXAMPLE
 	   Only return a list of SQL Servers found in Active Directory and write them to a csv file.
 	   
-	   PS C:\Get-SQLServerAccess -listonly | export-csv c:\temp\SQLServers.csv
+	   PS C:\Get-SqlServer-Escalate-CheckAccess -listonly | export-csv c:\temp\SQLServers.csv
 	   [*] ----------------------------------------------------------------------
 	   [*] Start Time: 04/09/2014 17:02:33
 	   [*] Domain: mydomain.com
@@ -289,7 +289,7 @@ function Get-SQLServerAccess
 	   
 	 .NOTES
 	   Author: Scott Sutherland - 2014, NetSPI
-	   Version: Get-SqlServerAccess.psm1 v1.0
+	   Version: Get-SqlServer-Escalate-CheckAccess.psm1 v1.0
 	   Comments: Should work on SQL Server 2005 and Above.   Requires PowerShell v3.
 	
 	#>
