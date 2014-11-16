@@ -11,25 +11,25 @@
 	.EXAMPLE
 	   Exporting custom stored procedures from a remote SQL Server using a trusted connection.
 
-	   PS C:\> Get-SqlServerSpSource -SQLServerInstance SQLSERVER1\SQLEXPRESS
+	   PS C:\> .\Get-SqlServer-Escalate-SpSource.ps1 -SQLServerInstance SQLSERVER1\SQLEXPRESS
 
 	.EXAMPLE
 	   Exporting custom stored procedures from a remote SQL Server using a SQL Login. 
 
-	   PS C:\> Get-SqlServerSpSource -SQLServerInstance SQLSERVER1\SQLEXPRESS -SqlUser MyUser -SqlPass MyPass
+	   PS C:\> .\Get-SqlServer-Escalate-SpSource.ps1 -SQLServerInstance SQLSERVER1\SQLEXPRESS -SqlUser MyUser -SqlPass MyPass
 
 	.EXAMPLE
 	   Exporting custom stored procedures from a remote SQL Server using a trusted connection,
 	   and set a custom output directory.
 
-	   PS C:\> Get-SqlServerSpSource -SqlServerInstance SQLSERVER1\SQLEXPRESS -OutDir .\myfolder\
+	   PS C:\> .\Get-SqlServer-Escalate-SpSource.ps1 -SqlServerInstance SQLSERVER1\SQLEXPRESS -OutDir .\myfolder\
 
 	.EXAMPLE
 	   Exporting custom stored procedures from a remote SQL Server using a trusted connection.
 	   The command below also checks the exported stored procedures interesting keywords they
  	   may indiciate things like hardcoded passwords, elevated execution, and SQL injection.
 
-	   PS C:\> Get-SqlServerSpSource -SqlServerInstance SQLSERVER1\SQLEXPRESS -RunChecks 
+	   PS C:\> .\Get-SqlServer-Escalate-SpSource.ps1 -SqlServerInstance SQLSERVER1\SQLEXPRESS -RunChecks 
 
 	.EXAMPLE
 	   Exporting custom stored procedures from a remote SQL Server using a trusted connection.
@@ -37,7 +37,7 @@
  	   may indiciate hardcoded passwords, elevated execution, and SQL injection.
  	   This syntax also targets a specific database and store procedure.
 
-	   PS C:\> Get-SqlServerSpSource -SqlServerInstance SQLSERVER1\SQLEXPRESS -RunChecks -Database mydb -Procedure mysp
+	   PS C:\> .\Get-SqlServer-Escalate-SpSource.ps1 -SqlServerInstance SQLSERVER1\SQLEXPRESS -RunChecks -Database mydb -Procedure mysp
 
 	.EXAMPLE
 	   Exporting custom stored procedures from a remote SQL Server using a trusted connection.
@@ -46,7 +46,7 @@
  	   The -verbose flag will display the current keyword being search for as well as some
  	   additional information about the script's operation.
 
-	   PS C:\> Get-SqlServerSpSource -SqlServerInstance SQLSERVER1\SQLEXPRESS -RunChecks -verbose
+	   PS C:\> .\Get-SqlServer-Escalate-SpSource.ps1 -SqlServerInstance SQLSERVER1\SQLEXPRESS -RunChecks -verbose
 
 	.LINK
 	   http://www.netspi.com
@@ -55,7 +55,7 @@
 
 	.NOTES
 	   Author: Scott Sutherland - 2014, NetSPI
-	   Version: Get-SqlServerSpSource v1.2
+	   Version: Get-SqlServer-Escalate-SpSource.ps1 v1.2
 	   Comments: Should work on SQL Server 2005 and Above.
     #>
 
