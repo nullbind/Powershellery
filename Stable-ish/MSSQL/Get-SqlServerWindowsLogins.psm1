@@ -197,8 +197,7 @@ function Get-DomainAccounts
     # -----------------------------------------------
     # Enumerate windows accounts with SUSER_NAME()
     # -----------------------------------------------
-    Write-Host  -Object "[*] Setting up to fuzz $FuzzNum Windows domain accounts." 
-    Write-Host  -Object '[*] Enumerating logins...'
+    Write-Host  -Object "[*] Brute forcing $FuzzNum RIDs..." 
 
     # Open database connection
     $conn.Open()
