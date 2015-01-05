@@ -160,8 +160,7 @@ function Get-SqlServer-Escalate-SpSource
 
     # Setup query to grab a list of accessible databases
     $QueryDatabases = "SELECT name from master..sysdatabases 
-	    where has_dbaccess(name)=1 and 
-	    name not like 'master' and
+	    where has_dbaccess(name)=1 and
 	    name not like 'tempdb' and
 	    name not like 'model' and
 	    name not like 'msdb' $SqlDatabase"
