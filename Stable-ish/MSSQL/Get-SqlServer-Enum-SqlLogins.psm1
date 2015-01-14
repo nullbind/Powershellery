@@ -169,7 +169,7 @@ function Get-SqlServer-Enum-SqlLogins
 
     # Display initial login count
     $SqlLoginCount = $MyQueryResultsClean.Rows.Count
-    Write-Host  -Message "[*] $SqlLoginCount SQL Server logins and roles were found." 
+    Write-Host "[*] $SqlLoginCount SQL Server logins and roles were found." 
 
 
     # ----------------------------------------------------
