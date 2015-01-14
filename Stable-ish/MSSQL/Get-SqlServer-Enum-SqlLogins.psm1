@@ -19,10 +19,6 @@ function Get-SqlServer-Enum-SqlLogins
         PS C:\> Get-SqlServer-Enum-SqlLogins -SQLServerInstance "SQLSERVER1\SQLEXPRESS" 
     
         .EXAMPLE
-        Below is an example of how to enumerate logins from a SQL Server using alternative domain credentials.
-        PS C:\> Get-SqlServer-Enum-SqlLogins -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -SqlUser domain\user -SqlPass MyPassword!
-
-        .EXAMPLE
         Below is an example of how to enumerate logins from a SQL Server using a SQL Server login".
         PS C:\> Get-SqlServer-Enum-SqlLogins -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -SqlUser MyUser -SqlPass MyPassword!
 
@@ -75,36 +71,19 @@ function Get-SqlServer-Enum-SqlLogins
     # Create fun connection object
     $conn = New-Object  -TypeName System.Data.SqlClient.SqlConnection
 
-    # Check for domain credentials
-    if($SqlUser)
-    {
-        $DomainUserCheck = $SqlUser.Contains('\')
-    }
 
     # Set authentication type and create connection string
-    if($SqlUser -and $SqlPassword -and !$DomainUserCheck)
+    if($SqlUser)
     {
         # SQL login / alternative domain credentials
+        Write-Output  -InputObject "[*] Attempting to authenticate to $SqlServerInstance with the Login $SqlUser..."
         $conn.ConnectionString = "Server=$SqlServerInstance;Database=master;User ID=$SqlUser;Password=$SqlPass;"
         [string]$ConnectUser = $SqlUser
     }
     else
     {
-        # Create credentials management entry if a domain user is used
-        if ($DomainUserCheck -and (Test-Path  ('C:\Windows\System32\cmdkey.exe')))
-        {
-            Write-Output  -InputObject "[*] Attempting to authenticate to $SqlServerInstance with domain account $SqlUser..."
-            $SqlServerInstanceCol = $SqlServerInstance -replace ',', ':'
-            $CredManCmd = 'cmdkey /add:'+$SqlServerInstanceCol+' /user:'+$SqlUser+' /pass:'+$SqlPass 
-            Write-Verbose  -Message "Command: $CredManCmd"
-            $ExecManCmd = Invoke-Expression  -Command $CredManCmd
-        }
-        else
-        {
-            Write-Output  -InputObject "[*] Attempting to authenticate to $SqlServerInstance as the current Windows user..."
-        }
-
         # Trusted connection
+        Write-Output  -InputObject "[*] Attempting to authenticate to $SqlServerInstance as the current Windows user..."        
         $conn.ConnectionString = "Server=$SqlServerInstance;Database=master;Integrated Security=SSPI;"   
         $UserDomain = [Environment]::UserDomainName
         $Username = [Environment]::UserName
