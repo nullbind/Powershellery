@@ -180,7 +180,7 @@ function Get-SqlServer-Enum-SqlLogins
     Write-Host  -Object '[*] Identifying the logins...'
 
     # Open database connection
-    $conn.Open()
+    $conn.Open() 
 
     # Create table to store results
     $SqlLoginVerified = New-Object  -TypeName System.Data.DataTable
