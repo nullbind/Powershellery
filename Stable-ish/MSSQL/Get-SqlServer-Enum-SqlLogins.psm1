@@ -117,8 +117,7 @@ function Get-SqlServer-Enum-SqlLogins
     # -----------------------------------------------
     # Enumerate sql server logins with SUSER_NAME()
     # -----------------------------------------------
-    Write-Host  -Object "[*] Setting up to fuzz $FuzzNum SQL Server logins." 
-    Write-Host  -Object '[*] Enumerating logins...'
+    Write-Host  -Object "[*] Fuzzing $FuzzNum SQL Server principal_ids..." 
 
     # Open database connection
     $conn.Open()
@@ -170,7 +169,7 @@ function Get-SqlServer-Enum-SqlLogins
 
     # Display initial login count
     $SqlLoginCount = $MyQueryResultsClean.Rows.Count
-    Write-Verbose  -Message "[*] $SqlLoginCount initial logins were found." 
+    Write-Verbose  -Message "[*] $SqlLoginCount SQL Server logins and roles were found." 
 
 
     # ----------------------------------------------------
@@ -178,7 +177,7 @@ function Get-SqlServer-Enum-SqlLogins
     # ----------------------------------------------------
 
     # Status user
-    Write-Host  -Object '[*] Verifying the logins...'
+    Write-Host  -Object '[*] Identifying the logins...'
 
     # Open database connection
     $conn.Open()
