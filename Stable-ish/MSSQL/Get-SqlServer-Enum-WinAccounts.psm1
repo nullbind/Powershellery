@@ -16,10 +16,6 @@ function Get-SqlServer-Enum-WinAccounts
         .EXAMPLE
         Below is an example of how to enumerate windows accounts from a SQL Server using the current Windows user context or "trusted connection".
         PS C:\> Get-SqlServer-Enum-WinAccounts -SQLServerInstance "SQLSERVER1\SQLEXPRESS" 
-    
-        .EXAMPLE
-        Below is an example of how to enumerate windows accounts from a SQL Server using alternative domain credentials.
-        PS C:\> Get-SqlServer-Enum-WinAccounts -SQLServerInstance "SQLSERVER1\SQLEXPRESS" -SqlUser domain\user -SqlPass MyPassword!
 
         .EXAMPLE
         Below is an example of how to enumerate windows accounts from a SQL Server using a SQL Server login".
@@ -76,36 +72,18 @@ function Get-SqlServer-Enum-WinAccounts
     # Create fun connection object
     $conn = New-Object  -TypeName System.Data.SqlClient.SqlConnection
 
-    # Check for domain credentials
+    # Set authentication type and create connection string
     if($SqlUser)
     {
-        $DomainUserCheck = $SqlUser.Contains('\')
-    }
-
-    # Set authentication type and create connection string
-    if($SqlUser -and $SqlPassword -and !$DomainUserCheck)
-    {
         # SQL login / alternative domain credentials
+        Write-Output  -InputObject "[*] Attempting to authenticate to $SqlServerInstance as the login $SqlUser..."
         $conn.ConnectionString = "Server=$SqlServerInstance;Database=master;User ID=$SqlUser;Password=$SqlPass;"
         [string]$ConnectUser = $SqlUser
     }
     else
     {
-        # Create credentials management entry if a domain user is used
-        if ($DomainUserCheck -and (Test-Path  ('C:\Windows\System32\cmdkey.exe')))
-        {
-            Write-Output  -InputObject "[*] Attempting to authenticate to $SqlServerInstance with domain account $SqlUser..."
-            $SqlServerInstanceCol = $SqlServerInstance -replace ',', ':'
-            $CredManCmd = 'cmdkey /add:'+$SqlServerInstanceCol+' /user:'+$SqlUser+' /pass:'+$SqlPass 
-            Write-Verbose  -Message "Command: $CredManCmd"
-            $ExecManCmd = Invoke-Expression  -Command $CredManCmd
-        }
-        else
-        {
-            Write-Output  -InputObject "[*] Attempting to authenticate to $SqlServerInstance as the current Windows user..."
-        }
-
         # Trusted connection
+        Write-Output  -InputObject "[*] Attempting to authenticate to $SqlServerInstance as the current Windows user..."
         $conn.ConnectionString = "Server=$SqlServerInstance;Database=master;Integrated Security=SSPI;"   
         $UserDomain = [Environment]::UserDomainName
         $Username = [Environment]::UserName
@@ -282,12 +260,4 @@ function Get-SqlServer-Enum-WinAccounts
     Write-Host "[*] $SqlLoginCount domain accounts / groups were found." -ForegroundColor Green
 
     $MyQueryResultsClean | Select-Object name -Unique|Sort-Object  -Property name
-
-    # Clean up credentials manager entry
-    if ($DomainUserCheck)
-    {
-        $CredManDel = 'cmdkey /delete:'+$SqlServerInstanceCol
-        Write-Verbose  -Message "Command: $CredManDel"   
-        $ExecManDel = Invoke-Expression  -Command $CredManDel
-    }
 }
