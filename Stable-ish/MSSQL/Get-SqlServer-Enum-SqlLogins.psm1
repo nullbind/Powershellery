@@ -151,9 +151,6 @@ function Get-SqlServer-Enum-SqlLogins
     $MyQueryResults |
     Select-Object name -Unique |
     Where-Object  -FilterScript {
-        $_.name -notlike '*##*'
-    } |
-    Where-Object  -FilterScript {
         $_.name -notlike ''
     } |
     ForEach-Object  -Process {
