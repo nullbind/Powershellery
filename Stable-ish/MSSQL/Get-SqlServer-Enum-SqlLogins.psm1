@@ -150,9 +150,6 @@ function Get-SqlServer-Enum-SqlLogins
     # Filter list of sql logins
     $MyQueryResults |
     Select-Object name -Unique |
-    Where-Object  -FilterScript {
-        $_.name -notlike ''
-    } |
     ForEach-Object  -Process {
         # Get sql login name
         $SqlLoginName = $_.name
