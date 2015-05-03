@@ -23,8 +23,15 @@ function Get-FileServers
            fileserver2
            fileserver2.demo.com
         .EXAMPLE
-           The example below shows the standard command usage with alternative domain credentials.     
-           PS C:\> Get-FileServers -DomainController 192.168.1.1 -Credential demo.com\user 
+           The example below shows the standard command usage with the current user and output to a
+           CSV file.     
+           PS C:\> Get-FileServers | Export-Csv c:\temp\fileservers.csv -NoTypeInformation
+        .EXAMPLE
+           The example below shows the standard command usage with alternative domain credentials and verbose
+           output.     
+           PS C:\> Get-FileServers -DomainController 192.168.1.1 -Credential demo.com\user -verbose
+           VERBOSE: [*] Grabbing file server list from homeDirectory user attribute via LDAP...
+           VERBOSE: [*] Grabbing file server list from drives.xml files on DC sysvol share...
            ComputerName
            ------------
            homedirs
@@ -33,6 +40,20 @@ function Get-FileServers
            fileserver1.demo.com
            fileserver2
            fileserver2.demo.com
+        .EXAMPLE
+           The example below shows the command usage to list shares found on servers using with 
+           alternative domain credentials.     
+           PS C:\> Get-FileServers -DomainController 192.168.1.1 -Credential demo.com\user -ShowShares
+            ComputerName                                                 SharePath                                                  
+            ------------                                                 ---------                                                  
+            homedirs                                                     \\homedirs\HomeDirs$\user1                           
+            homedirs                                                     \\homedirs\HomeDirs$\user2                              
+            fileserver1                                                  \\fileserver1\Public                                       
+            fileserver2                                                  \\fileserver2\ITShare
+            homedirs.demo.com                                            \\homedirs.demo.com\HomeDirs$\user1                           
+            homedirs.demo.com                                            \\homedirs.demo.com\HomeDirs$\user2                              
+            fileserver1.demo.com                                         \\fileserver1.demo.com\Public                                       
+            fileserver2.demo.com                                         \\fileserver2.demo.com\ITShare
          .LINK
            http://www.netspi.com
            https://msdn.microsoft.com/en-us/library/windows/desktop/bb525387%28v=vs.85%29.aspx
@@ -93,7 +114,6 @@ function Get-FileServers
 
     Process
     {
-
         # ----------------------------------------------------------------
         # Setup data table to store file servers
         # ----------------------------------------------------------------
@@ -189,9 +209,9 @@ function Get-FileServers
         # Display file servers
         # ----------------------------------------------------------------
         if($ShowShares){
-            $TableFileServers | Sort-Object computername,sharepath | uniq
+            $TableFileServers | Sort-Object computername,sharepath 
         }else{
-            $TableFileServers | Select-Object computername | Sort-Object computername| uniq
+            $TableFileServers | Select-Object computername | Sort-Object computername | Get-Unique
         }
     }
 }
