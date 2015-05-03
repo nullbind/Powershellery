@@ -10,7 +10,8 @@ function Get-FileServers
            Active Directory by querying the "homeDirectory" user property in Active Directory.  It also
            parses file servers from the "drives.xml" files found on the domain controller's "sysvol" share.
            It can be run as the current user or alternative credentials can be provided to authenticate to 
-           a domain controller that the current user/computer isn't associated with.
+           a domain controller that the current user/computer isn't associated with.  Finally, the script 
+           can also be used to list the shares found on the file servers.
         .EXAMPLE
            The example below shows the standard command usage with the current user.     
            PS C:\> Get-FileServers
