@@ -48,58 +48,32 @@ function Get-FileServers
     #>
     [CmdletBinding(DefaultParametersetName="Default")]
     Param(
-        [Parameter(ParameterSetName='Modified')]
-        [Parameter(ParameterSetName='Created')]
-        [Parameter(ParameterSetName='Default')]
+
         [Parameter(Mandatory=$false,
         HelpMessage="Credentials to use when connecting to a Domain Controller.")]
         [System.Management.Automation.PSCredential]
         [System.Management.Automation.Credential()]$Credential = [System.Management.Automation.PSCredential]::Empty,
         
-        [Parameter(ParameterSetName='Modified')]
-        [Parameter(ParameterSetName='Created')]
-        [Parameter(ParameterSetName='Default')]
         [Parameter(Mandatory=$false,
         HelpMessage="Domain controller for Domain and Site that you want to query against.")]
         [string]$DomainController,
 
-        [Parameter(ParameterSetName='Modified')]
-        [Parameter(ParameterSetName='Created')]
-        [Parameter(ParameterSetName='Default')]
         [Parameter(Mandatory=$false,
         HelpMessage="Maximum number of Objects to pull from AD, limit is 1,000 .")]
         [int]$Limit = 1000,
 
-        [Parameter(ParameterSetName='Modified')]
-        [Parameter(ParameterSetName='Created')]
-        [Parameter(ParameterSetName='Default')]
         [Parameter(Mandatory=$false,
         HelpMessage="scope of a search as either a base, one-level, or subtree search, default is subtree.")]
         [ValidateSet("Subtree","OneLevel","Base")]
         [string]$SearchScope = "Subtree",
 
-        [Parameter(ParameterSetName='Modified')]
-        [Parameter(ParameterSetName='Created')]
-        [Parameter(ParameterSetName='Default')]
         [Parameter(Mandatory=$false,
         HelpMessage="Distinguished Name Path to limit search to.")]
         [string]$SearchDN,
 
-        [Parameter(ParameterSetName='Modified',
-        HelpMessage="Date to search for users mofied on or after this date.")]
-        [datetime]$ModifiedAfter,
-
-        [Parameter(ParameterSetName='Modified',
-        HelpMessage="Date to search for users mofied on or before this date.")]
-        [datetime]$ModifiedBefore,
-
-        [Parameter(ParameterSetName='Created',
-        HelpMessage="Date to search for users created on or after this date.")]
-        [datetime]$CreatedAfter,
-
-        [Parameter(ParameterSetName='Created',
-        HelpMessage="Date to search for users created on or after this date.")]
-        [datetime]$CreatedBefore
+        [Parameter(Mandatory=$false,
+        HelpMessage="Show shares that are associated with the file servers.")]
+        [switch]$ShowShares
     )
 
     Begin
@@ -125,6 +99,7 @@ function Get-FileServers
         # ----------------------------------------------------------------
         $TableFileServers = New-Object System.Data.DataTable 
         $TableFileServers.Columns.Add('ComputerName') | Out-Null
+        $TableFileServers.Columns.Add('SharePath') | Out-Null
 
 
         # ----------------------------------------------------------------
@@ -150,8 +125,9 @@ function Get-FileServers
         
         ForEach-Object {                
             if ($_.properties.homedirectory){           
-                $FileServer = $_.properties.homedirectory.split("\\")[2];                
-                $TableFileServers.Rows.Add($FileServer) | Out-Null
+                [string]$FileServer = $_.properties.homedirectory.split("\\")[2];
+                [string]$SharePath =  $_.properties.homedirectory              
+                $TableFileServers.Rows.Add($FileServer,$SharePath) | Out-Null
             }
         }
 
@@ -183,8 +159,6 @@ function Get-FileServers
             $ShareCred = New-Object System.Management.Automation.PsCredential("$ShareUser",$SharePass)
 
             New-PSDrive -PSProvider FileSystem -Name $DriveName -Root $DrivePath -Credential $ShareCred | Out-Null
-            #$Credential.UserName
-            #$Credential.GetNetworkCredential().Password
 
         }else{
             New-PSDrive -PSProvider FileSystem -Name $DriveName -Root $DrivePath | Out-Null
@@ -201,18 +175,24 @@ function Get-FileServers
         ForEach-Object {
             $DriveFile=$_.FullName;
             [xml]$xmlfile=gc $Drivefile;
-            $FileServer = $xmlfile| Select-xml "/Drives/Drive/Properties/@path" | Select-object -expand node | ForEach-Object {$_.Value.split("\\")[2];}             
-            $TableFileServers.Rows.Add($FileServer) | Out-Null            
+            [string]$FileServer = $xmlfile| Select-xml "/Drives/Drive/Properties/@path" | Select-object -expand node | ForEach-Object {$_.Value.split("\\")[2];}             
+            [string]$SharePath = $xmlfile| Select-xml "/Drives/Drive/Properties/@path" | Select-object -expand node | ForEach-Object {$_.Value}             
+            $TableFileServers.Rows.Add($FileServer,$SharePath) | Out-Null            
         } 
 
         # Remove temp drive        
         cd C:
         Remove-PSDrive $DriveName
-        
+
 
         # ----------------------------------------------------------------
         # Display file servers
         # ----------------------------------------------------------------
-        $TableFileServers | sort computername | uniq
+        if($ShowShares){
+            $TableFileServers | Sort-Object computername,sharepath | uniq
+        }else{
+            $TableFileServers | Select-Object computername | Sort-Object computername| uniq
+        }
     }
 }
+
