@@ -236,7 +236,7 @@ function Get-FileServers
         if($ShowShares){
             $TableFileServers 
         }else{
-            $TableFileServers | Select-Object ComputerName | Get-Unique
+            $TableFileServers | Select-Object ComputerName 
         }
     }
 }
