@@ -7,11 +7,11 @@ function Get-FileServers
            current user/computer isn't associated with.
         .DESCRIPTION
            This module will enumerate file servers from Active Directory.  It enumerates file servers from
-           Active Directory by querying the "homeDirectory" user property in Active Directory.  It also
-           parses file servers from the "drives.xml" files found on the domain controller's "sysvol" share.
-           It can be run as the current user or alternative credentials can be provided to authenticate to 
-           a domain controller that the current user/computer isn't associated with.  Finally, the script 
-           can also be used to list the shares found on the file servers.
+           Active Directory by querying the "homeDirectory" and "ScriptPath" user properties in Active Directory.  
+           It also parses file servers from the "drives.xml" files found on the domain controller's "sysvol" 
+           share.  It can be run as the current user or alternative credentials can be provided to authenticate to 
+           a domain controller that the current user/computer isn't associated with.  Finally, the script can also 
+           be used to list the shares found on the file servers.
         .EXAMPLE
            The example below shows the standard command usage with the current user.     
            PS C:\> Get-FileServers
@@ -45,16 +45,16 @@ function Get-FileServers
            The example below shows the command usage to list shares found on servers using with 
            alternative domain credentials.     
            PS C:\> Get-FileServers -DomainController 192.168.1.1 -Credential demo.com\user -ShowShares
-            ComputerName                                                 SharePath                                                  
-            ------------                                                 ---------                                                  
-            homedirs                                                     \\homedirs\HomeDirs$\user1                           
-            homedirs                                                     \\homedirs\HomeDirs$\user2                              
-            fileserver1                                                  \\fileserver1\Public                                       
-            fileserver2                                                  \\fileserver2\ITShare
-            homedirs.demo.com                                            \\homedirs.demo.com\HomeDirs$\user1                           
-            homedirs.demo.com                                            \\homedirs.demo.com\HomeDirs$\user2                              
-            fileserver1.demo.com                                         \\fileserver1.demo.com\Public                                       
-            fileserver2.demo.com                                         \\fileserver2.demo.com\ITShare
+            ComputerName                                                 SharePath                                       ShareDrive                                      ShareLabel                                                   
+            ------------                                                 ---------                                       ----------                                      ----------                                                   
+            homedirs                                                     \\homedirs\HomeDirs$\user1                      U:
+            homedirs                                                     \\homedirs\HomeDirs$\user2                      U:
+            fileserver1                                                  \\fileserver1\Public                            P:                                              Public Folder
+            fileserver2                                                  \\fileserver2\ITShare                           I:                                              IT documents
+            homedirs.demo.com                                            \\homedirs.demo.com\HomeDirs$\user1             U:
+            homedirs.demo.com                                            \\homedirs.demo.com\HomeDirs$\user2             U:
+            fileserver1.demo.com                                         \\fileserver1.demo.com\Public                   P:                                              Public Folder
+            fileserver2.demo.com                                         \\fileserver2.demo.com\ITShare                  I:                                              IT documents
          .LINK
            http://www.netspi.com
            https://msdn.microsoft.com/en-us/library/windows/desktop/bb525387%28v=vs.85%29.aspx
@@ -121,6 +121,8 @@ function Get-FileServers
         $TableFileServers = New-Object System.Data.DataTable 
         $TableFileServers.Columns.Add('ComputerName') | Out-Null
         $TableFileServers.Columns.Add('SharePath') | Out-Null
+        $TableFileServers.Columns.Add('ShareDrive') | Out-Null
+        $TableFileServers.Columns.Add('ShareLabel') | Out-Null
 
 
         # ----------------------------------------------------------------
@@ -128,7 +130,7 @@ function Get-FileServers
         # ----------------------------------------------------------------
         
         # Status user        
-        Write-Verbose "[*] Grabbing file server list from homeDirectory user attribute via LDAP..."
+        Write-Verbose "[*] Grabbing file servers from homeDirectory & ScriptPath user properties via LDAP..."
 
         $SAMAccountFilter = "(sAMAccountType=805306368)"
         
@@ -143,12 +145,31 @@ function Get-FileServers
         }
         
         $ObjSearcher.FindAll() | 
-        
+
+        # Add fileservers from homedirectory property
         ForEach-Object {                
             if ($_.properties.homedirectory){           
-                [string]$FileServer = $_.properties.homedirectory.split("\\")[2];
-                [string]$SharePath =  $_.properties.homedirectory              
-                $TableFileServers.Rows.Add($FileServer,$SharePath) | Out-Null
+                [string]$HomeFileServer = $_.properties.homedirectory.split("\\")[2];
+                [string]$HomeSharePath =  $_.properties.homedirectory
+                [string]$HomeDrive = $_.properties.homedrive
+                
+                if ($HomeDrive) {
+                    $HomeShareDrive = $HomeDrive
+                }else{
+                    $HomeShareDrive = ""
+                }
+                              
+                $TableFileServers.Rows.Add($HomeFileServer,$HomeSharePath,$HomeShareDrive) | Out-Null
+            }
+        }
+ 
+        # Add fileservers from scriptpath property
+        ForEach-Object {                
+            if ($_.properties.scriptpath){           
+                [string]$ScriptFileServer = $_.properties.scriptpath.split("\\")[2];
+                [string]$ScriptSharePath =  $_.properties.scriptpath
+              
+                $TableFileServers.Rows.Add($ScriptFileServer,$ScriptSharePath) | Out-Null
             }
         }
 
@@ -198,7 +219,10 @@ function Get-FileServers
             [xml]$xmlfile=gc $Drivefile;
             [string]$FileServer = $xmlfile| Select-xml "/Drives/Drive/Properties/@path" | Select-object -expand node | ForEach-Object {$_.Value.split("\\")[2];}             
             [string]$SharePath = $xmlfile| Select-xml "/Drives/Drive/Properties/@path" | Select-object -expand node | ForEach-Object {$_.Value}             
-            $TableFileServers.Rows.Add($FileServer,$SharePath) | Out-Null            
+            [string]$ShareDrive = $xmlfile| Select-xml "/Drives/Drive/@name" | Select-object -expand node | ForEach-Object {$_.Value} 
+            [string]$ShareLabel = $xmlfile| Select-xml "/Drives/Drive/Properties/@label" | Select-object -expand node | ForEach-Object {$_.Value}
+                        
+            $TableFileServers.Rows.Add($FileServer,$SharePath,$ShareDrive,$ShareLabel) | Out-Null            
         } 
 
         # Remove temp drive        
@@ -210,10 +234,9 @@ function Get-FileServers
         # Display file servers
         # ----------------------------------------------------------------
         if($ShowShares){
-            $TableFileServers | Sort-Object computername,sharepath 
+            $TableFileServers 
         }else{
-            $TableFileServers | Select-Object computername | Sort-Object computername | Get-Unique
+            $TableFileServers | Select-Object ComputerName | Get-Unique
         }
     }
 }
-
