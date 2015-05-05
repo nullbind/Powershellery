@@ -180,7 +180,7 @@ function Get-FileServers
 
         # Grab DC
         if($DomainController){
-            $TargetDC = $DomainController
+            $TargetDC = "\\$DomainController"
         }else{
             $TargetDC = $env:LOGONSERVER
         }
