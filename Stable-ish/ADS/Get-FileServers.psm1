@@ -195,19 +195,15 @@ function Get-FileServers
         If ($Credential.UserName){
 
             # Status user        
-            Write-Verbose "[*] Authenticating to DC for access to sysvol share..."
-            $ShareUser = $Credential.UserName
-            $SharePass = $Credential.GetNetworkCredential().Password|ConvertTo-SecureString -AsPlainText -Force
-            $ShareCred = New-Object System.Management.Automation.PsCredential("$ShareUser",$SharePass)
-
-            New-PSDrive -PSProvider FileSystem -Name $DriveName -Root $DrivePath -Credential $ShareCred | Out-Null
+            Write-Verbose "[*] Creating temp share $DriveName to $DrivePath..." 
+            New-PSDrive -PSProvider FileSystem -Name $DriveName -Root $DrivePath -Credential $Credential | Out-Null
 
         }else{
             New-PSDrive -PSProvider FileSystem -Name $DriveName -Root $DrivePath | Out-Null
         }
 
         # Status user        
-        Write-Verbose "[*] Grabbing file server list from drives.xml files on DC sysvol share..."
+        Write-Verbose "[*] Grabbing and parsing drives.xml files from $DrivePath..."
 
         # Parse out drives.xml files into the data table
         $TempDrive = $DriveName+":"
@@ -225,7 +221,9 @@ function Get-FileServers
             $TableFileServers.Rows.Add($FileServer,$SharePath,$ShareDrive,$ShareLabel) | Out-Null            
         } 
 
-        # Remove temp drive        
+        # Remove temp drive
+        # Status user        
+        Write-Verbose "[*] Removing temp share $DriveName..."         
         cd C:
         Remove-PSDrive $DriveName
 
