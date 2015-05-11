@@ -247,7 +247,7 @@ function Get-GPPPasswordMod
                     [string]$Username = $_.properties.username
                     [string]$CPassword = $_.properties.cpassword
                     [string]$Password = Get-DecryptedCpassword $Cpassword
-                    [string]$Changed = $_.changed
+                    [datetime]$Changed = $_.changed
                     [string]$NewName = ""         
                     
                     # Add the results to the data table
@@ -265,7 +265,7 @@ function Get-GPPPasswordMod
                     [string]$Username = $_.properties.username
                     [string]$CPassword = $_.properties.cpassword
                     [string]$Password = Get-DecryptedCpassword $Cpassword
-                    [string]$Changed = $_.changed
+                    [datetime]$Changed = $_.changed
                     [string]$NewName = $_.properties.newname        
                     
                     # Add the results to the data table
@@ -283,7 +283,7 @@ function Get-GPPPasswordMod
                     [string]$Username = $_.properties.accountname
                     [string]$CPassword = $_.properties.cpassword
                     [string]$Password = Get-DecryptedCpassword $Cpassword
-                    [string]$Changed = $_.changed
+                    [datetime]$Changed = $_.changed
                     [string]$NewName = ""         
                     
                     # Add the results to the data table
@@ -301,7 +301,7 @@ function Get-GPPPasswordMod
                     [string]$Username = $_.properties.runas
                     [string]$CPassword = $_.properties.cpassword
                     [string]$Password = Get-DecryptedCpassword $Cpassword
-                    [string]$Changed = $_.changed
+                    [datetime]$Changed = $_.changed
                     [string]$NewName = ""         
                     
                     # Add the results to the data table
@@ -319,7 +319,7 @@ function Get-GPPPasswordMod
                     [string]$Username = $_.properties.username
                     [string]$CPassword = $_.properties.cpassword
                     [string]$Password = Get-DecryptedCpassword $Cpassword
-                    [string]$Changed = $_.changed
+                    [datetime]$Changed = $_.changed
                     [string]$NewName = ""         
                     
                     # Add the results to the data table
@@ -337,7 +337,7 @@ function Get-GPPPasswordMod
                     [string]$Username = $_.properties.username
                     [string]$CPassword = $_.properties.cpassword
                     [string]$Password = Get-DecryptedCpassword $Cpassword
-                    [string]$Changed = $_.changed
+                    [datetime]$Changed = $_.changed
                     [string]$NewName = ""         
                     
                     # Add the results to the data table
