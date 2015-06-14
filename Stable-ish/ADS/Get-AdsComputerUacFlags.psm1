@@ -1,11 +1,13 @@
 <#
 	.Synopsis
 	   This module will query Active Directory for the computer accounts and parse out the flags
-	   in each of their User Account Control property.
+	   in each of their User Account Control property via ADSI.  This can be used from a domain
+	   or non domain system.
 
 	.DESCRIPTION
 	   This module will query Active Directory for the computer accounts and parse out the flags
-	   in each of their User Account Control property.
+	   in each of their User Account Control property via ADSI.  This can be used from a domain
+	   or non domain system.
 
 	.EXAMPLE
 	   The example below uses integrated authentication to show all User Account Control flags.      
@@ -14,7 +16,7 @@
 
 	.EXAMPLE
 	   The example below uses alternative domain credentials to authenticate to a remote domain controller
- 	   and show all User Account Control flags.      
+ 	   and show all User Account Control flags from a non domain system.
 
 	   PS C:\>Get-AdsComputerUacFlags -DomainController 192.168.1.1 -Credential demo\user
 
@@ -159,7 +161,7 @@ function Get-AdsComputerUacFlags
             $CurrentUacBinPadding = "0" * $CurrentUacBinPadNum
             $CurrentUacBinFull = "$CurrentUacBinPadding$CurrentUacBin"
             
-			# Parse out the UAC flags
+	    # Parse out the UAC flags
             $UAC_SCRIPT = $CurrentUacBinFull.Substring(1,1)
             $UAC_ACCOUNTDISABLE = $CurrentUacBinFull.Substring(($CurrentUacBinFull.Length - 2),1)
             $UAC_UNKNOWN_OFFSET_3 = $CurrentUacBinFull.Substring(($CurrentUacBinFull.Length - 3),1)
