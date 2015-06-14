@@ -104,7 +104,7 @@
     
             # Get current user name
             $SamAccountName = $_.samaccountname
-            Write-Verbose "Processing $ComputerName"
+            Write-Verbose "Processing $SamAccountName"
 
             # Get current access controls
             $ntsec = $_.nTSecurityDescriptor
