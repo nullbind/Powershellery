@@ -4,8 +4,8 @@
 .SYNOPSIS    
 
     Description: Report on permissions assigned on domain computer accounts to domain users and groups.
-    Author: Scott Sutherland (@_nullbind)
-    Author: Khai Tran (@k_tr4n)
+    Author: Scott Sutherland (@_nullbind), NetSPi 2015
+    Author: Khai Tran (@k_tr4n), NetSPi 2015
  
 .DESCRIPTION
 
@@ -74,7 +74,6 @@
 
         }else{
             New-PSDrive -PSProvider ActiveDirectory -Name $DriveRandom -Root "" | Out-Null
-            $TargetDC = $env:LOGONSERVER
             cd $DriveName
         }
 
