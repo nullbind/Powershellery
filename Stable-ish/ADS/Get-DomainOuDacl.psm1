@@ -118,20 +118,21 @@
             ForEach-Object {                                
 
                 # Add the results to the data table
-                $TableDacl.Rows.Add($OuName,
-                $OuDesc,
-                $nTSec_owner,
-                $nTSec_group,
-                $_.IdentityReference,
-                $_.ActiveDirectoryRights ,
-                $_.InheritanceType,
-                $_.ObjectType,
-                $_.InheritedObjectType,
-                $_.ObjectFlags,
-                $_.AccessControlType,
-                $_.IsInherited,
-                $_.InheritanceFlags,
-                $_.PropagationFlags) | Out-Null                 
+                $TableDacl.Rows.Add(
+                [string]$OuName,
+                [string]$OuDesc,
+                [string]$nTSec_owner,
+                [string]$nTSec_group,
+                [string]$_.IdentityReference,
+                [string]$_.ActiveDirectoryRights ,
+                [string]$_.InheritanceType,
+                [string]$_.ObjectType,
+                [string]$_.InheritedObjectType,
+                [string]$_.ObjectFlags,
+                [string]$_.AccessControlType,
+                [string]$_.IsInherited,
+                [string]$_.InheritanceFlags,
+                [string]$_.PropagationFlags) | Out-Null                 
             }
         }
 
