@@ -79,8 +79,7 @@
 
         # Create data table for results
         $TableDacl = New-Object System.Data.DataTable 
-        $TableDacl.Columns.Add('ComputerAccount')| Out-Null
-        $TableDacl.Columns.Add('ComputerName')| Out-Null
+        $TableDacl.Columns.Add('SamAccountName')| Out-Null
         $TableDacl.Columns.Add('Owner')| Out-Null
         $TableDacl.Columns.Add('Group')| Out-Null
         $TableDacl.Columns.Add('IdentityReference')| Out-Null
@@ -99,13 +98,12 @@
     Process
     {
    
-        # Grab DACL information for each domain computer   
-        Get-ADUser -filter * -Properties * | select samaccountname,nTSecurityDescriptor |
+        # Grab DACL information for each domain user   
+        Get-ADUser -filter * -Properties * |
         ForEach-Object{
     
-            # Get current computer name
-            $ComputerAccount = $_.samaccountname
-            $ComputerName = $ComputerAccount.trim("$")
+            # Get current user name
+            $SamAccountName = $_.samaccountname
             Write-Verbose "Processing $ComputerName"
 
             # Get current access controls
@@ -117,8 +115,7 @@
             ForEach-Object {                                
 
                 # Add the results to the data table
-                $TableDacl.Rows.Add($ComputerAccount,
-                $ComputerName,
+                $TableDacl.Rows.Add($SamAccountName,
                 $nTSec_owner,
                 $nTSec_group,
                 $_.IdentityReference,
