@@ -16,14 +16,14 @@
 
     Below is the standard command usage as a domain user.
 
-    PS C:\> Get-DomainComputerDacl -verbose
+    PS C:\> Get-DomainUserDacl -verbose
 
 .EXAMPLE
 
     Below is the standard command usage as a domain user, but it limits the results to the specific user or group
     provided.
 
-    PS C:\> Get-DomainComputerDacl -Verbose -user demo.com\user
+    PS C:\> Get-DomainUserDacl -Verbose -user demo.com\user
 
 .EXAMPLE
 
@@ -31,7 +31,7 @@
     provided.  It also targets a specific domain controller with alternative domain credentials.  This can be 
     executed from a non domain system.
 
-    PS C:\> Get-DomainComputerDacl -Verbose -DomainController 192.168.1.1 -Credential demo.com\user -user demo.com\user
+    PS C:\> Get-DomainUserDacl -Verbose -DomainController 192.168.1.1 -Credential demo.com\user -user demo.com\user
 
 .LINK
   https://msdn.microsoft.com/en-us/library/ms679006%28v=vs.85%29.aspx
