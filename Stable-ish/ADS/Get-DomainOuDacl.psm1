@@ -176,7 +176,7 @@
             if ($User)
             {
                 if (($TableDacl | Where-Object {$_.IdentityReference -like "*$user*"}).Rows.count -gt 0){
-
+                    $TableDacl | Where-Object {$_.IdentityReference -like "*$user*"}
                 }else{
                     Write-Host "No matches found."
                 }
