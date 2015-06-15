@@ -22,7 +22,7 @@ ForEach-Object {
    $TableTypes.Rows.Add([System.GUID]$_.rightsGUID,$_.name) | Out-Null
 }
 
-# Select guidname based on guidnumber
+# Get objecttype name
 $ObjectType = "bf967a7f-0de6-11d0-a285-00aa003049e2"
 $ObjectTypeGuid = "'" + "$ObjectType" + "'"
 $ObjectTypeGuidCount = $TableTypes.Select("guidnumber = $ObjectTypeGuid").Count
