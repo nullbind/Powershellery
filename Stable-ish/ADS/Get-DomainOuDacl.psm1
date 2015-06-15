@@ -68,7 +68,7 @@
 
         # Map a temp drive to the DC sysvol share
         Write-Verbose "Creating temp ADS drive $DriveName..."
-        If ($Credential.UserName){
+        If (($Credential) -and ($DomainController)){
             $TargetDC = "$DomainController"
             New-PSDrive -PSProvider ActiveDirectory -Name $DriveRandom -Root "" -Server $TargetDC -credential $Credential | Out-Null
             cd $DriveName
