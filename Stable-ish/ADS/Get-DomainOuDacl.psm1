@@ -78,6 +78,26 @@
             cd $DriveName
         }
 
+        # Create data table for inventory of object typees
+        $TableTypes = New-Object System.Data.DataTable 
+        $TableTypes.Columns.Add('GuidNumber')| Out-Null
+        $TableTypes.Columns.Add('GuidName')| Out-Null
+        $TableTypes.Clear| Out-Null
+
+        # Get standard rights
+        Write-Host "Getting standard rights"
+        Get-ADObject -SearchBase (Get-ADRootDSE).schemaNamingContext -LDAPFilter '(schemaIDGUID=*)' -Properties name, schemaIDGUID |
+        ForEach-Object {
+            $TableTypes.Rows.Add([System.GUID]$_.schemaIDGUID,$_.name) | Out-Null
+        }
+
+        # Get extended rights
+        Write-Host "Getting extended rights"
+        Get-ADObject -SearchBase "CN=Extended-Rights,$((Get-ADRootDSE).configurationNamingContext)" -LDAPFilter '(objectClass=controlAccessRight)' -Properties name, rightsGUID |
+        ForEach-Object {
+           $TableTypes.Rows.Add([System.GUID]$_.rightsGUID,$_.name) | Out-Null
+        }
+
         # Create data table for results
         $TableDacl = New-Object System.Data.DataTable 
         $TableDacl.Columns.Add('OuName')| Out-Null
@@ -88,6 +108,7 @@
         $TableDacl.Columns.Add('ActiveDirectoryRights')| Out-Null
         $TableDacl.Columns.Add('InheritanceType')| Out-Null
         $TableDacl.Columns.Add('ObjectType')| Out-Null
+        $TableDacl.Columns.Add('ObjectTypeName')| Out-Null
         $TableDacl.Columns.Add('InheritedObjectType')| Out-Null
         $TableDacl.Columns.Add('ObjectFlags')| Out-Null
         $TableDacl.Columns.Add('AccessControlType')| Out-Null
@@ -101,6 +122,7 @@
     {
    
         # Grab DACL information for each domain computer   
+        Write-Verbose "Processing OUs"
         get-ADOrganizationalUnit -filter * -Properties * |
         ForEach-Object{
     
@@ -116,7 +138,17 @@
             $nTSec_group = $ntsec.Group
             $ntsec.Access | 
         
-            ForEach-Object {                                
+            ForEach-Object {
+            
+                # Get objecttype name
+                $ObjectType = [string]$_.ObjectType
+                $ObjectTypeGuid = "'" + "$ObjectType" + "'"
+                $ObjectTypeGuidCount = $TableTypes.Select("guidnumber = $ObjectTypeGuid").Count
+                if ($ObjectTypeGuidCount -gt 0){
+                    [string]$ObjectTypeName = $TableTypes.Select("guidnumber=$ObjectTypeGuid") | select guidname -ExpandProperty guidname -First 1   
+                }else{
+                    [string]$ObjectTypeName = ""
+                }                                
 
                 # Add the results to the data table
                 $TableDacl.Rows.Add(
@@ -128,6 +160,7 @@
                 [string]$_.ActiveDirectoryRights ,
                 [string]$_.InheritanceType,
                 [string]$_.ObjectType,
+                [string]$_.ObjectTypeName,
                 [string]$_.InheritedObjectType,
                 [string]$_.ObjectFlags,
                 [string]$_.AccessControlType,
@@ -138,11 +171,20 @@
         }
 
         # Return results
-        if ($User)
-        {
-            $TableDacl | Where-Object {$_.IdentityReference -like "*$user*"}
+        cd c:
+        if ($TableDacl.Rows.Count -gt 0){
+            if ($User)
+            {
+                if (($TableDacl | Where-Object {$_.IdentityReference -like "*$user*"}).Rows.count -gt 0){
+
+                }else{
+                    Write-Host "No matches found."
+                }
+            }else{
+                $TableDacl | Sort-Object IdentityReference
+            }
         }else{
-            $TableDacl | Sort-Object IdentityReference
+            Write-Host "No matches found."
         }
     }
 
@@ -150,7 +192,6 @@
     {
         # Remove mounted ADS drive
         Write-Verbose "Removing temp ADS drive $DriveName..."
-        cd c:
         Remove-PSDrive $DriveRandom
     }
 }
