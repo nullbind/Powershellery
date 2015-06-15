@@ -35,6 +35,7 @@
 
 .LINK
   https://msdn.microsoft.com/en-us/library/ms679006%28v=vs.85%29.aspx
+  https://msdn.microsoft.com/en-us/library/system.directoryservices.extendedrightaccessrule(v=vs.110).aspx
 
 #>
     [CmdletBinding(DefaultParametersetName="Default")]
