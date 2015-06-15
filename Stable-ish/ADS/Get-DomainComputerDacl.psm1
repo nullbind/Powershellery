@@ -177,11 +177,20 @@
         }
 
         # Return results
-        if ($User)
-        {
-            $TableDacl | Where-Object {$_.IdentityReference -like "*$user*"}
+        cd c:
+        if ($TableDacl.Rows.Count -gt 0){
+            if ($User)
+            {
+                if (($TableDacl | Where-Object {$_.IdentityReference -like "*$user*"}).Rows.count -gt 0){
+                    $TableDacl | Where-Object {$_.IdentityReference -like "*$user*"}
+                }else{
+                    Write-Host "No matches found."
+                }
+            }else{
+                $TableDacl | Sort-Object IdentityReference
+            }
         }else{
-            $TableDacl | Sort-Object IdentityReference
+            Write-Host "No matches found."
         }
     }
 
