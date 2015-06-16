@@ -40,6 +40,7 @@
   https://technet.microsoft.com/en-us/library/ee617195.aspx
   http://blogs.technet.com/b/joec/archive/2013/04/25/active-directory-delegation-via-powershell.aspx
   https://msdn.microsoft.com/en-us/library/system.directoryservices.activedirectoryrights.aspx
+  http://project500.squarespace.com/journal/2014/1/14/powershell-list-active-directory-ou-permissions-by-group
   http://blogs.technet.com/b/ashleymcglone/archive/2013/03/25/active-directory-ou-permissions-report-free-powershell-script-download.aspx
 
 #>
