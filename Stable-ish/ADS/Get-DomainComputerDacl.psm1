@@ -37,6 +37,7 @@
 
 .LINK
   https://msdn.microsoft.com/en-us/library/ms679006%28v=vs.85%29.aspx
+  https://technet.microsoft.com/en-us/library/ee617195.aspx
   http://blogs.technet.com/b/ashleymcglone/archive/2013/03/25/active-directory-ou-permissions-report-free-powershell-script-download.aspx
 
 #>
