@@ -1,5 +1,5 @@
 # create the FtpWebRequest and configure it
-$ftp = [System.Net.FtpWebRequest]::Create("ftp://209.118.108.217/data.txt")
+$ftp = [System.Net.FtpWebRequest]::Create("ftp://10.1.1.1/data.txt")
 $ftp = [System.Net.FtpWebRequest]$ftp
 $ftp.Method = [System.Net.WebRequestMethods+Ftp]::UploadFile
 $ftp.Credentials = new-object System.Net.NetworkCredential("anonymous","anonymous@localhost")
