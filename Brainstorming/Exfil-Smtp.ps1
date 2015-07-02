@@ -92,7 +92,8 @@ function Exfil-Smtp
         # Set the mail server for use
         $smtp = New-Object Net.Mail.SmtpClient("$MailServer")
         #$smtp.Credentials = (Get-Credential)
-        #$smtp.UseDefaultCredentials
+        #$smtp.Credentials = [System.Net.CredentialCache]::DefaultCredentials
+        #$smtp.UseDefaultCredentials  
 
         write-host "Sending test emails..."
 
