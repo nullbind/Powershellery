@@ -1,3 +1,9 @@
+# This script can be used to perform data exfiltration tests using sample cc and ssn via SMTP
+# Example: Exfil-Smtp -FromAddress spoofed@domain.com -ToAddress consultant@domain.com
+# Example: Exfil-Smtp -FromAddress spoofed@domain.com -ToAddress consultant@domain.com -MailServer 10.2.2.1
+# by scott sutherlnad (nullbind), netspi 2015
+# todo: lot of stuff
+
 function Exfil-Smtp
 { 
     [CmdletBinding()] Param(
