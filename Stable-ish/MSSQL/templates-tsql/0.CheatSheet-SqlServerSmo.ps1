@@ -1,14 +1,17 @@
-# SQL Server SMO - Cheat sheet
-# Author: Scott Sutherland (@_nullbind), 2015 NetSPI
+# Script Name:
+#   SQL Server SMO Cheatsheet (0.CheatSheet-SqlServerSmo.ps1)
+# Author:
+#   Scott Sutherland (@_nullbind), 2015 NetSPI
 # Description:  
-# This file contains basic example of how to grab informition fro SQL Server using
-# the SQL Server SDK SMO APIs.
+#   This file contains basic examples that show how to query SQL Server
+#   for configuration information using the SQL Server SDK SMO APIs.
 # Requirements:  
-# This script require the SMO libraries installed with SQL Server.  They are listed below:
-# C:\Program Files\Microsoft SQL Server\110\SDK\Assemblies\Microsoft.SqlServer.Smo.dll
-# C:\Program Files\Microsoft SQL Server\110\SDK\Assemblies\Microsoft.SqlServer.SmoExtended.dll
+#   The examples in this cheatsheet require two SMO libraries that get installed with SQL Server.  
+#   The file names have been listed below:
+#   - Microsoft.SqlServer.Smo.dll
+#   - Microsoft.SqlServer.SmoExtended.dll
 # References:
-# https://msdn.microsoft.com/en-us/library/microsoft.sqlserver.management.smo.server.aspx
+#   https://msdn.microsoft.com/en-us/library/microsoft.sqlserver.management.smo.server.aspx
 
 # Import SMO Libs - required for all examples below
 [System.Reflection.Assembly]::LoadWithPartialName("Microsoft.SqlServer.Smo") | Out-Null
