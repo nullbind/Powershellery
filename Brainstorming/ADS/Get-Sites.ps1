@@ -1,4 +1,5 @@
 ﻿# Ref: http://social.technet.microsoft.com/wiki/contents/articles/5392.active-directory-ldap-syntax-filters.aspx
+﻿# need to fix so it also works on remote dc, only works locally at the moment
 function Get-Sites
 {
     [CmdletBinding()]
