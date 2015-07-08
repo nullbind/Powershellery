@@ -1,0 +1,15 @@
+interesting containers
+- system
+- policies
+- meetings
+- wmipolicy
+- wireless
+- wmigpo
+- som
+
+interesting cns
+dba
+psps
+drivemaps
+delegated setup
+wireless LAN Computer Settings
