@@ -103,7 +103,7 @@ function Get-MimikatzCreds2012
 
                 # attempt session
                 [string]$MyComputer = $_.ComputerName    
-                Write-Verbose "Processing host $Counter of $ServerCount - $MyComputer"         
+                Write-Verbose "Established Sessions: $SessionCount of $MaxHosts - Processing server $Counter of $ServerCount"         
                 New-PSSession -ComputerName $MyComputer -Credential $Credential -ErrorAction SilentlyContinue            
             }
         }                   
