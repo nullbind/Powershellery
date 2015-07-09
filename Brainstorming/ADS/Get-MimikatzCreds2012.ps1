@@ -1,5 +1,5 @@
 # modder of other's stuff: Scott Sutherland (@_nullbind), 2015 NetSPI
-# Description:  This can be used to massmimikatz 2012 servers from a non domain system.
+# Description:  This uses psremoting to mass mimikatz 2012 servers from a non domain system.
 # Example: PS C:\> Get-MimikatzCreds2012 -DomainController dc1.acme.com -Credential acme\user -MaxHost 10
 # Note: this is based on work done by rob fuller, JosephBialek, carlos perez, benjamin delpy, and will schroeder.
 # Just for fun.
