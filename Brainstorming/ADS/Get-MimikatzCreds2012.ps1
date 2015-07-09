@@ -1,6 +1,6 @@
 # Author: Scott Sutherland (@_nullbind), 2015 NetSPI
 # Description:  This can be used to massmimikatz 2012 server from a non domain system.
-# Example: PS C:\> Get-MimikatzCreds2012 -DomainController dc1.acme.com -Credential acme\user
+# Example: PS C:\> Get-MimikatzCreds2012 -DomainController dc1.acme.com -Credential acme\user -verbose
 # Note: this is based on work done by rob fuller and will schroeder.
 # todo: add option to limit number of servers.
 # Just for fun.
