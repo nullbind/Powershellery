@@ -1,3 +1,5 @@
+# Get-DomainTrusts -DomainController dc1.acme.com -Credential acme.com\user
+
 function Get-DomainTrusts
 {
     [CmdletBinding()]
