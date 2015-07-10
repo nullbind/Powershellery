@@ -1,4 +1,4 @@
-﻿# Ref: http://social.technet.microsoft.com/wiki/contents/articles/5392.active-directory-ldap-syntax-filters.aspx
+#﻿# Ref: http://social.technet.microsoft.com/wiki/contents/articles/5392.active-directory-ldap-syntax-filters.aspx
 function Get-DomainController
 {
     [CmdletBinding()]
@@ -52,10 +52,32 @@ function Get-DomainController
             $objSearcher.SearchDN = New-Object System.DirectoryServices.DirectoryEntry("LDAP://$($SearchDN)")
         }
 
-        $ObjSearcher.FindAll() | ForEach-Object {
-             $_
+        # Create table for domain controllers
+        $TblDCS = New-Object System.Data.DataTable 
+        $TblDCS.Columns.Add("name") | Out-Null
+        $TblDCS.Columns.Add("dnshostname") | Out-Null
+        $TblDCS.Columns.Add("operatingsystem ") | Out-Null
+        $TblDCS.Columns.Add("operatingsystemversion") | Out-Null 
+        $TblDCS.Columns.Add("operatingsystemservicepack") | Out-Null
+        $TblDCS.Columns.Add("whenchanged") | Out-Null
+        $TblDCS.Columns.Add("logoncount") | Out-Null
+
+        $ObjSearcher.FindAll() | ForEach-Object {             
+
+             [string]$name = $_.properties.name
+             [string]$dnshostname = $_.properties.dnshostname
+             [string]$operatingsystem  = $_.properties.operatingsystem
+             [string]$operatingsystemversion  = $_.properties.operatingsystemversion
+             [string]$operatingsystemservicepack = $_.properties.operatingsystemservicepack
+             [string]$whenchanged = $_.properties.whenchanged
+             [string]$logoncount = $_.properties.logoncount             
+
+             #add dc to table
+            $TblDCS.Rows.Add($name,$dnshostname,$operatingsystem ,$operatingsystemversion ,$operatingsystemservicepack,$whenchanged,$logoncount) | Out-Null
+         
          }
         
+        return $TblDCS
     }
 
     End
