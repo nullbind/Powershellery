@@ -1,5 +1,7 @@
 # Ref: http://social.technet.microsoft.com/wiki/contents/articles/5392.active-directory-ldap-syntax-filters.aspx
-# need to finish one - should include member and nested members
+# author: scott sutherland (@_nullbind), netspi 2015
+# description: this will use adsi to query for domain group memebers.  It can be used from a non domain systems.
+# todo: do nested search
 function Get-GroupMember
 {
     [CmdletBinding()]
@@ -12,6 +14,10 @@ function Get-GroupMember
         [Parameter(Mandatory=$false,
         HelpMessage="Domain controller for Domain and Site that you want to query against.")]
         [string]$DomainController,
+
+        [Parameter(Mandatory=$false,
+        HelpMessage="Maximum number of Objects to pull from AD, limit is 1,000 .")]
+        [string]$Group = "Domain Admins",
 
         [Parameter(Mandatory=$false,
         HelpMessage="Maximum number of Objects to pull from AD, limit is 1,000 .")]
@@ -33,13 +39,13 @@ function Get-GroupMember
         {
             $root = New-Object System.DirectoryServices.DirectoryEntry "LDAP://$($DomainController)", $Credential.UserName,$Credential.GetNetworkCredential().Password
             $rootdn = $root | select distinguishedName -ExpandProperty distinguishedName
-            $objDomain = New-Object System.DirectoryServices.DirectoryEntry "LDAP://$($DomainController)/CN=Domain Admins, CN=Users,$rootdn" , $Credential.UserName,$Credential.GetNetworkCredential().Password
+            $objDomain = New-Object System.DirectoryServices.DirectoryEntry "LDAP://$($DomainController)/CN=$Group, CN=Users,$rootdn" , $Credential.UserName,$Credential.GetNetworkCredential().Password
             $objSearcher = New-Object System.DirectoryServices.DirectorySearcher $objDomain
         }
         else
         {
             $root = ([ADSI]"").distinguishedName
-            $objDomain = [ADSI]("LDAP://CN=Domain Admins, CN=Users," + $root)  
+            $objDomain = [ADSI]("LDAP://CN=$Group, CN=Users," + $root)  
             $objSearcher = New-Object System.DirectoryServices.DirectorySearcher $objDomain
         }
     }
