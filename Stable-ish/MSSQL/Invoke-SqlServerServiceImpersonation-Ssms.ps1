@@ -1,4 +1,4 @@
-# script: Invoke-SqlServerServiceImpersonation-Cmd.ps1
+# script: Invoke-SqlServerServiceImpersonation-Ssms.ps1
 # author: scott sutherland (@_nullbind), 2015 netspi
 # Description: This script enumerates running sql server processes and 
 # opens a ssms.exe (sql server management studio gui) running as each of the associated service accounts.  This can be
