@@ -1,7 +1,8 @@
 # Ref: http://social.technet.microsoft.com/wiki/contents/articles/5392.active-directory-ldap-syntax-filters.aspx
 # author: scott sutherland (@_nullbind), netspi 2015
 # description: this will use adsi to query for domain group memebers.  It can be used from a non domain systems.
-# todo: do nested search
+# Get-GroupMember -Group "Enterprise Admins"
+# Get-GroupMember -DomainController dc1.acme.com -Credential acme.com\user1 -Group "Enterprise Admins"
 function Get-GroupMember
 {
     [CmdletBinding()]
@@ -33,10 +34,9 @@ function Get-GroupMember
 
         [string]$SearchDN
     )
-    Begin
-    {
-        if ($DomainController -and $Credential.GetNetworkCredential().Password)
-        {
+  
+    if ($DomainController -and $Credential.GetNetworkCredential().Password)
+       {
             $root = New-Object System.DirectoryServices.DirectoryEntry "LDAP://$($DomainController)", $Credential.UserName,$Credential.GetNetworkCredential().Password
             $rootdn = $root | select distinguishedName -ExpandProperty distinguishedName
             $objDomain = New-Object System.DirectoryServices.DirectoryEntry "LDAP://$($DomainController)/CN=$Group, CN=Users,$rootdn" , $Credential.UserName,$Credential.GetNetworkCredential().Password
@@ -48,16 +48,16 @@ function Get-GroupMember
             $objDomain = [ADSI]("LDAP://CN=$Group, CN=Users," + $root)  
             $objSearcher = New-Object System.DirectoryServices.DirectorySearcher $objDomain
         }
-    }
+        
+        # Create data table to house results to return
+        $TblMembers = New-Object System.Data.DataTable 
+        $TblMembers.Columns.Add("GroupMember") | Out-Null 
+        $TblMembers.Clear()
 
-    Process
-    {
-        $objDomain.member        
-    }
+        $objDomain.member | %{                    
+            $TblMembers.Rows.Add($_.split("=")[1].split(",")[0]) | Out-Null 
+        }
 
-    End
-    {
-
-    }
+        return $TblMembers
 }
 
