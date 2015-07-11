@@ -1,4 +1,4 @@
-﻿# Ref: http://social.technet.microsoft.com/wiki/contents/articles/5392.active-directory-ldap-syntax-filters.aspx
+# Ref: http://social.technet.microsoft.com/wiki/contents/articles/5392.active-directory-ldap-syntax-filters.aspx
 # need to finish one - should include member and nested members
 function Get-GroupMember
 {
@@ -31,34 +31,22 @@ function Get-GroupMember
     {
         if ($DomainController -and $Credential.GetNetworkCredential().Password)
         {
-            $objDomain = New-Object System.DirectoryServices.DirectoryEntry "LDAP://$($DomainController)", $Credential.UserName,$Credential.GetNetworkCredential().Password
+            $root = New-Object System.DirectoryServices.DirectoryEntry "LDAP://$($DomainController)", $Credential.UserName,$Credential.GetNetworkCredential().Password
+            $rootdn = $root | select distinguishedName -ExpandProperty distinguishedName
+            $objDomain = New-Object System.DirectoryServices.DirectoryEntry "LDAP://$($DomainController)/CN=Domain Admins, CN=Users,$rootdn" , $Credential.UserName,$Credential.GetNetworkCredential().Password
             $objSearcher = New-Object System.DirectoryServices.DirectorySearcher $objDomain
         }
         else
         {
-            $objDomain = [ADSI]""  
+            $root = ([ADSI]"").distinguishedName
+            $objDomain = [ADSI]("LDAP://CN=Domain Admins, CN=Users," + $root)  
             $objSearcher = New-Object System.DirectoryServices.DirectorySearcher $objDomain
         }
     }
 
     Process
     {
-        $FilterDomain = $objDomain | select distinguishedName -ExpandProperty distinguishedName
-        #$CompFilter = "(memberOf:1.2.840.113556.1.4.1941:=cn=NetSPI Employees,ou=East,$FilterDomain)" # this should do nested groups
-        $CompFilter = "(&(objectCategory=user)(memberOf=*))"
-        $ObjSearcher.PageSize = $Limit
-        $ObjSearcher.Filter = $CompFilter
-        $ObjSearcher.SearchScope = "Subtree"
-
-        if ($SearchDN)
-        {
-            $objSearcher.SearchDN = New-Object System.DirectoryServices.DirectoryEntry("LDAP://$($SearchDN)")
-        }
-
-        $ObjSearcher.FindAll() | ForEach-Object {
-             $_
-         }
-        
+        $objDomain.member        
     }
 
     End
