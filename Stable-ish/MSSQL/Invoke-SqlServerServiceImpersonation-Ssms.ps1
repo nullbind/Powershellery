@@ -1,9 +1,10 @@
 # script: Invoke-SqlServerServiceImpersonation-Cmd.ps1
 # author: scott sutherland (@_nullbind), 2015 netspi
 # Description: This script enumerates running sql server processes and 
-# opens a ssms.exe (sql server management studio gui) as each of the service accounts.  This can be
-# used as to gain access to the sql server if the sa password is lost or locked.
+# opens a ssms.exe (sql server management studio gui) running as each of the associated service accounts.  This can be
+# used to gain access to the sql server if the sa password is lost or locked.
 #...also its a fun demo during pentests.
+# requirements: local administrator privileges on the windows server.
 # credits: JosephBialek for invoke-mikatz.ps1 and benjamin delpy for the original mimikatz.
 
 Write-Host "Getting list of SQL Server services..."
