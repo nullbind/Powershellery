@@ -1,7 +1,9 @@
 #todo:
-# winrm and os filters now dont work -add to computer search fuction
 # test all local and remote scenarios
-# psurl doesntwork
+# fix psurl
+# add write-verbose to let user know when no servers were provided
+# add will's / obscuresec's self-serv mimikatz file option
+# write examples
 
 
 # Author: Scott Sutherland (@_nullbind), 2015 NetSPI
@@ -16,7 +18,6 @@
 # Example: PS C:\> Invoke-MassMimikatz-PsRemoting -DomainController dc1.acme.com -Credential acme\user -MaxHost 10 -DomainController 10.1.1.1 -Credential  -verbose
 # Note: this is based on work done by rob fuller, JosephBialek, carlos perez, benjamin delpy, and will schroeder.
 # note: returns data table object.
-# todo: fix psurl, add host opt from pipeline, add from host pfrom file.
 # Just for fun.
 
 function Invoke-MassMimikatz-PsRemoting
