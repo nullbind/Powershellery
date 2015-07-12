@@ -153,8 +153,8 @@ function Invoke-MassMimikatz-PsRemoting
         $EaCount = $EnterpriseAdmins.row.count
         $DaCount = $DomainAdmins.row.count
 
-        Write-Verbose "Found $EaCount Enterprise Admins"
-        Write-Verbose "Found $DaCount Domain Admins"
+        Write-Verbose "Found $EaCount Enterprise Admins."
+        Write-Verbose "Found $DaCount Domain Admins."
         
 
         # ----------------------------------------
@@ -392,6 +392,10 @@ function Invoke-MassMimikatz-PsRemoting
             $TblServers.Clear()
             
             # Return passwords
+            if ($TblPasswordList.row.count -eq 0){
+                Write-Verbose "No credentials were recovered."
+            }
+
             $TblPasswordList | select domain,username,password -Unique | Sort-Object domain,username,password
         
         }else{
@@ -406,4 +410,3 @@ function Invoke-MassMimikatz-PsRemoting
 
     }
 }
-
