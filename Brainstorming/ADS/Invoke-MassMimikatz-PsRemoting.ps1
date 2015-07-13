@@ -94,8 +94,8 @@ PS C:\> "10.1.1.1" |Invoke-MassMimikatz-PsRemoting -Verbose -Credential domain\u
 
 Todo
     fix parsing so password hashes show up differently.
-    fix psurl
-    add will's / obscuresec's self-serv mimikatz file option
+    prettify
+    help updates
 
 References
 	pending
