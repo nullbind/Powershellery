@@ -4,10 +4,22 @@ Script mod author
     Scott Sutherland (@_nullbind), 2015 NetSPI
 
 Description
-    This can be used to massmimikatz servers with registered winrm SPNs from a non domain system.
-
+    This script can be used to run mimikatz on multiple servers from both domain and non-domain systems using psremoting.
+    Features/credits:
+    	 - Idea: rob, will, and carlos
+	 - Input: Accepts host from pipeline (will's code)
+	 - Input: Accepts host list from file (will's code)
+	 - AutoTarget option will lookup domain computers from DC (carlos's code)
+	 - Ability to filter by OS (scott's code)
+	 - Ability to only target domain systems with WinRm installed (vai SPNs) (scott's code)
+	 - Ability to limit number of hosts to run Mimikatz on (scott's code)
+	 - More descriptive verbose error messages (scott's code)
+	 - Ability to specify alternative credentials and connect from a non-domain system (carlos's code)
+	 - Runs mimikatz on target system using ie/download/execute cradle (chris's, Joseph's, Matt's, and benjamin's code)
+	 - Returns enumerated credentials in a datable which can be used in the pipeline (scott's code)
+	 
 Notes
-    This is based on work done by rob fuller, JosephBialek, carlos perez, benjamin delpy, and will schroeder.
+    This is based on work done by rob fuller, Joseph Bialek, carlos perez, benjamin delpy, Matt Graeber, Chris campbell, and will schroeder.
     Returns data table object to pipeline with creds.
     Weee PowerShell.
 
@@ -83,6 +95,9 @@ Todo
     fix parsing so password hashes show up differently.
     fix psurl
     add will's / obscuresec's self-serv mimikatz file option
+
+References
+	pending
 
 #>
 function Invoke-MassMimikatz-PsRemoting
