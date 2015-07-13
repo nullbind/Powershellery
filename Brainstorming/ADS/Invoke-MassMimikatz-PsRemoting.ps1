@@ -100,10 +100,9 @@ Todo
 References
 	https://github.com/gentilkiwi/mimikatz
 	https://github.com/clymb3r/PowerShell/tree/master/Invoke-Mimikatz
-	http://carnal0wnage.attackresearch.com/2013/10/dumping-domains-worth-of-passwords-with.html
+	https://github.com/mubix/post-exploitation/tree/master/scripts/mass_mimikatz
 	https://raw.githubusercontent.com/Veil-Framework/PowerTools/master/PewPewPew/Invoke-MassMimikatz.ps1
-	
-
+	http://blogs.technet.com/b/heyscriptingguy/archive/2009/10/29/hey-scripting-guy-october-29-2009.aspx
 #>
 function Invoke-MassMimikatz-PsRemoting
 {
