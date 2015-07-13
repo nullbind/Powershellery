@@ -16,7 +16,8 @@ Description
 	 - More descriptive verbose error messages (scott's code)
 	 - Ability to specify alternative credentials and connect from a non-domain system (carlos's code)
 	 - Runs mimikatz on target system using ie/download/execute cradle (chris's, Joseph's, Matt's, and benjamin's code)
-	 - Returns enumerated credentials in a datable which can be used in the pipeline (scott's code)
+	 - Parses mimikatz output (will's code)
+	 - Returns enumerated credentials in a data table which can be used in the pipeline (scott's code)
 	 
 Notes
     This is based on work done by rob fuller, Joseph Bialek, carlos perez, benjamin delpy, Matt Graeber, Chris campbell, and will schroeder.
