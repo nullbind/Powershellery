@@ -98,7 +98,11 @@ Todo
     help updates
 
 References
-	pending
+	https://github.com/gentilkiwi/mimikatz
+	https://github.com/clymb3r/PowerShell/tree/master/Invoke-Mimikatz
+	http://carnal0wnage.attackresearch.com/2013/10/dumping-domains-worth-of-passwords-with.html
+	https://raw.githubusercontent.com/Veil-Framework/PowerTools/master/PewPewPew/Invoke-MassMimikatz.ps1
+	
 
 #>
 function Invoke-MassMimikatz-PsRemoting
