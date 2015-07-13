@@ -1,7 +1,6 @@
 #todo:
 # test all local and remote scenarios
 # fix psurl
-# add write-verbose to let user know when no servers were provided
 # add will's / obscuresec's self-serv mimikatz file option
 # write examples
 
@@ -446,7 +445,13 @@ function Invoke-MassMimikatz-PsRemoting
             # Establish sessions
             # ---------------------------------------- 
             $ServerCount = $TblServers.Rows.Count
-            Write-Verbose "Found $ServerCount servers that met search criteria."
+
+            if($ServerCount -eq 0){
+                Write-Verbose "No target systems were provided."
+                break
+            }
+
+            Write-Verbose "Found $ServerCount servers that met search criteria."            
             Write-verbose "Attempting to create $MaxHosts ps sessions..."
 
             # Set counters
