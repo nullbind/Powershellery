@@ -520,8 +520,6 @@ function Invoke-MassMimikatz-PsRemoting
                         $EnterpriseAdmins |
                         ForEach-Object {
                             $EaUser = $_.GroupMember
-                            Write-Verbose "EA USER: $EaUser"
-                            Write-Verbose "Kat User: $pwusername"
                             if ($EaUser -eq $pwusername){
                                 $ea = "Yes"
                             }
@@ -531,8 +529,6 @@ function Invoke-MassMimikatz-PsRemoting
                         $DomainAdmins |
                         ForEach-Object {
                             $DaUser = $_.GroupMember
-                            Write-Verbose "DA USER: $DaUser"
-                            Write-Verbose "Kat User: $pwusername"
                             if ($DaUser -eq $pwusername){
                                 $da = "Yes"
                             }
