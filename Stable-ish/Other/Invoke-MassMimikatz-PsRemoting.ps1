@@ -586,7 +586,12 @@ function Invoke-MassMimikatz-PsRemoting
                     # attempt session
                     [string]$MyComputer = $_.ComputerName    
                     
-                    New-PSSession -ComputerName $MyComputer -Credential $Credential -ErrorAction SilentlyContinue -ThrottleLimit $MaxHosts | Out-Null          
+                    if($Password)
+                    {
+                        New-PSSession -ComputerName $MyComputer -Credential $Credential -ErrorAction SilentlyContinue -ThrottleLimit $MaxHosts | Out-Null          
+                    }else{
+                        New-PSSession -ComputerName $MyComputer -ErrorAction SilentlyContinue -ThrottleLimit $MaxHosts | Out-Null          
+                    }
                     
                     # Get session count
                     $SessionCount = Get-PSSession | Measure-Object | select count -ExpandProperty count
