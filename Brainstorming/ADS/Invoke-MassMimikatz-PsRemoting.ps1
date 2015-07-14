@@ -501,6 +501,18 @@ function Invoke-MassMimikatz-PsRemoting
                 }
             }
 
+            $ServerCount = $TblServers.Rows.Count
+            if($ServerCount -eq 0){
+                Write-Verbose "No target systems were provided."
+                break
+            }
+
+            if($ServerCount -lt $MaxHosts){
+                $MaxHosts = $ServerCount
+            }
+
+            Write-Verbose "Found $ServerCount servers that met search criteria." 
+
 
             # ----------------------------------------
             # Get list of entrprise/domain admins
@@ -522,19 +534,7 @@ function Invoke-MassMimikatz-PsRemoting
 
             # ----------------------------------------
             # Establish sessions
-            # ---------------------------------------- 
-            $ServerCount = $TblServers.Rows.Count
-
-            if($ServerCount -eq 0){
-                Write-Verbose "No target systems were provided."
-                break
-            }
-
-            if($ServerCount -lt $MaxHosts){
-                $MaxHosts = $ServerCount
-            }
-
-            Write-Verbose "Found $ServerCount servers that met search criteria."            
+            # ----------------------------------------            
             Write-verbose "Attempting to create $MaxHosts ps sessions..."
 
             # Set counters
