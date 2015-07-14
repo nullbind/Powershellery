@@ -469,6 +469,13 @@ function Invoke-MassMimikatz-PsRemoting
                     $TblServers.Rows.Add($_) | Out-Null 
                 }
             }
+        
+         }
+
+        # Clean and results
+        End
+        {
+
 
             # Get list of systems from the command line / pipeline
             if($HostList){
@@ -3348,11 +3355,7 @@ Invoke-Mimikatz -DumpCreds
             }else{
                 Write-verbose "No ps sessions could be created."
             }                 
-        }
-
-        # Clean and results
-        End
-        {
+    
                 # Clear server list
                 $TblServers.Clear()
 
@@ -3365,3 +3368,4 @@ Invoke-Mimikatz -DumpCreds
                 }                
         }
     }
+
