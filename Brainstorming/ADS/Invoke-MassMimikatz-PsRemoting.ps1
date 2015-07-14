@@ -11,11 +11,12 @@ Description
 	 - Input: Accepts host list from file (will's code)
 	 - AutoTarget option will lookup domain computers from DC (carlos's code)
 	 - Ability to filter by OS (scott's code)
-	 - Ability to only target domain systems with WinRm installed (vai SPNs) (scott's code)
+	 - Ability to only target domain systems with WinRm installed (via SPNs) (scott's code)
 	 - Ability to limit number of hosts to run Mimikatz on (scott's code)
+     	 - enterprise and domain admin lookup (scotts code)
 	 - More descriptive verbose error messages (scott's code)
-	 - Ability to specify alternative credentials and connect from a non-domain system (carlos's code)
-	 - Runs mimikatz on target system using ie/download/execute cradle (chris's, Joseph's, Matt's, and benjamin's code)
+	 - Ability to specify alternative credentials and query dc from non-domain system (carlos's code)
+	 - Run mimikatz on target system (chris's, Joseph's, Matt's, and benjamin's code)
 	 - Parses mimikatz output (will's code)
 	 - Returns enumerated credentials in a data table which can be used in the pipeline (scott's code)
 	 
@@ -98,16 +99,12 @@ PS C:\> "10.1.1.1" |Invoke-MassMimikatz-PsRemoting -Verbose -Credential domain\u
     cleartext test.domain myadmin       MyUSerPassword!                  No              No        
     ntlm hash test        myadmin       68ed2cc11cd1b1bd0f29c7f6afe95c92 No              No                  
 
-
-Todo
-    fix loop
-    fix parsing so password hashes show up differently.
-    fix psurl
-    add will's / obscuresec's self-serv mimikatz file option
-
 References
-	pending
-
+    	https://github.com/gentilkiwi/mimikatz
+	https://github.com/clymb3r/PowerShell/tree/master/Invoke-Mimikatz
+	https://github.com/mubix/post-exploitation/tree/master/scripts/mass_mimikatz
+	https://raw.githubusercontent.com/Veil-Framework/PowerTools/master/PewPewPew/Invoke-MassMimikatz.ps1
+	http://blogs.technet.com/b/heyscriptingguy/archive/2009/10/29/hey-scripting-guy-october-29-2009.aspx
 #>
 function Invoke-MassMimikatz-PsRemoting
 {
