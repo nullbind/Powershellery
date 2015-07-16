@@ -124,8 +124,8 @@
 	       https://technet.microsoft.com/en-us/library/hh849694.aspx
 
  	    .More notes
- 	    - Requires trusted hosts psremoting to be enabled locally.
- 	    
+ 	    - Requires trusted hosts / psremoting to be enabled locally.
+ 	    - Todo: Add check for psremoting, add option to enable locally, add options to mod remote winrm trusted hosts via get-wmimethod
 	    #list wmi trusted hosts with powershell
 	    Get-Item WSMan:\localhost\Client\TrustedHosts
             #set hosts to trusted with powershell
