@@ -122,6 +122,15 @@
 	       https://raw.githubusercontent.com/Veil-Framework/PowerTools/master/PewPewPew/Invoke-MassMimikatz.ps1
 	       http://blogs.technet.com/b/heyscriptingguy/archive/2009/10/29/hey-scripting-guy-october-29-2009.aspx
 	       https://technet.microsoft.com/en-us/library/hh849694.aspx
+
+ 	    .More notes
+ 	    - Requires trusted hosts psremoting to be enabled locally.
+ 	    
+	    #list wmi trusted hosts with powershell
+	    Get-Item WSMan:\localhost\Client\TrustedHosts
+            #set hosts to trusted with powershell
+	    set-item wsman:localhost\client\trustedhosts -value *
+	    set-item wsman:localhost\client\trustedhosts -value 10.1.1.1
 #>
 function Invoke-MassMimikatz-PsRemoting
 {
