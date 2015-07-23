@@ -81,12 +81,12 @@ Goude 2012, TrueSec
         foreach($b in ($StartAddress.Split(".")[1]..$EndAddress.Split(".")[1])) {
         foreach($c in ($StartAddress.Split(".")[2]..$EndAddress.Split(".")[2])) {
             foreach($d in ($StartAddress.Split(".")[3]..$EndAddress.Split(".")[3])) {
-            write-progress -activity PingSweep -status "$a.$b.$c.$d" -percentcomplete (($d/($EndAddress.Split(".")[3])) * 100)
+            #write-progress -activity PingSweep -status "$a.$b.$c.$d" -percentcomplete (($d/($EndAddress.Split(".")[3])) * 100)
             $pingStatus = $ping.Send("$a.$b.$c.$d",$TimeOut)
-            if($pingStatus.Status -ne "dontdothis") {
+            #if($pingStatus.Status -ne "dontdothis") {
                 if($ResolveHost) {
-                write-progress -activity ResolveHost -status "$a.$b.$c.$d" -percentcomplete (($d/($EndAddress.Split(".")[3])) * 100) -Id 1
-                $getHostEntry = [Net.DNS]::BeginGetHostEntry($pingStatus.Address, $null, $null)
+                #write-progress -activity ResolveHost -status "$a.$b.$c.$d" -percentcomplete (($d/($EndAddress.Split(".")[3])) * 100) -Id 1
+                $getHostEntry = [Net.DNS]::BeginGetHostEntry($StartAddress, $null, $null)
                 }
                 if($ScanPort) {
                 $openPorts = @()
@@ -94,7 +94,7 @@ Goude 2012, TrueSec
                     $port = $Ports[($i-1)]
                     write-progress -activity PortScan -status "$a.$b.$c.$d" -percentcomplete (($i/($Ports.Count)) * 100) -Id 2
                     $client = New-Object System.Net.Sockets.TcpClient
-                    $beginConnect = $client.BeginConnect($pingStatus.Address,$port,$null,$null)
+                    $beginConnect = $client.BeginConnect($StartAddress,$port,$null,$null)
                     if($client.Connected) {
                     $openPorts += $port
                     } else {
@@ -116,7 +116,7 @@ Goude 2012, TrueSec
                 HostName = $hostName;
                 Ports = $openPorts
                 } | Select-Object IPAddress, HostName, Ports
-            }
+            #}
             }
         }
         }
