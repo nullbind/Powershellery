@@ -205,6 +205,7 @@ function Invoke-MassMimikatz-PsRemoting
             }else{
                 Write-Verbose "PowerShell Remoting is not enabled. Run the command below as an adiministrator to enable it."
                 Write-Verbose "Enable-PSRemoting -Force"
+                return
             }
 
             # create ps credential
