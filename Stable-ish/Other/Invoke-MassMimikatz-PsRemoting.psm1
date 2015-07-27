@@ -199,13 +199,12 @@ function Invoke-MassMimikatz-PsRemoting
         {
 
             # Check if ps remoting is enabled locally
-            $WinRMState = Get-WmiObject -Class win32_service | Where-Object {$_.name -like "WinRM"} | select StartMode -ExpandProperty StartMode
-            if($WinRMState -like "Auto" -or $WinRMState -like "Manual"){
-                Write-Verbose "WinRM is installed and running on the local system."
+            $WinRMState = Get-WmiObject -Class win32_service | Where-Object {$_.name -like "WinRM"} | select State -ExpandProperty State
+            if($WinRMState -like "Running"){
+                Write-Verbose "WinRM is installed and running."
             }else{
                 Write-Verbose "PowerShell Remoting is not enabled. Run the command below as an adiministrator to enable it."
-                Write-Verbose "Enabled-PSRemoting -Force"
-                break
+                Write-Verbose "Enable-PSRemoting -Force"
             }
 
             # create ps credential
