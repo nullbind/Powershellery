@@ -5,7 +5,7 @@
 # used to gain access to the sql server if the sa password is lost or locked.
 #...also its a fun demo during pentests.
 # requirements: local administrator privileges on the windows server.
-# credits: JosephBialek for invoke-mikatz.ps1 and benjamin delpy for the original mimikatz.
+# credits: JosephBialek for Invoke-TokenManipulation.ps1
 
 Write-Host "Getting list of SQL Server services..."
 $SqlServices = Get-WmiObject -Class win32_service | where {$_.pathname -like "*Microsoft SQL Server*"} | select displayname,pathname,StartName 
