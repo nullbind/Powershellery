@@ -4,6 +4,7 @@
 # opens a ssms.exe (sql server management studio gui) running as each of the associated service accounts.  This can be
 # used to gain access to the sql server if the sa password is lost or locked.
 #...also its a fun demo during pentests.
+# assumes that the sql service accounts are part of the sysadmin role (default configuration)
 # requirements: local administrator privileges on the windows server. - tested on 2k5,2k8,2k14
 # credits: JosephBialek for invoke-mikatz.ps1 and benjamin delpy for the original mimikatz.
 
