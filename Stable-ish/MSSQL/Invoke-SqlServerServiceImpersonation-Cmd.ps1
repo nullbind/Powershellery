@@ -4,6 +4,7 @@
 # opens a cmd.exe console running as each of the associated service account.  This can be
 # used to gain access to the sql server if the sa password is lost or locked.
 #...also its a fun demo during pentests.
+# assumes that the sql service accounts are part of the sysadmin role (default configuration)
 # requirements: local administrator privileges on the windows server.
 # credits: JosephBialek for Invoke-TokenManipulation.ps1
 
