@@ -1,6 +1,27 @@
-# Usage: Get-DomainFileServers 
-# Usage: Get-DomainFileServers -Verbose
-# Usage: Get-DomainFileServers -Verbose -DomainController ip -username domain\user -password 'passwordhere'
+<#
+
+SCRIPT
+Get-DomainFileServers.ps1
+
+PSEUDO AUTHOR
+Scott Sutherland (@_nullbind), NetSPI 2015
+
+DESCRIPTION
+This script will enumerate file servers from Active Directory user properties, DFS, and group policy
+preferences configuration files.  It can be run as the current user or alternative credentials can 
+be provided to authenticate to a domain controller that the current user/computer isn't associated with.  
+
+USAGE EXAMPLES
+Get-DomainFileServers 
+Get-DomainFileServers -Verbose
+Get-DomainFileServers -Verbose -DomainController ip -username domain\user -password 'passwordhere'
+
+REFERENCES
+Most of the code here is based on the PowerView functions written by Will Schoeder.
+https://github.com/PowerShellEmpire/PowerTools/tree/master/PowerView
+
+#>
+
 
 # -------------------------------------------
 # Function: Get-DomainDfsServers
