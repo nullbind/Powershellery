@@ -17,7 +17,7 @@ Get-DomainFileServers -Verbose
 Get-DomainFileServers -Verbose -DomainController ip -username domain\user -password 'passwordhere'
 
 REFERENCES
-Most of the code here is based on the PowerView functions written by Will Schoeder.
+Most of the code here is based on the PowerView functions written by Will Schoeder (@harmj0y).
 https://github.com/PowerShellEmpire/PowerTools/tree/master/PowerView
 
 #>
