@@ -3,7 +3,10 @@
 SCRIPT
 Get-DomainFileServers.ps1
 
-PSEUDO AUTHOR
+AUTHOR
+Will Schoeder (@harmj0y)
+
+MOD AUTHOR
 Scott Sutherland (@_nullbind), NetSPI 2015
 
 DESCRIPTION
