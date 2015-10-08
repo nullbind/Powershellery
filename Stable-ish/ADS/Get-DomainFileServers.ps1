@@ -13,7 +13,7 @@ DESCRIPTION
 This script will enumerate file servers from Active Directory user properties, DFS, and group policy
 preferences configuration files.  It can be run as the current user or alternative credentials can 
 be provided to authenticate to a domain controller that the current user/computer isn't associated with.
-Below is a summary of the modification to Will's script:
+Below is a summary of the modifications to Will's script:
 - Added support for the use of alternative credentials so users can connect to domain controllers 
   that their computer is not associated with.
 - Replaced recursive directory search with list of default file locations to speed up file search.
