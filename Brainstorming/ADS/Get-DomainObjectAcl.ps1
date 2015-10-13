@@ -2,7 +2,7 @@
 # Function: Get-DomainObjectAcl
 # -------------------------------------------
 # Ref: http://www.experts-exchange.com/Programming/Languages/Scripting/clearPowershell/Q_24625381.html
-# add parameter for objecttype (ou/user/group/computer) and work throug bugs
+# add filter for objecttype (ou/user/group/computer)
 function Get-DomainObjectAcls
 {
     [CmdletBinding()]
@@ -70,14 +70,14 @@ function Get-DomainObjectAcls
         {                  
             # Setup table fof object dacls
             $TableDomainObjects = New-Object System.Data.DataTable
-            $TableDomainObjects.Columns.Add("Name") | Out-Null
+            #$TableDomainObjects.Columns.Add("Name") | Out-Null
             $TableDomainObjects.Columns.Add("distinguishedName") | Out-Null
             $TableDomainObjects.Columns.Add("SecurityPrincipal") | Out-Null
             $TableDomainObjects.Columns.Add("AccessType") | Out-Null
             $TableDomainObjects.Columns.Add("Permissions") | Out-Null
-            $TableDomainObjects.Columns.Add("AppliesTo") | Out-Null
-            $TableDomainObjects.Columns.Add("AppliesToObjectType") | Out-Null
-            $TableDomainObjects.Columns.Add("AppliesToProperty") | Out-Null
+            #$TableDomainObjects.Columns.Add("AppliesTo") | Out-Null
+            #$TableDomainObjects.Columns.Add("AppliesToObjectType") | Out-Null
+            #$TableDomainObjects.Columns.Add("AppliesToProperty") | Out-Null
             $TableDomainObjects.Clear()
 
             # Setup the LDAP filter
@@ -92,35 +92,25 @@ function Get-DomainObjectAcls
                 $objSearcher.SearchDN = New-Object System.DirectoryServices.DirectoryEntry("LDAP://$($SearchDN)")
             }
 
-            # Find dacl information
+            # Find DACL information
             $ObjSearcher.FindAll() | 
             ForEach-Object {
-
                 
                 # Retrieve all Access Control Entries from the AD Object
                 $Object = $_.GetDirectoryEntry()                    
-                $ObjectAcl = $Object.PsBase.ObjectSecurity.GetAccessRules(`
-                $True, `
-                $False, `
-                [Security.Principal.NTAccount])
-               
+                $ObjectAcl = $Object.PsBase.ObjectSecurity.GetAccessRules($True,$False,[Security.Principal.NTAccount])
+
+                #$ObjectAcl | gm
+
                 # Filter down to explicit Access Control Entries and domain security principals
                 $ObjectAcl = $ObjectAcl | Where-Object { 
                     $_.IsInherited -eq $False -And 
                     $_.IdentityReference -Like "*\*" -And 
                     $_.IdentityReference -NotMatch "NT AUTHORITY*|BUILTIN*" 
-                }
-
-                <#
-                # Grab DACL information - start fixing here
-                $distinguishedName = $_.distinguishedName
-                $SecurityPrincipal = $_.IdentityReference.ToString() 
-                $AccessType = $_.AccessControlType
-                $Permissions = $_.ActiveDirectoryRights
-
+                }              
                 
                 # Change the values for InheritanceType to friendly names
-                $AppliesTo = switch ($_.InheritanceType) 
+                $AppliesTo = switch ($ObjectAcl.InheritanceType) 
                 {
                   "None"            { "This object only" }
                   "Descendents"     { "All child objects" }
@@ -129,17 +119,23 @@ function Get-DomainObjectAcls
                   "All"             { "This object and all child objects"} 
                 }
 
+                <#
                 # Search for the Object Type in the Schema
-                if($_.InheritedObjectType.ToString() -NotMatch "0{8}.*") 
+                [string]$_.InheritedObjectType
+                if([string]$_.InheritedObjectType -NotMatch "0{8}.*") 
                 {
-                    $LdapFilter = "(SchemaIDGUID=\$($_.InheritedObjectType.ToByteArray() | `
-                    %{ '{0:X2}' -f $_ }))"
+                    [string]$InheritedObjectTypeStuff = [string]$_.InheritedObjectType                    
+                    write-host "blah:$InheritedObjectTypeStuff"
+                    $LdapFilter = "(SchemaIDGUID=\$InheritedObjectTypeStuff | `
+                    %{ '{0:X2}' -f $_ })"
                     $Result = (New-Object DirectoryServices.DirectorySearcher($Schema, $LdapFilter)).FindOne()
-                    $AppliesToObjectType = $Result.Properties["ldapdisplayname"]
+                    $AppliesToObjectType = $Result.Properties.ldapdisplayname
                 }else{ 
                     $AppliesToObjectType = "All" 
-                }
+                } 
+                $AppliesToObjectType
 
+               
                 # Figure out what rights this applies to 
                 if ($_.ObjectType.ToString() -NotMatch "0{8}.*") 
                 {
@@ -163,9 +159,20 @@ function Get-DomainObjectAcls
                     $AppliesToProperty = "All" 
                 } 
                 #>
-                # Add object dacl information to table                
-                #$TableDomainObjects.Rows.Add( 
-                #) | Out-Null                        
+                
+                #$ObjectAcl.distinguishedName
+                #$ObjectAcl.IdentityReference                       
+                #$ObjectAcl.AccessControlType
+                #$ObjectAcl.ActiveDirectoryRights
+                #$AppliesTo
+
+                #Add object dacl information to table                
+                $TableDomainObjects.Rows.Add( 
+                [string]$ObjectAcl.distinguishedName,
+                [string]$ObjectAcl.IdentityReference,                      
+                [string]$ObjectAcl.AccessControlType,
+                [string]$ObjectAcl.ActiveDirectoryRights
+                ) | Out-Null                        
             }       
                                             
             # Check for deligated rights
@@ -177,9 +184,7 @@ function Get-DomainObjectAcls
             }else{
                 Write-Verbose "0 deligated rights were found."
             }        
-        }        
-        catch
-        {
+        }catch{
           "Error was $_"
           $line = $_.InvocationInfo.ScriptLineNumber
           "Error was in Line $line"
