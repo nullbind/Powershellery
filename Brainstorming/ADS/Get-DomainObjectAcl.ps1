@@ -70,13 +70,13 @@ function Get-DomainObjectAcls
         {                  
             # Setup table fof object dacls
             $TableDomainObjects = New-Object System.Data.DataTable
-            #$TableDomainObjects.Columns.Add("Name") | Out-Null
+            $TableDomainObjects.Columns.Add("Name") | Out-Null
             $TableDomainObjects.Columns.Add("distinguishedName") | Out-Null
             $TableDomainObjects.Columns.Add("SecurityPrincipal") | Out-Null
             $TableDomainObjects.Columns.Add("AccessType") | Out-Null
             $TableDomainObjects.Columns.Add("Permissions") | Out-Null
-            #$TableDomainObjects.Columns.Add("AppliesTo") | Out-Null
-            #$TableDomainObjects.Columns.Add("AppliesToObjectType") | Out-Null
+            $TableDomainObjects.Columns.Add("AppliesTo") | Out-Null
+            $TableDomainObjects.Columns.Add("AppliesToObjectType") | Out-Null
             #$TableDomainObjects.Columns.Add("AppliesToProperty") | Out-Null
             $TableDomainObjects.Clear()
 
@@ -100,79 +100,75 @@ function Get-DomainObjectAcls
                 $Object = $_.GetDirectoryEntry()                    
                 $ObjectAcl = $Object.PsBase.ObjectSecurity.GetAccessRules($True,$False,[Security.Principal.NTAccount])
 
-                #$ObjectAcl | gm
-
                 # Filter down to explicit Access Control Entries and domain security principals
                 $ObjectAcl = $ObjectAcl | Where-Object { 
                     $_.IsInherited -eq $False -And 
                     $_.IdentityReference -Like "*\*" -And 
                     $_.IdentityReference -NotMatch "NT AUTHORITY*|BUILTIN*" 
-                }              
+                }     
                 
-                # Change the values for InheritanceType to friendly names
-                $AppliesTo = switch ($ObjectAcl.InheritanceType) 
-                {
-                  "None"            { "This object only" }
-                  "Descendents"     { "All child objects" }
-                  "SelfAndChildren" { "This object and one level Of child objects" }
-                  "Children"        { "One level of child objects" }
-                  "All"             { "This object and all child objects"} 
-                }
+                # get acls
+                $ObjectAcl |  
+                ForEach-Object{                   
 
-                <#
-                # Search for the Object Type in the Schema
-                [string]$_.InheritedObjectType
-                if([string]$_.InheritedObjectType -NotMatch "0{8}.*") 
-                {
-                    [string]$InheritedObjectTypeStuff = [string]$_.InheritedObjectType                    
-                    write-host "blah:$InheritedObjectTypeStuff"
-                    $LdapFilter = "(SchemaIDGUID=\$InheritedObjectTypeStuff | `
-                    %{ '{0:X2}' -f $_ })"
-                    $Result = (New-Object DirectoryServices.DirectorySearcher($Schema, $LdapFilter)).FindOne()
-                    $AppliesToObjectType = $Result.Properties.ldapdisplayname
-                }else{ 
-                    $AppliesToObjectType = "All" 
-                } 
-                $AppliesToObjectType
-
-               
-                # Figure out what rights this applies to 
-                if ($_.ObjectType.ToString() -NotMatch "0{8}.*") 
-                {
-                    # Search for a possible Extended-Right or Property Set
-                    $LdapFilter = "(rightsGuid=$($_.ObjectType.ToString()))"
-                    $Result = (New-Object DirectoryServices.DirectorySearcher($ExtendedRights, $LdapFilter)).FindOne()
-                    If ($Result) 
+                    # Change the values for InheritanceType to friendly names
+                    $AppliesTo = switch ($_.InheritanceType) 
                     {
-                        $AppliesToProperty = $Result.Properties["displayname"]
-                    }else{   
-                                     
-                        # Search for the attribute name in the Schema
-                        $LdapFilter = "(SchemaIDGUID=\$($_.ObjectType.ToByteArray() |
-                        ForEach-Object{ 
-                            '{0:X2}' -f $_ 
-                        }))"
-                        $Result = (New-Object DirectoryServices.DirectorySearcher($Schema, $LdapFilter)).FindOne()
-                        $AppliesToProperty =  $Result.Properties["ldapdisplayname"]
-                    }
-                }else{ 
-                    $AppliesToProperty = "All" 
-                } 
-                #>
-                
-                #$ObjectAcl.distinguishedName
-                #$ObjectAcl.IdentityReference                       
-                #$ObjectAcl.AccessControlType
-                #$ObjectAcl.ActiveDirectoryRights
-                #$AppliesTo
+                      "None"            { "This object only" }
+                      "Descendents"     { "All child objects" }
+                      "SelfAndChildren" { "This object and one level Of child objects" }
+                      "Children"        { "One level of child objects" }
+                      "All"             { "This object and all child objects"} 
+                    }                    
 
-                #Add object dacl information to table                
-                $TableDomainObjects.Rows.Add( 
-                [string]$ObjectAcl.distinguishedName,
-                [string]$ObjectAcl.IdentityReference,                      
-                [string]$ObjectAcl.AccessControlType,
-                [string]$ObjectAcl.ActiveDirectoryRights
-                ) | Out-Null                        
+                    # Search for the Object Type in the Schema
+                    if([string]$_.InheritedObjectType -NotMatch "0{8}.*") 
+                    {
+                        [string]$InheritedObjectTypeStuff = [string]$_.InheritedObjectType                    
+                        $LdapFilter = "(SchemaIDGUID=\$InheritedObjectTypeStuff | `
+                        %{ '{0:X2}' -f $_ })"
+                        $Result = (New-Object DirectoryServices.DirectorySearcher($Schema, $LdapFilter)).FindOne()
+                        $AppliesToObjectType = $Result.Properties.ldapdisplayname
+                    }else{ 
+                        $AppliesToObjectType = "All" 
+                    }
+                    
+                    <#
+                    # Figure out what rights this applies to 
+                    if ([string]$_.ObjectType -NotMatch "0{8}.*") 
+                    {
+                        # Search for a possible Extended-Right or Property Set
+                        $LdapFilter = "(rightsGuid=[string]$_.ObjectType)"
+                        $Result = (New-Object DirectoryServices.DirectorySearcher($ExtendedRights, $LdapFilter)).FindOne()
+                        If ($Result) 
+                        {
+                            $AppliesToProperty = $Result.Properties["displayname"]
+                        }else{   
+                                     
+                            # Search for the attribute name in the Schema
+                            $LdapFilter = "(SchemaIDGUID=\$($_.ObjectType.ToByteArray() |
+                            ForEach-Object{ 
+                                '{0:X2}' -f $_ 
+                            }))"
+                            $Result = (New-Object DirectoryServices.DirectorySearcher($Schema, $LdapFilter)).FindOne()
+                            $AppliesToProperty =  $Result.Properties["ldapdisplayname"]
+                        }
+                    }else{ 
+                        $AppliesToProperty = "All" 
+                    }   
+                    #>
+
+                    #Add object dacl information to table                               
+                    $TableDomainObjects.Rows.Add( 
+                        [string]$Object.Get("name"),
+                        [string]$Object.Get("distinguishedName"),  
+                        [string]$_.IdentityReference,
+                        [string]$_.AccessControlType,
+                        [string]$_.ActiveDirectoryRights,
+                        [string]$AppliesTo,
+                        [string]$AppliesToObjectType
+                    ) | Out-Null                                                              
+                }           
             }       
                                             
             # Check for deligated rights
