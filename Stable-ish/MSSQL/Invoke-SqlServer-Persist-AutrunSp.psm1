@@ -1,4 +1,4 @@
-function Invoke-SqlServer-Backdoor-AutrunSp
+function Invoke-SqlServer-Persist-AutrunSp
 {
     <#
 	.SYNOPSIS
