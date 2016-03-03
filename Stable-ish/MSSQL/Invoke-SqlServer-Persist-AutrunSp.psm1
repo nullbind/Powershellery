@@ -304,8 +304,8 @@ function Invoke-SqlServer-Persist-AutrunSp
         # https://raw.githubusercontent.com/darkoperator/Posh-SecMod/master/PostExploitation/PostExploitation.psm1
 
         # Encode PowerShell command
-        $CmdBytes = [Text.Encoding]::Unicode.GetBytes($PsCommand)
-        $EncodedCommand = [Convert]::ToBase64String($bytes)
+        $CmdBytes = [Text.Encoding]::Unicode.GetBytes($PsCommand)        
+        $EncodedCommand = [Convert]::ToBase64String($CmdBytes)
 
         # Check if PowerShell command is too long
         If ($EncodedCommand.Length -gt 8100)
