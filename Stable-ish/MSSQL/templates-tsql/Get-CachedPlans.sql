@@ -5,4 +5,5 @@
 
 SELECT bucketid,plan_handle,cacheobjtype,objtype,dbid,DB_NAME(dbid) as DatabaseName,objectid,OBJECT_NAME(objectid) as ObjectName,refcounts,usecounts,number,encrypted,text
 FROM sys.dm_exec_cached_plans AS p
-CROSS APPLY sys.dm_exec_sql_text(p.plan_handle) AS t
+CROSS APPLY sys.dm_exec_sql_text(p.plan_handle) AS t 
+ORDER BY usecounts DESC
