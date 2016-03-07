@@ -1,8 +1,17 @@
 -- Script: Get-QueryHistory.sql
--- Description: Get query history / cache plans.  This requires sysadmin
--- privileges.
--- Reference: https://msdn.microsoft.com/en-us/library/ms187404.aspx
+-- Requirements: Sysadmin or required SELECT privileges.
+-- Description: Returns the last 50 queries executed on the system. 
+-- Reference: http://blogs.lessthandot.com/index.php/datamgmt/dbprogramming/finding-out-how-many-times-a-table-is-be-2008/
 
-SELECT t.[text]
-FROM sys.dm_exec_cached_plans AS p
-CROSS APPLY sys.dm_exec_sql_text(p.plan_handle) AS t
+SELECT TOP 50 * FROM 
+	(SELECT 
+	COALESCE(OBJECT_NAME(qt.objectid),'Ad-Hoc') AS objectname,
+	qt.objectid as objectid,
+	execution_count,
+    (SELECT TOP 1 SUBSTRING(qt.TEXT,statement_start_offset / 2+1,
+    ( (CASE WHEN statement_end_offset = -1 THEN (LEN(CONVERT(NVARCHAR(MAX),qt.TEXT)) * 2) ELSE statement_end_offset END)- statement_start_offset) / 2+1)) AS sql_statement,
+	last_execution_time
+	FROM sys.dm_exec_query_stats AS qs
+	CROSS APPLY sys.dm_exec_sql_text(sql_handle) AS qt ) x
+WHERE sql_statement NOT like 'SELECT TOP 50 * FROM(SELECT %'
+ORDER BY execution_count DESC
