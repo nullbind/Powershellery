@@ -13,5 +13,4 @@ SELECT TOP 50 * FROM
 	last_execution_time
 	FROM sys.dm_exec_query_stats AS qs
 	CROSS APPLY sys.dm_exec_sql_text(sql_handle) AS qt ) x
-WHERE sql_statement NOT like 'SELECT TOP 50 * FROM(SELECT %'
 ORDER BY execution_count DESC
