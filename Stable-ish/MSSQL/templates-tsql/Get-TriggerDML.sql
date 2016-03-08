@@ -1,13 +1,15 @@
 -- Script: Get-TriggerDML.sql 
 -- Return list of DML triggers at the database level for the current database. 
 
--- Return list of triggers at the database level for the current database.
 select	@@SERVERNAME as server_name,
+		(SELECT TOP 1 SCHEMA_NAME(schema_id)FROM sys.objects o WHERE type ='tr' and object_id like object_id ) as schema_id ,
 		DB_NAME() as database_name,
 		OBJECT_NAME(parent_id) as parent_name,
 		OBJECT_NAME(object_id) as trigger_name,
 		OBJECT_DEFINITION(object_id) as trigger_definition,
 		OBJECT_ID,
+		create_date,
+		modify_date,
 		CASE OBJECTPROPERTY(object_id, 'ExecIsTriggerDisabled')
           WHEN 1 THEN 'Disabled'
           ELSE 'Enabled'
@@ -17,9 +19,8 @@ select	@@SERVERNAME as server_name,
         OBJECTPROPERTY(object_id, 'ExecIsInsertTrigger') AS isinsert ,
         OBJECTPROPERTY(object_id, 'ExecIsAfterTrigger') AS isafter ,
         OBJECTPROPERTY(object_id, 'ExecIsInsteadOfTrigger') AS isinsteadof ,
-		create_date,
-		modify_date,
 		is_ms_shipped,
 		is_not_for_replication
-FROM sys.triggers
+FROM sys.triggers t
+
 
