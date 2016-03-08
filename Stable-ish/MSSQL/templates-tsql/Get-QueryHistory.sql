@@ -1,6 +1,6 @@
 -- Script: Get-QueryHistory.sql
 -- Requirements: Sysadmin or required SELECT privileges.
--- Description: Returns the last 50 queries executed on the system. 
+-- Description: Returns the last 50 queries executed on the system.  Includes queries since the service was started. 
 -- Reference: http://blogs.lessthandot.com/index.php/datamgmt/dbprogramming/finding-out-how-many-times-a-table-is-be-2008/
 
 SELECT TOP 50 * FROM 
