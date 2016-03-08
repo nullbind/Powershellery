@@ -1,9 +1,9 @@
 -- Script: Get-QueryHistory.sql
 -- Requirements: Sysadmin or required SELECT privileges.
--- Description: Returns the last 50 queries executed on the system.  Includes queries since the service was started. 
+-- Description: Returns queries executed on the system.  It should include all queries since the service was started. 
 -- Reference: http://blogs.lessthandot.com/index.php/datamgmt/dbprogramming/finding-out-how-many-times-a-table-is-be-2008/
 
-SELECT TOP 50 * FROM 
+SELECT * FROM 
 	(SELECT 
 	COALESCE(OBJECT_NAME(qt.objectid),'Ad-Hoc') AS objectname,
 	qt.objectid as objectid,
@@ -13,4 +13,3 @@ SELECT TOP 50 * FROM
 	last_execution_time
 	FROM sys.dm_exec_query_stats AS qs
 	CROSS APPLY sys.dm_exec_sql_text(sql_handle) AS qt ) x
-ORDER BY execution_count DESC
