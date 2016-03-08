@@ -1,7 +1,10 @@
 -- Script: Get-TriggerDML.sql 
 -- Return list of DML triggers at the database level for the current database. 
 
-select	OBJECT_NAME(parent_id) as parent_name,
+-- Return list of triggers at the database level for the current database.
+select	@@SERVERNAME as server_name,
+		DB_NAME() as database_name,
+		OBJECT_NAME(parent_id) as parent_name,
 		OBJECT_NAME(object_id) as trigger_name,
 		OBJECT_DEFINITION(object_id) as trigger_definition,
 		OBJECT_ID,
