@@ -3,12 +3,14 @@
 -- Reference: https://technet.microsoft.com/en-us/library/cc280663(v=sql.105).aspx
 
 SELECT	audit_id, 
-	  	  a.name as audit_name, 
-	    	s.name as server_specification_name,
-		    d.audit_action_name,
-		    s.is_state_enabled,
-		    s.create_date,
-    		s.modify_date
+		a.name as audit_name, 
+		s.name as server_specification_name,
+		d.audit_action_name,
+		s.is_state_enabled,
+		d.is_group,
+		d.audit_action_id,	
+		s.create_date,
+		s.modify_date
 FROM sys.server_audits AS a
 JOIN sys.server_audit_specifications AS s
 ON a.audit_guid = s.audit_guid
