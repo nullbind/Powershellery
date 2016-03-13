@@ -36,7 +36,7 @@ function Invoke-SqlServer-Persist-StartupSp
 	http://msdn.microsoft.com/en-us/library/ms178640.aspx
 
 	.NOTES
-	Author: Scott Sutherland - 2014, NetSPI
+	Author: Scott Sutherland - 2016, NetSPI
 	Version: Invoke-SqlServer-Persist-StartupSp.psm1 v1.0
 	Comments: 
         - This should work on SQL Server 2005 and Above.
