@@ -380,7 +380,7 @@ function Invoke-SqlServer-Persist-TriggerDDL
         # Close db connection
         $conn.Close()
 
-         Write-Host "[*] The evil_ddl_trigger trigger has been added...or already existed" -foreground "green"
+         Write-Host "[*] The evil_ddl_trigger trigger has been added." -foreground "green"
     }else{
         Write-Host "[*] No options were provided." -foreground "red"
     }
