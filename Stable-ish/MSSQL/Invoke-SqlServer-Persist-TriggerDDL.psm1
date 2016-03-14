@@ -11,25 +11,25 @@ function Invoke-SqlServer-Persist-TriggerDDL
 	The script also support add a new sysadmin. This script can be run as the current Windows user or a 
 	SQL Server login can be provided. Note: This script requires sysadmin privileges.  The DDL_SERVER_LEVEL_EVENTS include:
 
-    CREATE DATABASE
-    ALTER DATABASE
-    DROP DATABASE
-    CREATE_ENDPOINT
-    ALTER_ENDPOINT
-    DROP_ENDPOINT
-    ADD_ROLE_MEMBER
-    DROP_ROLE_MEMBER
-    ADD_SERVER_ROLE_MEMBER
-    DROP_SERVER_ROLE_MEMBER
-    ALTER_AUTHORIZATION_SERVER
-    DENY_SERVER
-    GRANT_SERVER
-    REVOKE_SERVER
-    ALTER_LOGIN
-    CREATE_LOGIN
-    DROP_LOGIN
-
-    Feel free to change "DDL_SERVER_LEVEL_EVENTS" to "DDL_EVENTS" if you want more coverage, but I haven't had time to test it.
+	CREATE DATABASE
+	ALTER DATABASE
+	DROP DATABASE
+	CREATE_ENDPOINT
+	ALTER_ENDPOINT
+	DROP_ENDPOINT
+	ADD_ROLE_MEMBER
+	DROP_ROLE_MEMBER
+	ADD_SERVER_ROLE_MEMBER
+	DROP_SERVER_ROLE_MEMBER
+	ALTER_AUTHORIZATION_SERVER
+	DENY_SERVER
+	GRANT_SERVER
+	REVOKE_SERVER
+	ALTER_LOGIN
+	CREATE_LOGIN
+	DROP_LOGIN
+	
+	Feel free to change "DDL_SERVER_LEVEL_EVENTS" to "DDL_EVENTS" if you want more coverage, but I haven't had time to test it.
 
 	.EXAMPLE
 	Create a DDL trigger to add a new sysadmin.  The example shows the script being run using a SQL Login.
