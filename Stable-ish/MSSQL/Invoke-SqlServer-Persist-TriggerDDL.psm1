@@ -35,6 +35,9 @@ function Invoke-SqlServer-Persist-TriggerDDL
 	.NOTES
 	Author: Scott Sutherland - 2016, NetSPI
 	Version: Invoke-SqlServer-Persist-TriggerDDL.psm1 v1.0
+	Comment:  The trigger can be removed with the TSQL Below.
+	USE master
+	DROP TRIGGER [evil_ddl_trigger] ON ALL SERVER
     #>
 
   [CmdletBinding()]
