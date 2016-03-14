@@ -347,7 +347,8 @@ function Invoke-SqlServer-Persist-TriggerDDL
         if($SvcAdmin -eq 0){
 
             # Status user
-            Write-Host "[*] No OS admin will be created, because the service account does not have local administrator privileges."
+            Write-Host "[*] The service account does not have local administrator privileges so no OS admin can be created.  Aborted."
+            Break
         }else{
 
             # Create query
@@ -443,4 +444,5 @@ function Invoke-SqlServer-Persist-TriggerDDL
 
     Write-Host "[*] All done."
 }
+
 
