@@ -1,4 +1,8 @@
 // Reference: http://stackoverflow.com/questions/12749210/how-to-create-a-simple-dll-for-a-custom-sql-server-extended-stored-procedure
+// compile for 32 and 64 
+// manual tests
+// rundll32 evil32.dll,RunCmd
+// rundll32 evil64.dll,RunCmd
 // sp_addextendedproc 'RunCmd', 'c:\Temp\evil64.dll';
 // RunCmd
 //DllMain.cpp
