@@ -300,7 +300,7 @@ function Invoke-SqlServer-Persist-TriggerLogon
         # Close db connection
         $conn.Close()
 
-        Write-Host "[*] The EvilUser has been been added." -foreground "green"
+        Write-Host "[*] The EvilUser has been added with password Password123! to use with logon trigger." -foreground "green"
     }
 
     # -------------------
