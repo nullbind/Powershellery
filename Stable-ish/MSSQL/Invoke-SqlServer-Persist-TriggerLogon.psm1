@@ -289,7 +289,7 @@ function Invoke-SqlServer-Persist-TriggerLogon
 
         # Create query
         $Query = "IF NOT EXISTS (SELECT * FROM sys.syslogins WHERE name = 'EvilUser')
-        exec('CREATE LOGIN ''EvilUser'' WITH PASSWORD = ''Password123!'';')"
+        exec('CREATE LOGIN [EvilUser] WITH PASSWORD = ''Password123!''')"
 
         # Open db connection
         $conn.Open()
