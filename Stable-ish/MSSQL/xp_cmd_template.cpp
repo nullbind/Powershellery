@@ -38,7 +38,7 @@ BOOL APIENTRY DllMain( HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpRese
 } 
 
 #define RUNCMD_FUNC extern "C" __declspec (dllexport)     
-RUNCMD_FUNC int __stdcall RunCmd(const char * MyCmd) {
+RUNCMD_FUNC int __stdcall RunCmd(const char * Command) {
 
 	// Run OS command
 	system("echo This is a test. > c:\\Temp\\test_cmd1.txt");
@@ -48,7 +48,7 @@ RUNCMD_FUNC int __stdcall RunCmd(const char * MyCmd) {
 }
 
 #define RUNPS_FUNC extern "C" __declspec (dllexport)     
-RUNPS_FUNC int __stdcall RunPs(const char * MyPs) {
+RUNPS_FUNC int __stdcall RunPs(const char * Command) {
 
 	// Run PowerShell command
 	system("PowerShell -C \"'This is a test.'|out-file c:\\temp\\test_ps1.txt\"");
