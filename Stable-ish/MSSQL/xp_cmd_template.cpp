@@ -3,8 +3,13 @@
 // manual tests
 // rundll32 evil32.dll,RunCmd
 // rundll32 evil64.dll,RunCmd
+// register tests
+// sp_addextendedproc 'RunCmd', 'c:\Temp\evil32.dll';
 // sp_addextendedproc 'RunCmd', 'c:\Temp\evil64.dll';
 // RunCmd
+// removal
+// sp_dropextendedproc 'RunCmd';
+// sp_dropextendedproc 'RunCmd';
 // DllMain.cpp
 
 #include "stdafx.h"			//dllmain.cpp : Defines the entry point for the DLL application.
