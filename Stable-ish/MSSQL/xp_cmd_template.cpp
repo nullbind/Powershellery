@@ -17,6 +17,7 @@
 // removal
 // sp_dropextendedproc 'RunCmd';
 // sp_dropextendedproc 'RunPs';
+// todo: suck less, https://technet.microsoft.com/en-us/library/aa197372(v=sql.80).aspx
 
 #include "stdafx.h"			//dllmain.cpp : Defines the entry point for the DLL application.
 #include "srv.h"			//Must get from C:\Program Files (x86)\Microsoft SQL Server\80\Tools\DevTools\Include            
