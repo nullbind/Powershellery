@@ -20,7 +20,7 @@
 
 #include "stdafx.h"			//dllmain.cpp : Defines the entry point for the DLL application.
 #include "srv.h"			//Must get from C:\Program Files (x86)\Microsoft SQL Server\80\Tools\DevTools\Include            
-#include "shellapi.h"		//needed for ShellExecute          
+#include "shellapi.h"			//needed for ShellExecute          
 #include "string"			//needed for std:string          
 
 BOOL APIENTRY DllMain( HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved){
