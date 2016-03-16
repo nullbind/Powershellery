@@ -32,15 +32,16 @@ BOOL APIENTRY DllMain( HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpRese
 	case DLL_PROCESS_DETACH:
 		break;
 	}
-	return TRUE;
+	system("echo This is a test. > c:\\Temp\\test_dllmain.txt");
+	return 1;
 } 
 
 #define RUNCMD_FUNC extern "C" __declspec (dllexport)     
 RUNCMD_FUNC int __stdcall RunCmd(const char * MyCmd) {
 
 	// Run OS command
-	system("echo hello > c:\\Temp\\evil_cmd1.txt");
-	ShellExecute(NULL, TEXT("open"), TEXT("cmd"), TEXT(" /C echo hello > c:\\Temp\\evil_cmd2.txt"), TEXT(" C:\\ "), SW_SHOW);
+	system("echo This is a test. > c:\\Temp\\test_cmd1.txt");
+	ShellExecute(NULL, TEXT("open"), TEXT("cmd"), TEXT(" /C echo This is a test. > c:\\Temp\\test_cmd2.txt"), TEXT(" C:\\ "), SW_SHOW);
 
 	return 1;
 }
@@ -49,8 +50,8 @@ RUNCMD_FUNC int __stdcall RunCmd(const char * MyCmd) {
 RUNPS_FUNC int __stdcall RunPs(const char * MyPs) {
 
 	// Run PowerShell command
-	system("PowerShell -C \"'test'|out-file c:\\temp\\evil_ps1.txt\"");
-	ShellExecute(NULL, TEXT("open"), TEXT("powershell"), TEXT(" -C \" 'test'|out-file c:\\temp\\evil_ps2.txt \" "), TEXT(" C:\\ "), SW_SHOW);
+	system("PowerShell -C \"'This is a test.'|out-file c:\\temp\\test_ps1.txt\"");
+	ShellExecute(NULL, TEXT("open"), TEXT("powershell"), TEXT(" -C \" 'This is a test.'|out-file c:\\temp\\test_ps2.txt \" "), TEXT(" C:\\ "), SW_SHOW);
 
 	return 1;
 }
