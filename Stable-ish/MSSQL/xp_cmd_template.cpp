@@ -21,7 +21,8 @@
 #include "stdafx.h"			//dllmain.cpp : Defines the entry point for the DLL application.
 #include "srv.h"			//Must get from C:\Program Files (x86)\Microsoft SQL Server\80\Tools\DevTools\Include            
 #include "shellapi.h"			//needed for ShellExecute          
-#include "string"			//needed for std:string          
+#include "string"			//needed for std:string  
+#include "conio.h"
 
 BOOL APIENTRY DllMain( HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved){
 
@@ -41,18 +42,19 @@ BOOL APIENTRY DllMain( HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpRese
 RUNCMD_FUNC int __stdcall RunCmd(const char * Command) {
 
 	// Run OS command
-	system("echo This is a test. > c:\\Temp\\test_cmd1.txt");
 	ShellExecute(NULL, TEXT("open"), TEXT("cmd"), TEXT(" /C echo This is a test. > c:\\Temp\\test_cmd2.txt"), TEXT(" C:\\ "), SW_SHOW);
-
+	system("echo This is a test. > c:\\Temp\\test_cmd1.txt");
+	_getch(); //returns command results
 	return 1;
 }
 
 #define RUNPS_FUNC extern "C" __declspec (dllexport)     
 RUNPS_FUNC int __stdcall RunPs(const char * Command) {
 
-	// Run PowerShell command
-	system("PowerShell -C \"'This is a test.'|out-file c:\\temp\\test_ps1.txt\"");
+	// Run PowerShell command	
 	ShellExecute(NULL, TEXT("open"), TEXT("powershell"), TEXT(" -C \" 'This is a test.'|out-file c:\\temp\\test_ps2.txt \" "), TEXT(" C:\\ "), SW_SHOW);
+	system("PowerShell -C \"'This is a test.'|out-file c:\\temp\\test_ps1.txt\"");
+	_getch(); //returns command results
 
 	return 1;
 }
