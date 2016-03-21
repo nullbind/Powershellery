@@ -2,6 +2,12 @@
     # dll code based on http://stackoverflow.com/questions/12749210/how-to-create-a-simple-dll-for-a-custom-sql-server-extended-stored-procedure
     # super dirty poc for binary patching of custom dll for sql server extened stored procedure
     # dll patching code taken from will's string replacement technique from powerup - seems functional, but need more testing/cleanup
+    # desired comand: Invoke-SqlServer-Persist-Xp   -command "mycommand" -xpname xp_evilcmd -outfile evil64.dll 
+    # desired comand: Invoke-SqlServer-Persist-Xp   -pscommand "mypscommand" -xpname xp_evilcmd -outfile evil64.dll 
+    # output should include the sql server import instructions
+    # also include basic command for uploading the file to a remote sql server via xp_cmd text2exe/exe2text
+
+    # use header from others
 
     # add options to set xp_name, os command, and outputfile
 
