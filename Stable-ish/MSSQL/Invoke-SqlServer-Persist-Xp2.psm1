@@ -99,7 +99,7 @@ function Invoke-SqlServer-Persist-Xp2
         }else{
             $BuffLenDiff = $BufferStringLen - $CommandStringLen
             $NewBuffer =  " " * $BuffLenDiff
-            $CommandString = "$CommandString$NewBuffer && REM"
+            $CommandString = "$CommandString && REM $NewBuffer"
         }
 
         # Convert command string 
@@ -146,8 +146,8 @@ function Invoke-SqlServer-Persist-Xp2
             Break
         }else{
             $ProcBuffLenDiff = $ProcNameBufferLen - $ExportNameLen
-            $ProcNewBuffer =  " " * $ProcBuffLenDiff
-            $ExportName = "$ExportName$ProcNewBuffer"
+            $ProcNewBuffer =  '\x00' * $ProcBuffLenDiff
+            #$ExportName = "$ExportName$ProcNewBuffer" # need to write nullbytes
         }
 
         # Get function name string offset
