@@ -146,7 +146,7 @@ function Invoke-SqlServer-Persist-Xp2
             Break
         }else{
             $ProcBuffLenDiff = $ProcNameBufferLen - $ExportNameLen
-            $ProcNewBuffer =  '\x00' * $ProcBuffLenDiff
+            $ProcNewBuffer =  '' * $ProcBuffLenDiff
             #$ExportName = "$ExportName$ProcNewBuffer" # need to write nullbytes
         }
 
@@ -175,6 +175,17 @@ function Invoke-SqlServer-Persist-Xp2
         for ($i=0; $i -lt $ExportNameBytes.Length; $i++)
         {
             $DllBytes[$ProcIndex+$i]=$ExportNameBytes[$i]
+        }
+
+        # Get offset for nulls
+        $NullOffset = $ProcIndex+$ExportNameLen
+        write-output "[*] Found buffer offset for buffer: $NullOffset"        
+        $NullBytes = ([system.Text.Encoding]::UTF8).GetBytes($ProcNewBuffer) # this needs to be fill with null bytes or vull
+        
+        # Replace target bytes         
+        for ($i=0; $i -lt  $ProcBuffLenDiff; $i++)
+        {
+            $DllBytes[$NullOffset+$i]=$NullBytes[$i]
         }
 
         # ------------------------------------
