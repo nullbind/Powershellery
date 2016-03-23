@@ -200,7 +200,5 @@ function Invoke-SqlServer-Persist-Xp2
         Set-Content -Value $DllBytes -Encoding Byte -Path $OutFile
         Write-Output "[*] DLL written to: $OutFile"
         Write-Output "[*] SQL Server TSQL options to register stored procedure on <= v2016:"
-        Write-Output "[*] sp_addextendedproc `'$ExportName`', `'c:\pathtofile\$OutFile`'"
-	    Write-Output "[*] sp_addextendedproc `'$ExportName`', `'\\127.0.0.1\C$\Temp\$OutFile`'"
-
+        Write-Output "[*] sp_addextendedproc `'$ExportName`', `'$OutFile`'"	    
 }
