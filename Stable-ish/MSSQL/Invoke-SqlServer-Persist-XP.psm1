@@ -14,8 +14,8 @@ function Invoke-SqlServer-Persist-Xp
 	    extended stored procedures.
 
 	    .EXAMPLE
-	    Create a DLL with an exported function named "xp_attack" that can be consumed by SQL Server that writes
-	    a file to c:\temp\file.txt with the word "test" in it.
+	    Create a DLL with an exported function named "xp_test" that can be consumed by SQL Server that writes
+	    a file to c:\temp\test.txt with the word "test" in it.
 
 	     PS C:\temp> Invoke-SqlServer-Persist-Xp -OutFile c:\temp\test.dll -Command "echo test > c:\temp\test.txt" -ExportName xp_test
  
@@ -27,9 +27,9 @@ function Invoke-SqlServer-Persist-Xp
  
 	     SQL Server Notes
 	     The exported function can be registered as a SQL Server extended stored procedure. Options below:
-	     - Register xp via local disk: sp_addextendedproc 'xp_attack', 'c:\temp\last.dll'
-	     - Register xp via UNC path: sp_addextendedproc 'xp_attack', '\\servername\pathtofile\file.dll'
-	     - Unregister xp: sp_dropextendedproc 'xp_attack'
+	     - Register xp via local disk: sp_addextendedproc 'xp_test', 'c:\temp\test.dll'
+	     - Register xp via UNC path: sp_addextendedproc 'xp_test', '\\servername\pathtofile\file.dll'
+	     - Unregister xp: sp_dropextendedproc 'xp_test'
 
 	    .LINK
 	     http://en.cppreference.com/w/cpp/utility/program/system
