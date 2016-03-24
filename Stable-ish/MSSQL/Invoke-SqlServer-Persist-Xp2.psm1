@@ -170,7 +170,6 @@ function Invoke-SqlServer-Persist-Xp2
         # Convert function name to bytes
         $ExportNameBytes = ([system.Text.Encoding]::UTF8).GetBytes($ExportName)
 
-
         # Replace target bytes
         for ($i=0; $i -lt $ExportNameBytes.Length; $i++)
         {
@@ -180,7 +179,7 @@ function Invoke-SqlServer-Persist-Xp2
         # Get offset for nulls
         $NullOffset = $ProcIndex+$ExportNameLen
         Write-Verbose "[*] Found buffer offset for buffer: $NullOffset"        
-        $NullBytes = ([system.Text.Encoding]::UTF8).GetBytes($ProcNewBuffer) # this needs to be fill with null bytes or vull
+        $NullBytes = ([system.Text.Encoding]::UTF8).GetBytes($ProcNewBuffer) 
         
         # Replace target bytes         
         for ($i=0; $i -lt  $ProcBuffLenDiff; $i++)
