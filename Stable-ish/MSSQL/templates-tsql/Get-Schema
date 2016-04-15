@@ -1,5 +1,7 @@
-SELECT schema_name, schema_owner
+
+SELECT *
 FROM information_schema.schemata
+
 
 SELECT  s.Name, u.*
 FROM    sys.schemas s
