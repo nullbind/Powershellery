@@ -4,6 +4,7 @@
 -- Reference: http://msdn.microsoft.com/en-us/library/ms188367.aspx
 -- Note: This line below will also show full privs for sysadmin users
 --       SELECT * FROM fn_my_permissions(NULL, 'DATABASE'); 
+-- http://stackoverflow.com/questions/410396/public-role-access-in-sql-server
 
 SELECT DISTINCT rp.name, 
                 ObjectType = rp.type_desc, 
