@@ -5,23 +5,22 @@
 -- Note: This line below will also show full privs for sysadmin users
 --       SELECT * FROM fn_my_permissions(NULL, 'DATABASE'); 
 
-SELECT  distinct class_desc as [CLASS_DESC],
-	c.name AS [GRANTOR],
-	b.name AS [GRANTEE],
-	b.type_desc AS [PRINCIPAL_TYPE],
-	ISNULL(SCH.name + N'.' + OBJ.name,DB_NAME()) AS [OBJECT_NAME],
-	a.permission_name AS [PERMISSION_NAME],
-	a.state_desc AS [PERMISSION_STATE]
-FROM [sys].[database_permissions] a
-INNER JOIN [sys].[database_principals] b
-	ON a.grantee_principal_id = b.principal_id
-INNER JOIN [sys].[database_principals] c
-	ON a.grantor_principal_id = c.principal_id
-LEFT JOIN [sys].[objects] AS OBJ
-    ON a.major_id = OBJ.object_id
-LEFT JOIN [sys].[schemas] AS SCH
-    ON OBJ.schema_id = SCH.schema_id
-LEFT JOIN [sys].[columns] AS COL
-    ON a.major_id = COL.object_id
-    AND a.minor_id = COL.column_id
-ORDER BY CLASS_DESC,GRANTEE
+SELECT DISTINCT rp.name, 
+                ObjectType = rp.type_desc, 
+                PermissionType = pm.class_desc, 
+                pm.permission_name, 
+                pm.state_desc, 
+                ObjectType = CASE 
+                               WHEN obj.type_desc IS NULL 
+                                     OR obj.type_desc = 'SYSTEM_TABLE' THEN 
+                               pm.class_desc 
+                               ELSE obj.type_desc 
+                             END, 
+                [ObjectName] = Isnull(ss.name, Object_name(pm.major_id)) 
+FROM   sys.database_principals rp 
+       INNER JOIN sys.database_permissions pm 
+               ON pm.grantee_principal_id = rp.principal_id 
+       LEFT JOIN sys.schemas ss 
+              ON pm.major_id = ss.schema_id 
+       LEFT JOIN sys.objects obj 
+              ON pm.[major_id] = obj.[object_id] 
