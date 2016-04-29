@@ -74,8 +74,6 @@ EXECUTE		master.dbo.xp_instance_regread
 		N'HKEY_LOCAL_MACHINE', @IntegrationVersion,  
 		N'ObjectName',@IntegrationDtsLogin OUTPUT
 
-		 select @IntegrationVersion
-
 -- Dislpay results
 SELECT		[DBEngineLogin] = @DBEngineLogin, 
 		[BrowserLogin] = @BrowserLogin,
