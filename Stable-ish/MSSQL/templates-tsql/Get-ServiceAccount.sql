@@ -31,13 +31,13 @@ ELSE
 
 -- Get SQL Server - Calculated
 EXECUTE		master.dbo.xp_instance_regread  
-			N'HKEY_LOCAL_MACHINE', @SQLServerInstance,  
-			N'ObjectName',@DBEngineLogin OUTPUT
+		N'HKEY_LOCAL_MACHINE', @SQLServerInstance,  
+		N'ObjectName',@DBEngineLogin OUTPUT
 
 -- Get SQL Server Agent - Calculated
 EXECUTE		master.dbo.xp_instance_regread  
-			N'HKEY_LOCAL_MACHINE', @AgentInstance,  
-			N'ObjectName',@AgentLogin OUTPUT
+		N'HKEY_LOCAL_MACHINE', @AgentInstance,  
+		N'ObjectName',@AgentLogin OUTPUT
 
 -- Get SQL Server Browser - Static Location
 EXECUTE       master.dbo.xp_instance_regread
@@ -55,13 +55,13 @@ EXECUTE       master.dbo.xp_instance_regread
 
 -- Get MSOLAP - Calculated
 EXECUTE		master.dbo.xp_instance_regread  
-			N'HKEY_LOCAL_MACHINE', @MSOLAPInstance,  
-			N'ObjectName',@AnalysisLogin OUTPUT
+		N'HKEY_LOCAL_MACHINE', @MSOLAPInstance,  
+		N'ObjectName',@AnalysisLogin OUTPUT
 
 -- Get Reporting - Calculated
 EXECUTE		master.dbo.xp_instance_regread  
-			N'HKEY_LOCAL_MACHINE', @ReportInstance,  
-			N'ObjectName',@ReportLogin OUTPUT
+		N'HKEY_LOCAL_MACHINE', @ReportInstance,  
+		N'ObjectName',@ReportLogin OUTPUT
 
 -- Get SQL Server DTS Server
 EXECUTE       master.dbo.xp_instance_regread
@@ -70,7 +70,8 @@ EXECUTE       master.dbo.xp_instance_regread
               @value_name   = N'ObjectName',
               @value        = @IntegrationLogin OUTPUT
 
-SELECT	[DBEngineLogin] = @DBEngineLogin, 
+-- Dislpay results
+SELECT		[DBEngineLogin] = @DBEngineLogin, 
 		[BrowserLogin] = @BrowserLogin,
 		[AgentLogin] = @AgentLogin,
 		[WriterLogin] = @WriterLogin,
