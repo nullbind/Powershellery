@@ -1,33 +1,34 @@
--- Script: Get-ServiceAccount.sql
+-- Script: Get-SQLServiceAccount.sql
 -- Description: Return the service accounts running the major database services.
 -- Reference: http://stackoverflow.com/questions/4440141/differences-between-xp-instance-regread-and-xp-regread
--- TODO: Add privilege checks.
 
 -- Setup variables
 DECLARE		@SQLServerInstance	VARCHAR(250)  
 DECLARE		@MSOLAPInstance		VARCHAR(250) 
 DECLARE		@ReportInstance 	VARCHAR(250) 
 DECLARE		@AgentInstance	 	VARCHAR(250) 
+DECLARE		@IntegrationVersion	VARCHAR(250)
 DECLARE		@DBEngineLogin		VARCHAR(100)
 DECLARE		@AgentLogin		VARCHAR(100)
 DECLARE		@BrowserLogin		VARCHAR(100)
 DECLARE     	@WriterLogin		VARCHAR(100)
 DECLARE		@AnalysisLogin		VARCHAR(100)
 DECLARE		@ReportLogin		VARCHAR(100)
-DECLARE		@IntegrationLogin	VARCHAR(100)
+DECLARE		@IntegrationDtsLogin	VARCHAR(100)
 
--- Get SQL Server Service Name Path 
+-- Get Service Paths 
+set @MSOLAPInstance = 'SYSTEM\CurrentControlSet\Services\MSOLAP$' + cast(@@SERVICENAME as varchar(250))		
+set @ReportInstance = 'SYSTEM\CurrentControlSet\Services\ReportServer$' + cast(@@SERVICENAME as varchar(250))
+set @AgentInstance = 'SYSTEM\CurrentControlSet\Services\SQLAgent$' + cast(@@SERVICENAME as varchar(250))	
+set @IntegrationVersion  = 'SYSTEM\CurrentControlSet\Services\MsDtsServer'+ SUBSTRING(CAST(SERVERPROPERTY('productversion') AS VARCHAR(255)),0, 3) + '0'
 if @@SERVICENAME = 'MSSQLSERVER'
-	BEGIN											
+BEGIN											
 	set @SQLServerInstance = 'SYSTEM\CurrentControlSet\Services\MSSQLSERVER'
-	END						
+END						
 ELSE
-	BEGIN
+BEGIN
 	set @SQLServerInstance = 'SYSTEM\CurrentControlSet\Services\MSSQL$' + cast(@@SERVICENAME as varchar(250))	
-	set @MSOLAPInstance = 'SYSTEM\CurrentControlSet\Services\MSOLAP$' + cast(@@SERVICENAME as varchar(250))		
-	set @ReportInstance = 'SYSTEM\CurrentControlSet\Services\ReportServer$' + cast(@@SERVICENAME as varchar(250))
-	set @AgentInstance = 'SYSTEM\CurrentControlSet\Services\SQLAgent$' + cast(@@SERVICENAME as varchar(250))							
-	END
+END
 
 -- Get SQL Server - Calculated
 EXECUTE		master.dbo.xp_instance_regread  
@@ -63,12 +64,10 @@ EXECUTE		master.dbo.xp_instance_regread
 		N'HKEY_LOCAL_MACHINE', @ReportInstance,  
 		N'ObjectName',@ReportLogin OUTPUT
 
--- Get SQL Server DTS Server
-EXECUTE       master.dbo.xp_instance_regread
-              @rootkey      = N'HKEY_LOCAL_MACHINE',
-              @key          = N'SYSTEM\CurrentControlSet\Services\MsDtsServer110',
-              @value_name   = N'ObjectName',
-              @value        = @IntegrationLogin OUTPUT
+-- Get SQL Server DTS Server - Calulated
+EXECUTE		master.dbo.xp_instance_regread  
+		N'HKEY_LOCAL_MACHINE', @IntegrationVersion,  
+		N'ObjectName',@IntegrationDtsLogin OUTPUT
 
 -- Dislpay results
 SELECT		[DBEngineLogin] = @DBEngineLogin, 
@@ -77,5 +76,5 @@ SELECT		[DBEngineLogin] = @DBEngineLogin,
 		[WriterLogin] = @WriterLogin,
 		[AnalysisLogin] = @AnalysisLogin,
 		[ReportLogin] = @ReportLogin,
-		[IntegrationLogin] = @IntegrationLogin
+		[IntegrationLogin] = @IntegrationDtsLogin
 GO
