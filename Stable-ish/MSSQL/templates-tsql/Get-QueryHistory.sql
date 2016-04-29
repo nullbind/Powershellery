@@ -13,4 +13,4 @@ SELECT * FROM
     (SELECT TOP 1 SUBSTRING(qt.TEXT,statement_start_offset / 2+1,( (CASE WHEN statement_end_offset = -1 THEN (LEN(CONVERT(NVARCHAR(MAX),qt.TEXT)) * 2) ELSE statement_end_offset END)- statement_start_offset) / 2+1)) AS sql_statement
 	FROM sys.dm_exec_query_stats AS qs
 	CROSS APPLY sys.dm_exec_sql_text(sql_handle) AS qt ) x
-ORDER BY last_execution_time
+ORDER BY execution_count DESC
