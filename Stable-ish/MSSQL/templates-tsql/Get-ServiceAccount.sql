@@ -1,6 +1,5 @@
 -- Script: Get-ServiceAccount.sql
 -- Description: Return the service accounts running the major database services.
--- Reference: http://stackoverflow.com/questions/4440141/differences-between-xp-instance-regread-and-xp-regread
 
 -- Setup variables
 DECLARE		@SQLServerInstance	VARCHAR(250)  
