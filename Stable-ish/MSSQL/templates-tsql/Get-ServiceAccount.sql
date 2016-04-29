@@ -1,4 +1,4 @@
--- Script: Get-SQLServiceAccount.sql
+-- Script: Get-ServiceAccount.sql
 -- Description: Return the service accounts running the major database services.
 -- Reference: http://stackoverflow.com/questions/4440141/differences-between-xp-instance-regread-and-xp-regread
 
@@ -16,18 +16,24 @@ DECLARE		@AnalysisLogin		VARCHAR(100)
 DECLARE		@ReportLogin		VARCHAR(100)
 DECLARE		@IntegrationDtsLogin	VARCHAR(100)
 
--- Get Service Paths 
-set @MSOLAPInstance = 'SYSTEM\CurrentControlSet\Services\MSOLAP$' + cast(@@SERVICENAME as varchar(250))		
-set @ReportInstance = 'SYSTEM\CurrentControlSet\Services\ReportServer$' + cast(@@SERVICENAME as varchar(250))
-set @AgentInstance = 'SYSTEM\CurrentControlSet\Services\SQLAgent$' + cast(@@SERVICENAME as varchar(250))	
-set @IntegrationVersion  = 'SYSTEM\CurrentControlSet\Services\MsDtsServer'+ SUBSTRING(CAST(SERVERPROPERTY('productversion') AS VARCHAR(255)),0, 3) + '0'
-if @@SERVICENAME = 'MSSQLSERVER'
+-- Get Service Paths for default and name instance
+if @@SERVICENAME = 'MSSQLSERVER' or @@SERVICENAME = HOST_NAME()
 BEGIN											
+	-- Default instance paths
 	set @SQLServerInstance = 'SYSTEM\CurrentControlSet\Services\MSSQLSERVER'
+	set @MSOLAPInstance = 'SYSTEM\CurrentControlSet\Services\MSSQLServerOLAPService'	
+	set @ReportInstance = 'SYSTEM\CurrentControlSet\Services\ReportServer'
+	set @AgentInstance = 'SYSTEM\CurrentControlSet\Services\SQLSERVERAGENT'	
+	set @IntegrationVersion  = 'SYSTEM\CurrentControlSet\Services\MsDtsServer'+ SUBSTRING(CAST(SERVERPROPERTY('productversion') AS VARCHAR(255)),0, 3) + '0'
 END						
 ELSE
 BEGIN
+	-- Named instance paths
 	set @SQLServerInstance = 'SYSTEM\CurrentControlSet\Services\MSSQL$' + cast(@@SERVICENAME as varchar(250))	
+	set @MSOLAPInstance = 'SYSTEM\CurrentControlSet\Services\MSOLAP$' + cast(@@SERVICENAME as varchar(250))		
+	set @ReportInstance = 'SYSTEM\CurrentControlSet\Services\ReportServer$' + cast(@@SERVICENAME as varchar(250))
+	set @AgentInstance = 'SYSTEM\CurrentControlSet\Services\SQLAgent$' + cast(@@SERVICENAME as varchar(250))	
+	set @IntegrationVersion  = 'SYSTEM\CurrentControlSet\Services\MsDtsServer'+ SUBSTRING(CAST(SERVERPROPERTY('productversion') AS VARCHAR(255)),0, 3) + '0'
 END
 
 -- Get SQL Server - Calculated
@@ -64,10 +70,12 @@ EXECUTE		master.dbo.xp_instance_regread
 		N'HKEY_LOCAL_MACHINE', @ReportInstance,  
 		N'ObjectName',@ReportLogin OUTPUT
 
--- Get SQL Server DTS Server - Calulated
+-- Get SQL Server DTS Server / Analysis - Calulated
 EXECUTE		master.dbo.xp_instance_regread  
 		N'HKEY_LOCAL_MACHINE', @IntegrationVersion,  
 		N'ObjectName',@IntegrationDtsLogin OUTPUT
+
+		 select @IntegrationVersion
 
 -- Dislpay results
 SELECT		[DBEngineLogin] = @DBEngineLogin, 
@@ -78,3 +86,4 @@ SELECT		[DBEngineLogin] = @DBEngineLogin,
 		[ReportLogin] = @ReportLogin,
 		[IntegrationLogin] = @IntegrationDtsLogin
 GO
+
