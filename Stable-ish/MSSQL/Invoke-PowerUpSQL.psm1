@@ -3955,7 +3955,6 @@ function Create-SQLFile-XPDLL
 
 # Pending Functions:
 # --
-#  Get-SQLInstanceLocal
 #  Get-SQLInstanceScan
 
 # -------------------------------------------
