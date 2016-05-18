@@ -1,5 +1,5 @@
 # Script: Invoke-PowerUpSql.psm1
-# Version: Super Beta x3000
+# Version: Super Beta x3001
 # Author: Scott Sutherland, NetSPI - 2016
 # Description:
 # This script targets three objectives: 
@@ -7,34 +7,34 @@
 # - 2 - Allow users to audit for common high impact vulnerabilities and weak configurations.
 # - 3 - Allow users to leverage vulnerabilities to obtain sysadmin privileges.
 # Example command:  Get-SQLInstanceDomain -Verbose |  Get-SQLDatabase -NoDefaults -Verbose -InformationAction Continue
-# Example command:  Get-SQLInstanceLocal -Verbose |  Get-SQLServerRoleMember -Verbose -InformationAction Continue
+# Example command:  Get-SQLInstanceLocal -Verbose  |  Get-SQLServerRoleMember -Verbose -InformationAction Continue
+# Example command:  Get-SQLInstanceScanUDP -Verbose -ComputerName | Get-SQLServerInfo -Verbose -InformationAction Continue
 # Example command:  Get-SQLInstanceFromFile -Verbose |  Invoke-PowerUpSQL -Verbose
 # General Todo List
 <#Add these first
-Invoke-SQLEscalate-ControlServer
 Invoke-SQLEscalate-DbOwner
+Invoke-SQLEscalate-AgentJob
+Invoke-SQLEscalate-SQLi-ExecuteAs
+Invoke-SQLEscalate-SQLi-SignedSp
+Invoke-SQLEscalate-CreateStartUpSP
+Invoke-SQLEscalate-CrawlServerLink
 Invoke-SQLEscalate-CreateAssembly
 Invoke-SQLEscalate-CreateTriggerDDL
 Invoke-SQLEscalate-CreateTriggerLOGON
 Invoke-SQLEscalate-CreateTriggerDML
-Invoke-SQLEscalate-CreateFunction
-Invoke-SQLEscalate-CreateStartUpSP
 Invoke-SQLEscalate-StealServiceToken
-Invoke-SQLEscalate-CrawlServerLink
+Invoke-SQLEscalate-ControlServer
+Invoke-SQLEscalate-DDLAdmin
 #>
-# get-sqlinstancelocal doesnt show default instance
 # add ping option to testconnection
-#  Get-SQLServerInfo -Verbose -InformationAction Continue - use example somewhere
-# rewrite escalate model to block code
-# add  Get-SQLInstanceScan - need to scan without port and return instance
-# update  Get-SQLInstanceDomain
-# - Check spn parsing against - MSP02SQLCVMPROD\CVMPROD not in list and should be - may have to start including "MSServerClusterMgmtAPI" then doing a scan to find instances - confirmed
-# - MSServerClusterMgmtAPI,MSServerCluster,MSClusterVirtualServer These SPN is needed for cluster APIs to authenticate to the server by using Kerberos
-# add  Get-SQLInstanceLocal
+# update  Get-SQLInstanceDomain to include: 
+# $x = Get-DomainSpn -Verbose -SpnService "MSServerClusterMgmtAPI" | Select-Object ComputerName | Where-Object {$_.ComputerName -like "*.*"} | Sort-Object ComputerName -Unique
+# $x | Get-SQLInstanceScanUDP -Verbose
+# mod get-sqlinstancescanudp to have a parameter to specify number of tries, udp bombs out about 1 in 5 times
 # port escalation functions from previous code base
 # Find multi threading option to speed everything up - runspaces, .net, or jobs? Also, consider timeout tweaks.
-# test across all versions and add version checks - need full lab setup
-# Clean up formatting
+# test across all versions and add version checks - finish the lab setup for all priv esc
+# Clean up formatting etc
 
 
 #########################################################################
@@ -3953,10 +3953,6 @@ function Create-SQLFile-XPDLL
 #
 #########################################################################
 
-# Pending Functions:
-# --
-#  Get-SQLInstanceScan
-
 # -------------------------------------------
 # Function: Get-DomainSpn
 # -------------------------------------------
@@ -4375,6 +4371,117 @@ Function  Get-SQLInstanceLocal {
 }
 
 
+# ----------------------------------
+#  Get-SQLInstanceScanUDP
+# ----------------------------------
+# Author: Eric Gruber
+# Note: Pipeline mods by Scott Sutherland
+# TODO: Add up to three tries for each server.
+function Get-SQLInstanceScanUDP
+{
+    [CmdletBinding()]
+    param(
+
+       [Parameter(Mandatory=$true,
+        ValueFromPipeline,
+        ValueFromPipelineByPropertyName=$true,
+        HelpMessage="Computer name or IP address to enumerate SQL Instance from.")]
+        [string]$ComputerName
+    )
+
+    Begin 
+    {
+        # Setup data table for results
+        $TableResults = New-Object -TypeName system.Data.DataTable -ArgumentList 'Table'
+        $TableResults.columns.add("ComputerName") | Out-Null
+        $TableResults.columns.add("InstanceName") | Out-Null
+        $TableResults.columns.add("ServerIP") | Out-Null
+        $TableResults.columns.add("TCPPort") | Out-Null
+        $TableResults.columns.add("BaseVersion") | Out-Null
+        $TableResults.columns.add("IsClustered") | Out-Null           
+    }
+
+    Process
+    {
+        Write-Verbose -Message "[*] Enumerating SQL Server instance for $ComputerName"
+
+        # Verify server name isn't empty
+        if ($ComputerName -ne '')
+        {        
+            # Try to enumerate SQL Server instances from remote system             
+            try
+            {
+                # Create UDP client object
+                $UDPClient = New-Object -TypeName System.Net.Sockets.Udpclient
+                $UDPClient.client.ReceiveTimeout = 3
+
+                # Attempt to connect to system
+                $UDPClient.Connect($ComputerName,0x59a)
+                $UDPPacket = 0x03  
+
+                # Send request to system
+                $UDPEndpoint = New-Object -TypeName System.Net.Ipendpoint -ArgumentList ([System.Net.Ipaddress]::Any, 0)
+                $UDPClient.Client.Blocking = $true
+                [void]$UDPClient.Send($UDPPacket,$UDPPacket.Length)
+
+                # Process response from system
+                $BytesRecived = $UDPClient.Receive([ref]$UDPEndpoint)
+                $Response = [System.Text.Encoding]::ASCII.GetString($BytesRecived).split(';')
+
+                $values = @{}
+           
+                for($i = 0; $i -le $Response.length; $i++)
+                {
+                    if(![string]::IsNullOrEmpty($Response[$i])) 
+                    {
+                        $values.Add(($Response[$i].ToLower() -replace '[\W]', ''),$Response[$i+1])
+                    }
+                    else 
+                    {
+                        if(![string]::IsNullOrEmpty($values.'tcp'))
+                        {
+                            # Add SQL Server instance info to results table
+                            $TableResults.rows.Add(
+                                [string]$ComputerName,
+                                [string]$values.'instancename',                                
+                                [string]$values.'servername',
+                                [string]$values.'tcp',
+                                [string]$values.'version',
+                                [string]$values.'isclustered') | Out-Null
+                            $values = @{}
+                        }
+                    }
+                }
+
+                # Close connection
+                $UDPClient.Close()
+            }
+            catch
+            {
+                #"Error was $_"
+                #$line = $_.InvocationInfo.ScriptLineNumber
+                #"Error was in Line $line"
+
+                # Close connection
+                $UDPClient.Close()
+            } 
+        }       
+   
+        Write-Verbose -Message "[*] Enumeration for $ComputerName complete."
+    }
+
+    End
+    {
+        # Return Results
+        $TableResults 
+    }
+}
+
+
+# ----------------------------------
+#  Get-SQLInstanceFromFile
+# ----------------------------------
+# Author: Scott Sutherland
 Function  Get-SQLInstanceFromFile {
     [CmdletBinding()]
     Param(        
