@@ -26,11 +26,7 @@ Invoke-SQLEscalate-StealServiceToken
 Invoke-SQLEscalate-ControlServer
 Invoke-SQLEscalate-DDLAdmin
 #>
-# add ping option to testconnection
-# update  Get-SQLInstanceDomain to include: 
-# $x = Get-DomainSpn -Verbose -SpnService "MSServerClusterMgmtAPI" | Select-Object ComputerName | Where-Object {$_.ComputerName -like "*.*"} | Sort-Object ComputerName -Unique
-# $x | Get-SQLInstanceScanUDP -Verbose
-# mod get-sqlinstancescanudp to have a parameter to specify number of tries, udp bombs out about 1 in 5 times
+# add ping option/udp option to testconnection
 # port escalation functions from previous code base
 # Find multi threading option to speed everything up - runspaces, .net, or jobs? Also, consider timeout tweaks.
 # test across all versions and add version checks - finish the lab setup for all priv esc
@@ -4230,37 +4226,43 @@ Function  Get-SQLInstanceDomain {
         ValueFromPipeline=$true,
         ValueFromPipelineByPropertyName=$true,
         HelpMessage="Domain account to filter for.")]
-        [string]$DomainAccount
+        [string]$DomainAccount,
+
+        [Parameter(Mandatory=$false,        
+        ValueFromPipelineByPropertyName=$true,
+        HelpMessage="Performs UDP scan of servers managing SQL Server clusters.")]
+        [switch]$CheckMgmt,
+
+        [Parameter(Mandatory=$false,        
+        ValueFromPipelineByPropertyName=$true,
+        HelpMessage="Timeout in seconds for UDP scans of management servers. Longer timeout = more accurate.")]
+        [int]$UDPTimeOut = 3
     )
 
     Begin
     {
-        # Table for output
+        # Table for SPN output
         $TblSQLServerSpns = New-Object System.Data.DataTable
+        $TblSQLServerSpns.Columns.Add("ComputerName") | Out-Null
+        $TblSQLServerSpns.Columns.Add("Instance") | Out-Null        
         $TblSQLServerSpns.Columns.Add("DomainAccountSid") | Out-Null
         $TblSQLServerSpns.Columns.Add("DomainAccount") | Out-Null
         $TblSQLServerSpns.Columns.Add("DomainAccountCn") | Out-Null
-        $TblSQLServerSpns.Columns.Add("Service") | Out-Null
-        $TblSQLServerSpns.Columns.Add("ComputerName") | Out-Null
-        $TblSQLServerSpns.Columns.Add("Spn") | Out-Null
-        $TblSQLServerSpns.Columns.Add("Instance") | Out-Null
+        $TblSQLServerSpns.Columns.Add("Service") | Out-Null        
+        $TblSQLServerSpns.Columns.Add("Spn") | Out-Null        
         $TblSQLServerSpns.Columns.Add("LastLogon") | Out-Null
         $TblSQLServerSpns.Columns.Add("Description") | Out-Null
+
+        # Table for UDP scan results of management servers
     }
 
     Process
     {
-        # Execute Query
-        $TblSQLServers = Get-DomainSpn -DomainController $DomainController -Username $Username -Password $Password -Credential $Credential -ComputerName $ComputerName -DomainAccount $DomainAccount -SpnService 'MSSQL*' | Where-Object {$_.service -like 'MSSQL*'} 
-        
-        # Todo
-        # $TblSQLServers = Get-DomainSpn -DomainController $DomainController -Username $Username -Password $Password -Credential $Credential -ComputerName $ComputerName -DomainAccount $DomainAccount  | Where-Object {$_.service -eq 'MSSQL*' -or $_.service -eq 'MSServerClusterMgmtAPI'} 
-        # parse server for clusters
-        # scan server for instances
-        # add to table
-        # dedup at the end
+        # Get list of SPNs for SQL Servers
+        Write-Verbose "Grabbing SQL Server SPNs from domain..."
+        $TblSQLServers = Get-DomainSpn -DomainController $DomainController -Username $Username -Password $Password -Credential $Credential -ComputerName $ComputerName -DomainAccount $DomainAccount -SpnService 'MSSQL*' | Where-Object {$_.service -like 'MSSQL*'}                
 
-        Write-Verbose "Parsing SQL Server instances..."
+        Write-Verbose "Parsing SQL Server instances from SPNs..."
 
         # Add column containing sql server instance
         $TblSQLServers | 
@@ -4278,31 +4280,48 @@ Function  Get-SQLInstanceDomain {
                 $SpnServerInstance = $Spn -replace ':', '\'                             
             } 
 
-            $SpnServerInstance = $SpnServerInstance -replace 'MSSQLSvc/',''
+            $SpnServerInstance = $SpnServerInstance -replace 'MSSQLSvc/',''                             
               
             # Add SQL Server spn to table
             $TblSQLServerSpns.Rows.Add(
+                [string]$_.ComputerName,
+                [string]$SpnServerInstance,                
                 $_.UserSid,
                 [string]$_.User,
                 [string]$_.Usercn,
                 [string]$_.Service,
-                [string]$_.ComputerName,
-                [string]$_.Spn,
-                $SpnServerInstance,
+                [string]$_.Spn,                
                 $_.LastLogon,
                 [string]$_.Description) | Out-Null            
+        }
+
+        # Enumerate SQL Server instances from management servers
+        if($CheckMgmt){
+
+            Write-Verbose "Grabbing SPNs for servers managing SQL Server clusters (MSServerClusterMgmtAPI) from domain..."        
+            $TblMgmtServers = Get-DomainSpn -DomainController $DomainController -Username $Username -Password $Password -Credential $Credential  -ComputerName $ComputerName -DomainAccount $DomainAccount -SpnService 'MSServerClusterMgmtAPI' | Where-Object {$_.ComputerName -like "*.*"} | Select-Object ComputerName -Unique | Sort-Object ComputerName 
+
+            Write-Verbose "Performing a UDP scan of management servers to obtain managed SQL Server instances..."
+            $TblMgmtSQLServers = $TblMgmtServers | Select-Object ComputerName -Unique | Get-SQLInstanceScanUDP -UDPTimeOut $UDPTimeOut
         }
     }
 
     End
-    {  
-        
-        # Status User
-        $SqlServerCount = $TblSQLServerSpns.rows.count
-        Write-Verbose "$SqlServerCount SQL Server instances found via SPN dump."
+    {                  
+        # Return data        
+        if($CheckMgmt){
+            $Tbl1 = $TblMgmtSQLServers | Select-Object ComputerName, Instance | Sort-Object ComputerName, Instance
+            $Tbl2 = $TblSQLServerSpns | Select-Object ComputerName, Instance | Sort-Object ComputerName, Instance
+            $Tbl3 = $Tbl1 + $Tbl2
 
-        # Return data
-        $TblSQLServerSpns          
+            $InstanceCount = $Tbl3.rows.count
+            Write-Verbose "$InstanceCount instances were found."
+            $Tbl3
+        }else{                    
+            $InstanceCount = $TblSQLServerSpns.rows.count
+            Write-Verbose "$InstanceCount instances were found."
+            $TblSQLServerSpns
+        }        
     }
 }
 
@@ -4375,18 +4394,22 @@ Function  Get-SQLInstanceLocal {
 #  Get-SQLInstanceScanUDP
 # ----------------------------------
 # Author: Eric Gruber
-# Note: Pipeline mods by Scott Sutherland
-# TODO: Add up to three tries for each server.
+# Note: Pipeline, timeout mods by Scott Sutherland
 function Get-SQLInstanceScanUDP
 {
     [CmdletBinding()]
     param(
 
-       [Parameter(Mandatory=$true,
+        [Parameter(Mandatory=$true,
         ValueFromPipeline,
         ValueFromPipelineByPropertyName=$true,
         HelpMessage="Computer name or IP address to enumerate SQL Instance from.")]
-        [string]$ComputerName
+        [string]$ComputerName,
+
+        [Parameter(Mandatory=$false,        
+        ValueFromPipelineByPropertyName=$true,
+        HelpMessage="Timeout in seconds. Longer timeout = more accurate.")]
+        [int]$UDPTimeOut = 2
     )
 
     Begin 
@@ -4394,6 +4417,7 @@ function Get-SQLInstanceScanUDP
         # Setup data table for results
         $TableResults = New-Object -TypeName system.Data.DataTable -ArgumentList 'Table'
         $TableResults.columns.add("ComputerName") | Out-Null
+        $TableResults.columns.add("Instance") | Out-Null
         $TableResults.columns.add("InstanceName") | Out-Null
         $TableResults.columns.add("ServerIP") | Out-Null
         $TableResults.columns.add("TCPPort") | Out-Null
@@ -4403,7 +4427,7 @@ function Get-SQLInstanceScanUDP
 
     Process
     {
-        Write-Verbose -Message "[*] Enumerating SQL Server instance for $ComputerName"
+        Write-Verbose -Message "[*] Enumerating SQL Server instances managed by $ComputerName"
 
         # Verify server name isn't empty
         if ($ComputerName -ne '')
@@ -4411,11 +4435,15 @@ function Get-SQLInstanceScanUDP
             # Try to enumerate SQL Server instances from remote system             
             try
             {
+                # Resolve IP
+                $IPAddress = [System.Net.Dns]::GetHostAddresses($ComputerName)
+
                 # Create UDP client object
                 $UDPClient = New-Object -TypeName System.Net.Sockets.Udpclient
-                $UDPClient.client.ReceiveTimeout = 3
 
                 # Attempt to connect to system
+                $UDPTimeOutMilsec = $UDPTimeOut * 1000
+                $UDPClient.client.ReceiveTimeout = $UDPTimeOutMilsec
                 $UDPClient.Connect($ComputerName,0x59a)
                 $UDPPacket = 0x03  
 
@@ -4443,8 +4471,9 @@ function Get-SQLInstanceScanUDP
                             # Add SQL Server instance info to results table
                             $TableResults.rows.Add(
                                 [string]$ComputerName,
+                                [string]"$ComputerName\"+$values.'instancename',                                
                                 [string]$values.'instancename',                                
-                                [string]$values.'servername',
+                                [string]$IPAddress,
                                 [string]$values.'tcp',
                                 [string]$values.'version',
                                 [string]$values.'isclustered') | Out-Null
@@ -4463,7 +4492,7 @@ function Get-SQLInstanceScanUDP
                 #"Error was in Line $line"
 
                 # Close connection
-                $UDPClient.Close()
+                # $UDPClient.Close()
             } 
         }       
    
