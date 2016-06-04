@@ -6,6 +6,10 @@
 # - 1 - Allow users to execute SQL Server commands quickly and easily on a large scale with zero knowledge of the environment.
 # - 2 - Allow users to audit for common high impact vulnerabilities and weak configurations.
 # - 3 - Allow users to leverage vulnerabilities to obtain sysadmin privileges.
+# Example command:  enumerate accessible instance on the domain 
+# Get-SQLInstanceDomain -Verbose -CheckMgmt | select computername -Unique | Get-SQLInstanceScanUDP -Verbose | Out-GridView
+# Get-SQLInstanceDomain -Verbose -CheckMgmt | select computername -Unique | Get-SQLInstanceScanUDP -Verbose | Get-SQLConnectionTest | ?{$_.state -like "Accessible"} | Get-SQLServerInfo
+# $x = Get-SQLInstanceDomain -Verbose -CheckMgmt | select computername -Unique | Get-SQLInstanceScanUDP -Verbose | Get-SQLConnectionTest -Verbose 
 # Example command:  Get-SQLInstanceDomain -Verbose |  Get-SQLDatabase -NoDefaults -Verbose -InformationAction Continue
 # Example command:  Get-SQLInstanceLocal -Verbose  |  Get-SQLServerRoleMember -Verbose -InformationAction Continue
 # Example command:  Get-SQLInstanceScanUDP -Verbose -ComputerName | Get-SQLServerInfo -Verbose -InformationAction Continue
@@ -13,7 +17,7 @@
 # General Todo List
 <#Add these first
 Invoke-SQLEscalate-DbOwner
-Invoke-SQLEscalate-AgentJob
+Invoke-SQLEscalate-AgentJob 
 Invoke-SQLEscalate-SQLi-ExecuteAs
 Invoke-SQLEscalate-SQLi-SignedSp
 Invoke-SQLEscalate-CreateStartUpSP
@@ -35,7 +39,7 @@ Invoke-SQLEscalate-DDLAdmin
 
 #########################################################################
 #
-#                            CORE FUNCTIONS
+#region                    CORE FUNCTIONS
 #
 #########################################################################
 
@@ -204,7 +208,7 @@ Function  Get-SQLConnectionTest {
             # Open connection
             $Connection.Open()                                              
 
-            Write-Information "$Instance : Connection Success."           
+            Write-Verbose "$Instance : Connection Success."           
 
             # Add record
             $TblResults.Rows.Add("$ComputerName","$Instance","Accessible") | Out-Null
@@ -218,7 +222,7 @@ Function  Get-SQLConnectionTest {
 
             # Connection failed                        
             $ErrorMessage = $_.Exception.Message
-            Write-Information "$Instance : Connection Failed."
+            Write-Verbose "$Instance : Connection Failed."
             Write-Information  " Error: $ErrorMessage"
             
             # Add record
@@ -230,6 +234,212 @@ Function  Get-SQLConnectionTest {
     {   
         # Return Results
         $TblResults          
+    }
+}
+
+
+# ----------------------------------
+#  Get-SQLConnectionTestThreaded
+# ----------------------------------
+Function  Get-SQLConnectionTestThreaded {
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory=$false,
+        HelpMessage="SQL Server or domain account to authenticate with.")]
+        [string]$Username,
+
+        [Parameter(Mandatory=$false,
+        HelpMessage="SQL Server or domain account password to authenticate with.")]
+        [string]$Password,
+
+        [Parameter(Mandatory=$false,
+        HelpMessage="Windows credentials.")]
+        [System.Management.Automation.PSCredential]
+        [System.Management.Automation.Credential()]$Credential = [System.Management.Automation.PSCredential]::Empty,
+        
+        [Parameter(Mandatory=$false,
+        ValueFromPipelineByPropertyName=$true,
+        HelpMessage="SQL Server instance to connection to.")]
+        [string]$Instance,       
+
+        [Parameter(Mandatory=$false,
+        HelpMessage="SQL Server query.")]
+        [Switch]$DAC,
+
+        [Parameter(Mandatory=$false,
+        HelpMessage="Connection timeout.")]
+        [string]$TimeOut
+    )
+
+    Begin
+    {
+        # Setup data table for output
+        $TblResults = New-Object System.Data.DataTable
+        $TblResults.Columns.Add("ComputerName") | Out-Null
+        $TblResults.Columns.Add("Instance") | Out-Null
+        $TblResults.Columns.Add("Status") | Out-Null
+
+        # Setup data table for pipeline threading
+        $PipelineItems = New-Object System.Data.DataTable
+    }
+
+    Process
+    {      
+      # Create list of pipeline items
+      $PipelineItems = $PipelineItems + $_         
+    }
+
+    End
+    {   
+        # Return list of pipeline items
+        # $PipelineItems
+
+        # --------------------------
+        # Start multi threading here
+        # --------------------------
+        # This is based on Chrissy LeMaire's work: https://raw.githubusercontent.com/ctrlbold/SqlImportSpeedTest/master/SqlImportSpeedTest.psm1
+
+        [int]$MinRunspaces = 1
+	    [int]$MaxRunspaces = 5
+        [string]$threading = "Multi"
+        [int]$BatchSize = 5
+
+	    switch ($threading) {
+		    "Multi" { $apartmentstate = "MTA" }
+		    "Single" { $apartmentstate = "STA" }
+	    }
+
+	    # Setup runspace pool and the scriptblock that runs inside each runspace
+	    $pool = [RunspaceFactory]::CreateRunspacePool($MinRunspaces,$MaxRunspaces)
+	    $pool.ApartmentState = $apartmentstate
+	    $pool.CleanupInterval =  (New-TimeSpan -Minutes 1)
+	    $pool.Open()
+	    $runspaces =  [System.Collections.ArrayList]@()
+
+	    # This is the workhorse. I think this is the test-connection function location
+        $scriptblock = {
+            Param (
+		    [string]$Username,
+		    [string]$Password,
+		    [System.Management.Automation.PSCredential]$Credential,
+		    [string]$Instance,
+		    [string]$DAC,
+		    [int]$Timeout
+            )
+	        
+
+            # Correct loop test - works
+            # Write-Output "test" | Out-File c:\temp\threadtest.txt
+
+            # Parse computer name from the instance
+            $ComputerName = Get-ComputerNameFromInstance -Instance $Instance
+
+            # Default connection to local default instance
+            if(-not $Instance){
+                $Instance = $env:COMPUTERNAME
+            }
+
+            # Setup DAC string
+            if($DAC){
+
+                # Create connection object
+                $Connection =  Get-SQLConnectionObject -Instance $Instance -Username $Username -Password $Password -Credential $Credential -DAC -TimeOut $TimeOut
+            }else{
+                # Create connection object
+                $Connection =  Get-SQLConnectionObject -Instance $Instance -Username $Username -Password $Password -Credential $Credential -TimeOut $TimeOut
+            }
+
+            # Parse SQL Server instance name
+            $ConnectionString = $Connection.Connectionstring
+            $Instance = $ConnectionString.split(";")[0].split("=")[1]
+
+            # Attempt connection
+            try{
+                # Open connection
+                $Connection.Open()                                              
+
+                Write-Verbose "$Instance : Connection Success."           
+
+                # Add record
+                $TblResults.Rows.Add("$ComputerName","$Instance","Accessible") | Out-Null
+
+                # Close connection
+                $Connection.Close()
+
+                # Dispose connection
+                $Connection.Dispose() 
+            }catch{
+
+                # Connection failed                        
+                $ErrorMessage = $_.Exception.Message
+                Write-Verbose "$Instance : Connection Failed."
+                Write-Information  " Error: $ErrorMessage"
+            
+                # Add record
+                $TblResults.Rows.Add("$ComputerName","$Instance","Not Accessible") | Out-Null
+            }          
+            		
+		    return $TblResults
+        }
+        
+
+        $elapsed = [System.Diagnostics.Stopwatch]::StartNew()
+
+        #threading here
+        # Once batchsize is reached, send it off to a runspace to be processed, then create a new datatable.
+	    # so that the one in the runspace doesn't get altered. Thanks Dave Wyatt for that suggestion!
+        $datatable = New-Object System.Data.DataTable
+        # Iterate through each pipeline iteam
+        for($i=0;$i -le $PipelineItems.Rows.Count;$i++)  {		
+		
+            # Correct loop test - works
+            # $PipelineItems[$i]  
+            
+            # Check batchsize and add to batch runspace
+		    if ($datatable.rows.count % $batchsize -eq 0) {  
+		       $runspace = [PowerShell]::Create()
+		       $null = $runspace.AddScript($scriptblock)
+		       $null = $runspace.AddArgument($Username)
+		       $null = $runspace.AddArgument($Password)
+		       $null = $runspace.AddArgument($Credential)
+		       $null = $runspace.AddArgument($Instance)
+		       $null = $runspace.AddArgument($DAC)
+		       $null = $runspace.AddArgument($Timeout)
+		       $runspace.RunspacePool = $pool
+		       [void]$runspaces.Add([PSCustomObject]@{ Pipe = $runspace; Status = $runspace.BeginInvoke() })
+
+		       # Overwrite the datatable 
+		       $datatable = $datatable.Clone()
+		    }            
+	    }
+        
+        # Wait for runspaces to complete
+	    while ($runspaces.Status.IsCompleted -notcontains $true) {}
+	    $secs = $elapsed.Elapsed.TotalSeconds
+	    Write-Output "Timer complete"
+	
+	    if ($showerrors -eq $true) {
+		    $errors =  [System.Collections.ArrayList]@()
+		    foreach ($runspace in $runspaces) { 
+			    [void]$errors.Add($runspace.Pipe.EndInvoke($runspace.Status))
+			    $runspace.Pipe.Dispose()
+		    }
+		    $errors 
+	    }
+	    else {
+		    foreach ($runspace in $runspaces ) { 
+			    $null = $runspace.Pipe.EndInvoke($runspace.Status)
+			    $runspace.Pipe.Dispose()
+		    }
+	    }
+	
+        # Drain the pool
+	    $pool.Close() 
+	    $pool.Dispose()
+
+        # Return Results
+        $TblResults  
+               
     }
 }
 
@@ -349,11 +559,11 @@ Function  Get-SQLQuery {
         $TblQueryResults          
     }
 }
-
+#endregion
 
 #########################################################################
 #
-#                            COMMON FUNCTIONS
+#region                   COMMON FUNCTIONS
 #
 #########################################################################
 
@@ -3212,11 +3422,11 @@ Function  Get-SQLStoredProcure {
         $TblProcs       
     }
 }
-
+#endregion
 
 #########################################################################
 #
-#                         UTILITY FUNCTIONS
+#region                   UTILITY FUNCTIONS
 #
 #########################################################################
 
@@ -3941,11 +4151,11 @@ function Create-SQLFile-XPDLL
         Write-Verbose " - Register xp via UNC path: sp_addextendedproc `'$ExportName`', `'\\servername\pathtofile\myxp.dll`'"
         Write-Verbose " - Unregister xp: sp_dropextendedproc `'$ExportName`'"
 }
-
+#endregion
 
 #########################################################################
 #
-#                         DISCOVERY FUNCTIONS
+#region                   DISCOVERY FUNCTIONS
 #
 #########################################################################
 
@@ -4427,7 +4637,7 @@ function Get-SQLInstanceScanUDP
 
     Process
     {
-        Write-Verbose -Message "[*] Enumerating SQL Server instances managed by $ComputerName"
+        Write-Verbose -Message " - $ComputerName - Enumerating managed SQL Server instances - UDP Scan Start."
 
         # Verify server name isn't empty
         if ($ComputerName -ne '')
@@ -4496,7 +4706,7 @@ function Get-SQLInstanceScanUDP
             } 
         }       
    
-        Write-Verbose -Message "[*] Enumeration for $ComputerName complete."
+        Write-Verbose -Message " - $ComputerName - UDP Scan Complete."
     }
 
     End
@@ -4566,10 +4776,11 @@ Function  Get-SQLInstanceFromFile {
         $TblFileInstances         
     }
 }
+#endregion
 
 #########################################################################
 #
-#                       PASSWORD RECOVERY FUNCTIONS
+#region              PASSWORD RECOVERY FUNCTIONS
 #
 #########################################################################
 
@@ -4583,10 +4794,11 @@ Function  Get-SQLInstanceFromFile {
 #  Get-SQLRecoverMasterKey
 #  Get-SQLRecoverMachineKey
 
+#endregion
 
 #########################################################################
 #
-#                            EXFILTRATION FUNCTIONS
+#region               EXFILTRATION FUNCTIONS
 #
 #########################################################################
 
@@ -4601,10 +4813,11 @@ Function  Get-SQLInstanceFromFile {
 #  Get-SQLExfilServerLink
 #  Get-SQLExfilAdHocQuery
 
+#endregion
 
 #########################################################################
 #
-#                            PERSISTENCE FUNCTIONS
+#region               PERSISTENCE FUNCTIONS
 #
 #########################################################################
 
@@ -4624,10 +4837,11 @@ Function  Get-SQLInstanceFromFile {
 #  Get-SQLPersistFullPrivLogin
 #  Get-SQLPersistImpersonateSysadmin
 
+#endregion
 
 #########################################################################
 #
-#                    PRIVILEGE ESCALATION FUNCTIONS
+#region               PRIVILEGE ESCALATION FUNCTIONS
 #
 #########################################################################
 
@@ -5555,10 +5769,11 @@ Function Invoke-SQLEscalate-SampleDataByColumn {
         }
     }
 }
+#endregion
 
 #########################################################################
 #
-#                             WRAPPER FUNCTIONS
+#region            Invoke-PowerUpSQL WRAPPER FUNCTION
 #
 #########################################################################
 
@@ -5685,4 +5900,4 @@ Function Invoke-PowerUpSQL {
         }   
     }
 }
-
+#endregion
