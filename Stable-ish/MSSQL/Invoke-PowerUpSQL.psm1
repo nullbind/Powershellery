@@ -14,6 +14,10 @@
 # Example command:  Get-SQLInstanceLocal -Verbose  |  Get-SQLServerRoleMember -Verbose -InformationAction Continue
 # Example command:  Get-SQLInstanceScanUDP -Verbose -ComputerName | Get-SQLServerInfo -Verbose -InformationAction Continue
 # Example command:  Get-SQLInstanceFromFile -Verbose |  Invoke-PowerUpSQL -Verbose
+# More examples
+#Get-SQLInstanceDomain -Verbose -CheckMgmt | Get-SQLConnectionTestThreaded -Verbose -Threads 30 
+#=
+#Get-SQLInstanceDomain -CheckMgmt | Invoke-Parallel -ScriptBlock { Get-SQLConnectionTest -Instance $_.instance -verbose } -ImportSessionFunctions -ImportVariables -Quiet -Throttle 30 -RunspaceTimeout 2 -ErrorAction SilentlyContinue 
 # General Todo List
 <#Add these first
 Invoke-SQLEscalate-DbOwner
@@ -30,9 +34,8 @@ Invoke-SQLEscalate-StealServiceToken
 Invoke-SQLEscalate-ControlServer
 Invoke-SQLEscalate-DDLAdmin
 #>
-# add ping option/udp option to testconnection
-# port escalation functions from previous code base
-# Find multi threading option to speed everything up - runspaces, .net, or jobs? Also, consider timeout tweaks.
+# rename get-sqlconnectiontest to get-sqllogintest, rename get-sqlinstancescanup to get-sqlconnectiontestdup
+# Multithread the existsing functions
 # test across all versions and add version checks - finish the lab setup for all priv esc
 # Clean up formatting etc
 
