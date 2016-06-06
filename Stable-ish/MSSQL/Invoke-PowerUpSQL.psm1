@@ -347,11 +347,13 @@ Function  Get-SQLConnectionTestThreaded {
                 $TblResults.Rows.Add("$ComputerName","$Instance","Not Accessible") | Out-Null
             }          
             		
-		    return $TblResults
+#		    return $TblResults
         }         
 
         # Run scriptblock using multi-threading
         $PipelineItems | Invoke-Parallel -ScriptBlock $MyScriptBlock -ImportSessionFunctions -ImportVariables -Throttle $Threads -RunspaceTimeout 2 -Quiet -ErrorAction SilentlyContinue                
+
+        return $TblResults
     }
 }
 
