@@ -1,42 +1,32 @@
-# Script: Invoke-PowerUpSql.psm1
-# Version: Super Beta x3001
-# Author: Scott Sutherland, NetSPI - 2016
-# Description:
-# This script targets three objectives: 
-# - 1 - Allow users to execute SQL Server commands quickly and easily on a large scale with zero knowledge of the environment.
-# - 2 - Allow users to audit for common high impact vulnerabilities and weak configurations.
-# - 3 - Allow users to leverage vulnerabilities to obtain sysadmin privileges.
-# Example command:  enumerate accessible instance on the domain 
-# Get-SQLInstanceDomain -Verbose -CheckMgmt | select computername -Unique | Get-SQLInstanceScanUDP -Verbose | Out-GridView
-# Get-SQLInstanceDomain -Verbose -CheckMgmt | select computername -Unique | Get-SQLInstanceScanUDP -Verbose | Get-SQLConnectionTest | ?{$_.state -like "Accessible"} | Get-SQLServerInfo
-# $x = Get-SQLInstanceDomain -Verbose -CheckMgmt | select computername -Unique | Get-SQLInstanceScanUDP -Verbose | Get-SQLConnectionTest -Verbose 
-# Example command:  Get-SQLInstanceDomain -Verbose |  Get-SQLDatabase -NoDefaults -Verbose -InformationAction Continue
-# Example command:  Get-SQLInstanceLocal -Verbose  |  Get-SQLServerRoleMember -Verbose -InformationAction Continue
-# Example command:  Get-SQLInstanceScanUDP -Verbose -ComputerName | Get-SQLServerInfo -Verbose -InformationAction Continue
-# Example command:  Get-SQLInstanceFromFile -Verbose |  Invoke-PowerUpSQL -Verbose
-# More examples
-#Get-SQLInstanceDomain -Verbose -CheckMgmt | Get-SQLConnectionTestThreaded -Verbose -Threads 30 
-#=
-#Get-SQLInstanceDomain -CheckMgmt | Invoke-Parallel -ScriptBlock { Get-SQLConnectionTest -Instance $_.instance -verbose } -ImportSessionFunctions -ImportVariables -Quiet -Throttle 30 -RunspaceTimeout 2 -ErrorAction SilentlyContinue 
-# General Todo List
-<#Add these first
-Invoke-SQLEscalate-DbOwner
-Invoke-SQLEscalate-AgentJob 
-Invoke-SQLEscalate-SQLi-ExecuteAs
-Invoke-SQLEscalate-SQLi-SignedSp
-Invoke-SQLEscalate-CreateStartUpSP
-Invoke-SQLEscalate-CrawlServerLink
-Invoke-SQLEscalate-CreateAssembly
-Invoke-SQLEscalate-CreateTriggerDDL
-Invoke-SQLEscalate-CreateTriggerLOGON
-Invoke-SQLEscalate-CreateTriggerDML
-Invoke-SQLEscalate-StealServiceToken
-Invoke-SQLEscalate-ControlServer
-Invoke-SQLEscalate-DDLAdmin
+<#
+Script: Invoke-PowerUpSQL.psm1
+Version: Super Beta x3002
+Author: Scott Sutherland (@_nullbind), NetSPI - 2016
+Description
+PowerUpSQL: A SQL Server Recon, Privilege Escalation, and Data Exfiltration Toolkit
+The PowerUpSQL is an offensive toolkit designed to accomplish six goals:
+* Portability: Default .net libraries are used, and there are no SMO dependancies so commands can be run without having to install SQL Server. Also, function are designed so they can run independantly.
+* Scalability: Multi-threading is supported so commands can be executed against many SQL Servers quickly.
+* Support SQL Server Discovery: Discovery functions help users blindly identify local, domain, and non-domain SQL Server instances.
+* Support SQL Server Auditing: Invoke-PowerUpSQL audits for common high impact vulnerabilities and weak configurations by default.
+* Support SQL Server Exploitation: Invoke-PowerUpSQL can leverage SQL Server vulnerabilities to obtain sysadmin privileges to illistrate risk.
+* Pipeline Support: Most functions support the pipeline so they can be used with other toolsets.
 #>
-# rename get-sqlconnectiontest to get-sqllogintest, rename get-sqlinstancescanup to get-sqlconnectiontestdup
-# Multithread the existsing functions
-# test across all versions and add version checks - finish the lab setup for all priv esc
+
+########## DISCOVERY and EXECUTION EXAMPLES ##########
+# Example command:  Get-SQLInstanceFromFile -Verbose | Invoke-PowerUpSQL -Verbose
+# Example command:  Get-SQLInstanceLocal    -Verbose | Get-SQLServerRoleMember -Verbose -InformationAction Continue
+# Example command:  Get-SQLInstanceDomain   -Verbose | Get-SQLDatabase -NoDefaults -Verbose -InformationAction Continue
+# Example command:  Get-SQLInstanceScanUDP  -Verbose | Get-SQLServerInfo -Verbose -InformationAction Continue
+# Example command:  Get-SQLInstanceDomain -Verbose -CheckMgmt | select computername -Unique | Get-SQLInstanceScanUDP -Verbose | Out-GridView
+# Example command:  Get-SQLInstanceDomain -Verbose -CheckMgmt | select computername -Unique | Get-SQLInstanceScanUDP -Verbose | Get-SQLConnectionTest -Verbose
+# Example command:  Get-SQLInstanceDomain -Verbose -CheckMgmt | select computername -Unique | Get-SQLInstanceScanUDP -Verbose | Get-SQLConnectionTest | ?{$_.state -like "Accessible"} | Get-SQLServerInfo 
+# Example command:  Get-SQLInstanceDomain -Verbose -CheckMgmt | Invoke-Parallel -ScriptBlock { Get-SQLConnectionTest -Instance $_.instance -verbose } -ImportSessionFunctions -ImportVariables -Quiet -Throttle 30 -RunspaceTimeout 2 -ErrorAction SilentlyContinue 
+# Example command:  Get-SQLInstanceDomain -Verbose -CheckMgmt | Get-SQLConnectionTestThreaded -Verbose -Threads 30
+
+########## General Todo List ############### 
+# Modify all existing functions to support multi-threading (core, common, and utility) - invoke-parallel (runspaces)
+# Test all functions in the lab against SQL Server 2000-2016
 # Clean up formatting etc
 
 
@@ -480,9 +470,9 @@ Function  Get-SQLQuery {
 #region          COMMON FUNCTIONS
 #
 #########################################################################
-
-# Pending functions:
-# --
+#
+#  Roadmap Functions:
+#  ------------------
 #  Get-SQLProxyAccount
 #  Get-SQLTempObject
 #  Get-SQLCachePlan
@@ -3343,42 +3333,41 @@ Function  Get-SQLStoredProcure {
 #region          UTILITY FUNCTIONS
 #
 #########################################################################
-
-# Pending functions:
-# --
-#  Get-SQLSampleDataByColumnName
-#  Get-SQLUploadFile
-#  Get-SQLUploadFileXpCmdshell
-#  Get-SQLUploadFileAgent
-#  Get-SQLUploadFileAssembly
-#  Get-SQLUploadFileServerLink
-#  Get-SQLUploadFileAdHocQuery
-#  Get-SQLDownloadFile
-#  Get-SQLDownloadFileXpCmdshell
-#  Get-SQLDownloadFileBulkInsert
-#  Get-SQLDownloadFileServerLink
-#  Get-SQLDownloadFileAssembly
-#  Get-SQLDownloadFileAdHocQuery
-#  Get-SQLDecryptedStoreProcedure
-#  Get-SQLInstalledSoftware
-# Invoke-SqlCmdExec
-# Invoke-SqlCmdExecXpCmdshell
-# Invoke-SqlCmdExecAgentPs
-# Invoke-SqlCmdExecAgentActiveX
-# Invoke-SqlCmdExecAgentCmdExec
-# Invoke-SqlCmdExecAgentVbscript
-# Invoke-SqlCmdExecAgentAnalysis
-# Invoke-SqlCmdExecAssembly
-# Invoke-SqlCmdExecServerLinkMdb
-# Invoke-SqlCmdExecAdHoQueryMdb
-# Invoke-SqlCmdExecSsisExecuteProcessTask
+#  
+#  Roadmap Functions:
+#  ------------------
 #  Get-SQLDatabaseOrphanUser
+#  Get-SQLDatabaseUser- add fuzzing option 
+#  Get-SQLDecryptedStoreProcedure
 #  Get-SQLDomainAccount
 #  Get-SQLDomainComputer
 #  Get-SQLDomainGroup
+#  Get-SQLDownloadFile
+#  Get-SQLDownloadFileAdHocQuery
+#  Get-SQLDownloadFileAssembly
+#  Get-SQLDownloadFileBulkInsert
+#  Get-SQLDownloadFileServerLink
+#  Get-SQLDownloadFileXpCmdshell
+#  Get-SQLInstalledSoftware
+#  Get-SQLSampleDataByColumnName
 #  Get-SQLServerLogin - add fuzzing option
-#  Get-SQLDatabaseUser- add fuzzing option
-
+#  Get-SQLUploadFile
+#  Get-SQLUploadFileAdHocQuery
+#  Get-SQLUploadFileAgent
+#  Get-SQLUploadFileAssembly
+#  Get-SQLUploadFileServerLink
+#  Get-SQLUploadFileXpCmdshell
+#  Invoke-SqlCmdExec
+#  Invoke-SqlCmdExecAdHoQueryMdb
+#  Invoke-SqlCmdExecAgentActiveX
+#  Invoke-SqlCmdExecAgentAnalysis
+#  Invoke-SqlCmdExecAgentCmdExec
+#  Invoke-SqlCmdExecAgentPs
+#  Invoke-SqlCmdExecAgentVbscript
+#  Invoke-SqlCmdExecAssembly
+#  Invoke-SqlCmdExecServerLinkMdb
+#  Invoke-SqlCmdExecSsisExecuteProcessTask
+#  Invoke-SqlCmdExecXpCmdshell
 
 # ----------------------------------
 #  Get-SQLFuzzObjectName
@@ -4697,9 +4686,9 @@ Function  Get-SQLInstanceFromFile {
 #region          PASSWORD RECOVERY FUNCTIONS
 #
 #########################################################################
-
-# Pending functions:
-# --
+#
+#  Roadmap Functions:
+#  ------------------
 #  Get-SQLRecoverPwCredential
 #  Get-SQLRecoverPwServerLink
 #  Get-SQLRecoverPWProxyAccount
@@ -4707,17 +4696,17 @@ Function  Get-SQLInstanceFromFile {
 #  Get-SQLRecoverLoginHash
 #  Get-SQLRecoverMasterKey
 #  Get-SQLRecoverMachineKey
-
+#
 #endregion
 
 #########################################################################
 #
-#region          EXFILTRATION FUNCTIONS
+#region          DATA EXFILTRATION FUNCTIONS
 #
 #########################################################################
-
-# Pending functions:
-# --
+#
+#  Roadmap Functions:
+#  ------------------
 #  Get-SQLExfilHttp
 #  Get-SQLExfilHttps
 #  Get-SQLExfilDns
@@ -4726,7 +4715,7 @@ Function  Get-SQLInstanceFromFile {
 #  Get-SQLExfilFtp
 #  Get-SQLExfilServerLink
 #  Get-SQLExfilAdHocQuery
-
+#
 #endregion
 
 #########################################################################
@@ -4734,9 +4723,9 @@ Function  Get-SQLInstanceFromFile {
 #region          PERSISTENCE FUNCTIONS
 #
 #########################################################################
-
-# Pending functions:
-# --
+#
+#  Roadmap Functions:
+#  ------------------
 #  Get-SQLPersistAssembly
 #  Get-SQLPersistSp
 #  Get-SQLPersistSpStartup
@@ -4750,7 +4739,7 @@ Function  Get-SQLInstanceFromFile {
 #  Get-SQLPersistSkeletonKey
 #  Get-SQLPersistFullPrivLogin
 #  Get-SQLPersistImpersonateSysadmin
-
+#
 #endregion
 
 #########################################################################
@@ -4758,29 +4747,42 @@ Function  Get-SQLInstanceFromFile {
 #region          PRIVILEGE ESCALATION FUNCTIONS
 #
 #########################################################################
-
-# Pending functions:
-# --
-# Invoke-SqlInjectUncPath
-# Create-SqlStoredProcedure - db_owner, db_ddladmin, db_securityadmin, or db_accessadmin
-# Invoke-SqlXpCmdshell
-# Create-SqlStoredProcedureStartUp
-# Create-SqlAgentJob
-# --
-# Create-SqlSysadmin
-# Invoke-Escalate-CrawlServerLinks
-# Invoke-Escalate-CrawlOwnershipChain
-# Create-SqlTriggerDdl
-# Create-SqlTriggerDml
-# Invoke-SqlInjectSqliSp
-# Invoke-Escalate-PrivAlterServerLogin
-# Invoke-Escalate-PrivAlterServerRole
-# Invoke-Escalate-PrivExternalAssembly
-# Invoke-Escalate-PrivAdministerBulkOps
-# Invoke-Escalate-PrivControlServer
-# Invoke-Escalate-DictionaryAttackOnline
-# Invoke-Escalate-DictionaryAttackOffline
-# Impersonate-SqlDatabaseUser
+#
+#  Roadmap Functions:
+#  ------------------
+#  Invoke-SQLEscalate-DbOwner
+#  Invoke-SQLEscalate-AgentJob 
+#  Invoke-SQLEscalate-SQLi-ExecuteAs
+#  Invoke-SQLEscalate-SQLi-SignedSp
+#  Invoke-SQLEscalate-CreateStartUpSP
+#  Invoke-SQLEscalate-CrawlServerLink
+#  Invoke-SQLEscalate-CreateAssembly
+#  Invoke-SQLEscalate-CreateTriggerDDL
+#  Invoke-SQLEscalate-CreateTriggerLOGON
+#  Invoke-SQLEscalate-CreateTriggerDML
+#  Invoke-SQLEscalate-StealServiceToken
+#  Invoke-SQLEscalate-ControlServer
+#  Invoke-SQLEscalate-DDLAdmin
+#  Invoke-SqlInjectUncPath
+#  Create-SqlStoredProcedure - db_owner, db_ddladmin, db_securityadmin, or db_accessadmin
+#  Invoke-SqlXpCmdshell
+#  Create-SqlStoredProcedureStartUp
+#  Create-SqlAgentJob
+#  --
+#  Create-SqlSysadmin
+#  Invoke-Escalate-CrawlServerLinks
+#  Invoke-Escalate-CrawlOwnershipChain
+#  Create-SqlTriggerDdl
+#  Create-SqlTriggerDml
+#  Invoke-SqlInjectSqliSp
+#  Invoke-Escalate-PrivAlterServerLogin
+#  Invoke-Escalate-PrivAlterServerRole
+#  Invoke-Escalate-PrivExternalAssembly
+#  Invoke-Escalate-PrivAdministerBulkOps
+#  Invoke-Escalate-PrivControlServer
+#  Invoke-Escalate-DictionaryAttackOnline
+#  Invoke-Escalate-DictionaryAttackOffline
+#  Impersonate-SqlDatabaseUser
 
 # ---------------------------------------
 # Template Function
