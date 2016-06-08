@@ -16,6 +16,8 @@ Script Information
 
 Note: This was largely inspired by twitter requests and Harmj0y's PowerUp Windows privilege escalation toolkit.
 
+Below are the functions included in this module.  Many are complete, but I've also outlined the intended roadmap.
+
 ### Core Functions:
 	Get-SQLConnectionObject		-   [Complete] 	- Creates a object for connecting to SQL Server.
 	Get-SQLConnectionTest		-   [Complete] 	- Tests if the current Windows account or provided SQL Server login can log into an SQL Server.
@@ -45,7 +47,7 @@ Note: This was largely inspired by twitter requests and Harmj0y's PowerUp Window
 	Get-SQLTable				-   [Complete] 	- Returns table information from target SQL Servers.
 	Get-SQLTriggerDdl			-   [Complete] 	- Returns DDL trigger information from target SQL Servers.  This includes logon triggers.
 	Get-SQLTriggerDml			-   [Complete] 	- Returns DML trigger information from target SQL Servers.
-	Get-SQLView				-   [Complete] 	- Returns view information from target SQL Servers.
+	Get-SQLView					-   [Complete] 	- Returns view information from target SQL Servers.
 
 	Roadmap:
 	
