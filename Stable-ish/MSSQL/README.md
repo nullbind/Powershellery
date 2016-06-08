@@ -16,7 +16,7 @@ Optional Dependencies: None
 
 
 ### Core Functions:
-	Get-SQLConnectionObjec		-   [Complete] 	- Creates a object for connecting to SQL Server.
+	Get-SQLConnectionObject		-   [Complete] 	- Creates a object for connecting to SQL Server.
 	Get-SQLConnectionTest		-   [Complete] 	- Tests if the current Windows account or provided SQL Server login can log into an SQL Server.
 	Get-SQLQuery			-   [Complete] 	- Executes a query on target SQL servers.
 	
