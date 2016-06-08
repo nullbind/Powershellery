@@ -51,8 +51,8 @@ Below are the functions included in this module.  Many are complete, but I've al
 
 	Roadmap:
 	
-	Get-SQLProxyAccoun			-   [Roadmap]	- Returns proxy accounts from target SQL Servers.
-	Get-SQLTempObjec			-   [Roadmap] 	- Returns temp objects from target SQL Servers.	
+	Get-SQLProxyAccount			-   [Roadmap]	- Returns proxy accounts from target SQL Servers.
+	Get-SQLTempObject			-   [Roadmap] 	- Returns temp objects from target SQL Servers.	
 	Get-SQLCachePlan			-   [Roadmap] 	- Returns cache plans from target SQL Servers.	
 	Get-SQLQueryHistory			-   [Roadmap] 	- Returns recent query history from target SQL Servers.	
 	Get-SQLHiddenSystemObject	-   [Roadmap] 	- Returns hidden system objects from target SQL Servers.	 (consider moving to utility)
