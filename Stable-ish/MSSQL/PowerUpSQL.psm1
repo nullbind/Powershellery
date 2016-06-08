@@ -1,5 +1,5 @@
 <#
-Script: Invoke-PowerUpSQL.psm1
+Script: PowerUpSQL.psm1
 Version: Super Beta x3002
 Author: Scott Sutherland (@_nullbind), NetSPI - 2016
 Description
