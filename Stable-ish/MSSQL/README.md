@@ -23,10 +23,10 @@ Optional Dependencies: None
 ### Common Functions:	
 	Get-SQLAuditDatabaseSpec	-   [Complete] 	- Returns Audit database specifications from target SQL Servers.
 	Get-SQLAuditServerSpec		-   [Complete] 	- Returns Audit server specifications from target SQL Servers.
-	Get-SQLColmn			-   [Complete] 	- Returns column information from target SQL Servers.
-	Get-SQLDatabase			-   [Complete] 	- Returns database information from target SQL Servers.
-	Get-SQLDatabasePriv		-   [Complete] 	- Returns database user privilege information from target SQL Servers.
-	Get-SQLDatabaseRole		-   [Complete]	- Returns database role information from target SQL Servers.
+	Get-SQLColmn				-   [Complete] 	- Returns column information from target SQL Servers.
+	Get-SQLDatabase				-   [Complete] 	- Returns database information from target SQL Servers.
+	Get-SQLDatabasePriv			-   [Complete] 	- Returns database user privilege information from target SQL Servers.
+	Get-SQLDatabaseRole			-   [Complete]	- Returns database role information from target SQL Servers.
 	Get-SQLDatabaseRoleMember	-   [Complete]	- Returns database role member information from target SQL Servers.
 	Get-SQLDatabaseSchema		-   [Complete] 	- Returns schema information from target SQL Servers. 					(consider renaming)	
 	Get-SQLDatabaseUser		-   [Complete] 	- Returns database user information from target SQL Servers.
