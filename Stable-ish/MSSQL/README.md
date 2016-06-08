@@ -20,8 +20,7 @@ Below are the functions included in this module.  Many are complete, but I've al
 
 ### Core Functions:
 	Get-SQLConnectionObject			-   [Complete] 	- Creates a object for connecting to SQL Server.
-	Get-SQLConnectionTest			-   [Complete] 	- Tests if the current Windows account or provided SQL Server login can log
-	into an SQL Server.
+	Get-SQLConnectionTest			-   [Complete] 	- Tests if the current Windows account or provided SQL Server login can log into an SQL Server.
 	Get-SQLConnectionTestThreaded	-   [Complete] 	- Tests if the current Windows account or provided SQL Server login can log into an SQL Server.  Now with threading.
 	Get-SQLQuery					-   [Complete] 	- Executes a query on target SQL servers.
 	
