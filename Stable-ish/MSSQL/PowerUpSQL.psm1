@@ -266,7 +266,7 @@ Function  Get-SQLConnectionTestThreaded {
 
         [Parameter(Mandatory=$false,
         HelpMessage="Number of threads.")]
-        [int]$Threads = 30
+        [int]$Threads = 5
     )
 
     Begin
