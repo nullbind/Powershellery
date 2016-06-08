@@ -157,8 +157,8 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Get-ComputerNameFromInstance	-   [Complete] 	- Parses computer name form a provided instance.
 	Get-SQLServiceLocal				-   [Complete] 	- Returns local SQL Server services.
 	Create-SQLFile-XPDLL			-   [Complete] 	- Used to create DLLs with exported functions that can be imported as extended stored procedures in SQL Server. Supports arbitrary command execution.
-	Get-DomainSpn				-   [Complete] 	- Returns a list of SPNs for the target domain. Supports authentication from non domain systems. (consider moving to utility)
-	Get-DomainObject			-   [Complete] 	- Used to query domain controllers via LDAP.  Based on @Harmj0y's function to query LDAP.		 (consider moving to utility)
+	Get-DomainSpn					-   [Complete] 	- Returns a list of SPNs for the target domain. Supports authentication from non domain systems. (consider moving to utility)
+	Get-DomainObject				-   [Complete] 	- Used to query domain controllers via LDAP.  Based on @Harmj0y's function to query LDAP.		 (consider moving to utility)
 	
 	Roadmap:
 
