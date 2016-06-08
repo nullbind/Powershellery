@@ -38,12 +38,12 @@ Optional Dependencies: None
 	Get-SQLServerRole			-   [Complete] 	- Returns SQL Server role information from target SQL Servers.
 	Get-SQLServerRoleMember		-   [Complete] 	- Returns SQL Server role member information from target SQL Servers.
 	Get-SQLServiceAccount		-   [Complete] 	- Returns a list of local SQL Server services.
-	Get-SQLSession			-   [Complete] 	- Returns active sessions from target SQL Servers.(consider renaming)
+	Get-SQLSession				-   [Complete] 	- Returns active sessions from target SQL Servers.(consider renaming)
 	Get-SQLStoredProcure		-   [Complete] 	- Returns stored procedures from target SQL Servers.	
 	Get-SQLSysadminCheck		-   [Complete] 	- Check if login is has sysadmin privilege on the target SQL Servers. (consider moving to utility)
-	Get-SQLTable			-   [Complete] 	- Returns table information from target SQL Servers.
-	Get-SQLTriggerDdl		-   [Complete] 	- Returns DDL trigger information from target SQL Servers.  This includes logon triggers.
-	Get-SQLTriggerDml		-   [Complete] 	- Returns DML trigger information from target SQL Servers.
+	Get-SQLTable				-   [Complete] 	- Returns table information from target SQL Servers.
+	Get-SQLTriggerDdl			-   [Complete] 	- Returns DDL trigger information from target SQL Servers.  This includes logon triggers.
+	Get-SQLTriggerDml			-   [Complete] 	- Returns DML trigger information from target SQL Servers.
 	Get-SQLView			-   [Complete] 	- Returns view information from target SQL Servers.
 
 	Roadmap:
