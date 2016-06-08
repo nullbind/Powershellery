@@ -294,10 +294,9 @@ Function  Get-SQLConnectionTestThreaded {
 	    # Define code to be multi-threaded
         $MyScriptBlock = {                        
             
-            if(-not $instance){
-                $Instance = $_.Instance
-            }
-
+            
+            $Instance = $_.Instance
+            
             # Parse computer name from the instance
             $ComputerName = Get-ComputerNameFromInstance -Instance $Instance
 
