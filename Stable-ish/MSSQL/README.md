@@ -112,19 +112,19 @@ Below are the functions included in this module.  Many are complete, but I've al
 
 	Roadmap:
 	
-	Get-SQLPersistAssembly						  -   [Roadmap]	- Pending...
-	Get-SQLPersistSp							      -   [Roadmap]	- Pending...
-	Get-SQLPersistSpStartup						  -   [Roadmap]	- Pending...
-	Get-SQLPersistTriggerDml					  -   [Roadmap]	- Pending...
-	Get-SQLPersistTriggerDdl					  -   [Roadmap]	- Pending...
-	Get-SQLPersistTriggerLogon					-   [Roadmap]	- Pending...
-	Get-SQLPersistView							    -   [Roadmap]	- Pending...
-	Get-SQLPersistInternalObject				-   [Roadmap]	- Pending...
-	Get-SQLPersistAgentJob						  -   [Roadmap]	- Pending...
-	Get-SQLPersistXstatus						    -   [Roadmap]	- Pending...
-	Get-SQLPersistSkeletonKey					  -   [Roadmap]	- Pending...
-	Get-SQLPersistFullPrivLogin					-   [Roadmap]	- Pending...
-	Get-SQLPersistImpersonateSysadmin		-   [Roadmap]	- Pending...
+	Get-SQLPersistAssembly						  
+	Get-SQLPersistSp						
+	Get-SQLPersistSpStartup						 
+	Get-SQLPersistTriggerDml					  
+	Get-SQLPersistTriggerDdl					  
+	Get-SQLPersistTriggerLogon					
+	Get-SQLPersistView							   
+	Get-SQLPersistInternalObject				
+	Get-SQLPersistAgentJob						 
+	Get-SQLPersistXstatus						   
+	Get-SQLPersistSkeletonKey					  
+	Get-SQLPersistFullPrivLogin					
+	Get-SQLPersistImpersonateSysadmin	
 
 ### Password Recovery Functions:
 	
@@ -156,8 +156,8 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Get-SQLFuzzDatabaseName			-   [Complete] 	- Enumerates databases based on database id using DB_NAME().
 	Get-SQLFuzzServerLogin			-   [Complete] 	- Enumerates SQL Server Logins based on login id using SUSER_NAME().
 	Get-SQLFuzzDomainAccount		-   [Complete] 	- Enumerates domain accounts based on domain RID using SUSER_SNAME().
-	Get-ComputerNameFromInstance		-   [Complete] 	- Parses computer name form a provided instance.
-	Get-SQLServiceLocal			-   [Complete] 	- Returns local SQL Server services.
+	Get-ComputerNameFromInstance	-   [Complete] 	- Parses computer name form a provided instance.
+	Get-SQLServiceLocal				-   [Complete] 	- Returns local SQL Server services.
 	Create-SQLFile-XPDLL			-   [Complete] 	- Used to create DLLs with exported functions that can be imported as extended stored procedures in SQL Server. Supports arbitrary command execution.
 	
 	Roadmap:
