@@ -8,11 +8,11 @@ The PowerUpSQL is an offensive toolkit designed to accomplish six goals:
 * Support SQL Server Exploitation: Invoke-PowerUpSQL can leverage SQL Server vulnerabilities to obtain sysadmin privileges to illistrate risk.
 * Pipeline Support: Most functions support the pipeline so they can be used with other toolsets.
 
-
-Author: Scott Sutherland (@_nullbind), NetSPI - 2016
-License: BSD 3-Clause
-Required Dependencies: PowerShell v3 (or later)
-Optional Dependencies: None 
+Script Information
+* Author: Scott Sutherland (@_nullbind), NetSPI - 2016
+* License: BSD 3-Clause
+* Required Dependencies: PowerShell v3 (or later)
+* Optional Dependencies: None 
 
 Note: This was largely inspired by twitter requests and Harmj0y's PowerUp Windows privilege escalation toolkit.
 
