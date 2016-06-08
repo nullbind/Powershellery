@@ -14,6 +14,7 @@ License: BSD 3-Clause
 Required Dependencies: PowerShell v3 (or later)
 Optional Dependencies: None 
 
+Note: This was largely inspired by twitter requests and Harmj0y's PowerUp Windows privilege escalation toolkit.
 
 ### Core Functions:
 	Get-SQLConnectionObject		-   [Complete] 	- Creates a object for connecting to SQL Server.
