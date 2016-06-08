@@ -12,7 +12,7 @@ The PowerUpSQL is an offensive toolkit designed to accomplish six goals:
 Author: Scott Sutherland (@_nullbind), NetSPI - 2016
 License: BSD 3-Clause
 Required Dependencies: PowerShell v3 (or later)
-Optional Dependencies: None
+Optional Dependencies: None 
 
 
 ### Core Functions:
