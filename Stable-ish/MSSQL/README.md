@@ -59,12 +59,12 @@ Below are the functions included in this module.  Many are complete, but I've al
 	
 	
 ### Discovery Functions:  
-	Get-DomainSpn			-   [Complete] 	- Returns a list of SPNs for the target domain. Supports authentication from non domain systems. (consider moving to utility)
+	Get-DomainSpn				-   [Complete] 	- Returns a list of SPNs for the target domain. Supports authentication from non domain systems. (consider moving to utility)
 	Get-DomainObject			-   [Complete] 	- Used to query domain controllers via LDAP.  Based on @Harmj0y's function to query LDAP.		 (consider moving to utility)
-	Get-SQLInstanceFromFile			-   [Complete] 	- Returns SQL Server instances from a file.  One per line.
-	Get-SQLInstanceLocal			-   [Complete] 	- Returns SQL Server instances from the local system based on a registry search.
-	Get-SQLInstanceDomain			-   [Complete] 	- Returns SQL Server instances from LDAP query results. Based on SPNs and UDP scanning of management servers.
-	Get-SQLInstanceScanUDP			-   [Complete] 	- Returns SQL Server instances from UDP scan results.
+	Get-SQLInstanceFromFile		-   [Complete] 	- Returns SQL Server instances from a file.  One per line.
+	Get-SQLInstanceLocal		-   [Complete] 	- Returns SQL Server instances from the local system based on a registry search.
+	Get-SQLInstanceDomain		-   [Complete] 	- Returns SQL Server instances from LDAP query results. Based on SPNs and UDP scanning of management servers.
+	Get-SQLInstanceScanUDP		-   [Complete] 	- Returns SQL Server instances from UDP scan results.
 
 ### Privilege Escalation Functions:
 	Invoke-SQLEscalate-CreateProcedure      -   [Complete] 	- Get sysadmin using create procedure privileges.
