@@ -150,6 +150,7 @@ Function  Get-SQLConnectionTest {
         [System.Management.Automation.Credential()]$Credential = [System.Management.Automation.PSCredential]::Empty,
         
         [Parameter(Mandatory=$false,
+        ValueFromPipeline,
         ValueFromPipelineByPropertyName=$true,
         HelpMessage="SQL Server instance to connection to.")]
         [string]$Instance,       
@@ -252,6 +253,7 @@ Function  Get-SQLConnectionTestThreaded {
         [System.Management.Automation.Credential()]$Credential = [System.Management.Automation.PSCredential]::Empty,
         
         [Parameter(Mandatory=$false,
+        ValueFromPipeline,
         ValueFromPipelineByPropertyName=$true,
         HelpMessage="SQL Server instance to connection to.")]
         [string]$Instance,       
@@ -292,7 +294,9 @@ Function  Get-SQLConnectionTestThreaded {
 	    # Define code to be multi-threaded
         $MyScriptBlock = {                        
             
-            $Instance = $_.Instance
+            if(-not $instance){
+                $Instance = $_.Instance
+            }
 
             # Parse computer name from the instance
             $ComputerName = Get-ComputerNameFromInstance -Instance $Instance
