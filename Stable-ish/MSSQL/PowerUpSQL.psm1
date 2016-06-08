@@ -194,10 +194,6 @@ Function  Get-SQLConnectionTest {
             $Connection =  Get-SQLConnectionObject -Instance $Instance -Username $Username -Password $Password -Credential $Credential -TimeOut $TimeOut
         }
 
-        # Parse SQL Server instance name
-        $ConnectionString = $Connection.Connectionstring
-        $Instance = $ConnectionString.split(";")[0].split("=")[1]
-
         # Attempt connection
         try{
             # Open connection
@@ -298,8 +294,7 @@ Function  Get-SQLConnectionTestThreaded {
     {   
 	    # Define code to be multi-threaded
         $MyScriptBlock = {                        
-            
-            
+                        
             $Instance = $_.Instance
             
             # Parse computer name from the instance
@@ -314,10 +309,6 @@ Function  Get-SQLConnectionTestThreaded {
                 # Create connection object
                 $Connection =  Get-SQLConnectionObject -Instance $Instance -Username $Username -Password $Password -Credential $Credential -TimeOut $TimeOut
             }
-
-            # Parse SQL Server instance name
-            $ConnectionString = $Connection.Connectionstring
-            $Instance = $ConnectionString.split(";")[0].split("=")[1]
 
             # Attempt connection
             try{
@@ -574,10 +565,10 @@ Function  Get-SQLQueryThreaded {
                 # Create connection object
                 $Connection =  Get-SQLConnectionObject -Instance $Instance -Username $Username -Password $Password -Credential $Credential -TimeOut $TimeOut
             }
-
+            
             # Parse SQL Server instance name
-            $ConnectionString = $Connection.Connectionstring
-            $Instance = $ConnectionString.split(";")[0].split("=")[1]
+            #$ConnectionString = $Connection.Connectionstring
+            #$Instance = $ConnectionString.split(";")[0].split("=")[1]            
             
             Write-Output "Query: $Query"
             Write-Output "Instance: $Instance"
