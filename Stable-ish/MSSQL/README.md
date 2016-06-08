@@ -1,12 +1,3 @@
-To install this module, drop the entire PowerUpSQL folder into one of your module directories. The default PowerShell module paths are listed in the $Env:PSModulePath environment variable.
-
-The default per-user module path is: "$Env:HomeDrive$Env:HOMEPATH\Documents\WindowsPowerShell\Modules"
-The default computer-level module path is: "$Env:windir\System32\WindowsPowerShell\v1.0\Modules"
-
-To use the module, type `Import-Module PowerUpSQL`
-
-To see the commands imported, type `Get-Command -Module PowerUpSQL`
-
 ## PowerUpSQL: A SQL Server Recon, Privilege Escalation, and Data Exfiltration Toolkit
 
 The PowerUpSQL is an offensive toolkit designed to accomplish six goals:
@@ -25,35 +16,35 @@ Optional Dependencies: None
 
 
 ### Core Functions:
-    Get-SQLConnectionObject           -   [Complete] 	- Creates a object for connecting to SQL Server.
-	Get-SQLConnectionTest             	-   [Complete] 	- Tests if the current Windows account or provided SQL Server login can log into an SQL Server.
-	Get-SQLQuery             			      -   [Complete] 	- Executes a query on target SQL servers.
+    	Get-SQLConnectionObject         -   [Complete] 	- Creates a object for connecting to SQL Server.
+	Get-SQLConnectionTest		-   [Complete] 	- Tests if the current Windows account or provided SQL Server login can log into an SQL Server.
+	Get-SQLQuer			-   [Complete] 	- Executes a query on target SQL servers.
 	
 ### Common Functions:	
-	Get-SQLAuditDatabaseSpec			      -   [Complete] 	- Returns Audit database specifications from target SQL Servers.
-	Get-SQLAuditServerSpec				      -   [Complete] 	- Returns Audit server specifications from target SQL Servers.
-	Get-SQLColmn						            -   [Complete] 	- Returns column information from target SQL Servers.
-	Get-SQLDatabase						          -   [Complete] 	- Returns database information from target SQL Servers.
-	Get-SQLDatabasePriv					        -   [Complete] 	- Returns database user privilege information from target SQL Servers.
-	Get-SQLDatabaseRole					        -   [Complete]	- Returns database role information from target SQL Servers.
-	Get-SQLDatabaseRoleMember			      -   [Complete]	- Returns database role member information from target SQL Servers.
-	Get-SQLDatabaseSchema				        -   [Complete] 	- Returns schema information from target SQL Servers. 					(consider renaming)	
-	Get-SQLDatabaseUser					        -   [Complete] 	- Returns database user information from target SQL Servers.
-	Get-SQLServerCredential				      -   [Complete] 	- Returns credentials from target SQL Servers.
-	Get-SQLServerInfo					          -   [Complete] 	- Returns basic server and user information from target SQL Servers.
-	Get-SQLServerLink					          -   [Complete] 	- Returns link servers from target SQL Servers. 
-	Get-SQLServerLogin					        -   [Complete] 	- Returns logins from target SQL Servers.
-	Get-SQLServerPriv					          -   [Complete] 	- Returns SQL Server login privilege information from target SQL Servers.
-	Get-SQLServerRole					          -   [Complete] 	- Returns SQL Server role information from target SQL Servers.
-	Get-SQLServerRoleMember				      -   [Complete] 	- Returns SQL Server role member information from target SQL Servers.
-	Get-SQLServiceAccount				        -   [Complete] 	- Returns a list of local SQL Server services.
-	Get-SQLSession						          -   [Complete] 	- Returns active sessions from target SQL Servers.						(consider renaming)
-	Get-SQLStoredProcure				        -   [Complete] 	- Returns stored procedures from target SQL Servers.	
-	Get-SQLSysadminCheck				        -   [Complete] 	- Check if login is has sysadmin privilege on the target SQL Servers.	(consider moving to utility)
-	Get-SQLTable						            -   [Complete] 	- Returns table information from target SQL Servers.
-	Get-SQLTriggerDdl					          -   [Complete] 	- Returns DDL trigger information from target SQL Servers.  This includes logon triggers.
-	Get-SQLTriggerDml					          -   [Complete] 	- Returns DML trigger information from target SQL Servers.
-	Get-SQLView							            -   [Complete] 	- Returns view information from target SQL Servers.
+	Get-SQLAuditDatabaseSpec	-   [Complete] 	- Returns Audit database specifications from target SQL Servers.
+	Get-SQLAuditServerSpec		-   [Complete] 	- Returns Audit server specifications from target SQL Servers.
+	Get-SQLColmn			-   [Complete] 	- Returns column information from target SQL Servers.
+	Get-SQLDatabase			-   [Complete] 	- Returns database information from target SQL Servers.
+	Get-SQLDatabasePriv		-   [Complete] 	- Returns database user privilege information from target SQL Servers.
+	Get-SQLDatabaseRole		-   [Complete]	- Returns database role information from target SQL Servers.
+	Get-SQLDatabaseRoleMember	-   [Complete]	- Returns database role member information from target SQL Servers.
+	Get-SQLDatabaseSchema		-   [Complete] 	- Returns schema information from target SQL Servers. 					(consider renaming)	
+	Get-SQLDatabaseUser		-   [Complete] 	- Returns database user information from target SQL Servers.
+	Get-SQLServerCredential		-   [Complete] 	- Returns credentials from target SQL Servers.
+	Get-SQLServerInfo		-   [Complete] 	- Returns basic server and user information from target SQL Servers.
+	Get-SQLServerLink		-   [Complete] 	- Returns link servers from target SQL Servers. 
+	Get-SQLServerLogin		-   [Complete] 	- Returns logins from target SQL Servers.
+	Get-SQLServerPriv		-   [Complete] 	- Returns SQL Server login privilege information from target SQL Servers.
+	Get-SQLServerRole		-   [Complete] 	- Returns SQL Server role information from target SQL Servers.
+	Get-SQLServerRoleMember		-   [Complete] 	- Returns SQL Server role member information from target SQL Servers.
+	Get-SQLServiceAccount		-   [Complete] 	- Returns a list of local SQL Server services.
+	Get-SQLSession			-   [Complete] 	- Returns active sessions from target SQL Servers.(consider renaming)
+	Get-SQLStoredProcure		-   [Complete] 	- Returns stored procedures from target SQL Servers.	
+	Get-SQLSysadminCheck		-   [Complete] 	- Check if login is has sysadmin privilege on the target SQL Servers. (consider moving to utility)
+	Get-SQLTable			-   [Complete] 	- Returns table information from target SQL Servers.
+	Get-SQLTriggerDdl		-   [Complete] 	- Returns DDL trigger information from target SQL Servers.  This includes logon triggers.
+	Get-SQLTriggerDml		-   [Complete] 	- Returns DML trigger information from target SQL Servers.
+	Get-SQLView			-   [Complete] 	- Returns view information from target SQL Servers.
 
 	Roadmap:
 	
