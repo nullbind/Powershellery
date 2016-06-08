@@ -94,18 +94,16 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Invoke-SqlXpCmdshell
 	Create-SqlStoredProcedureStartUp
 	Create-SqlAgentJob
-	Invoke-Escalate-CrawlServerLinks
-	Invoke-Escalate-CrawlOwnershipChain
-	Create-SqlTriggerDdl
-	Create-SqlTriggerDml
+	Invoke-SQLEscalate-CrawlServerLinks
+	Invoke-SQLEscalate-CrawlOwnershipChain
 	Invoke-SqlInjectSqliSp
-	Invoke-Escalate-PrivAlterServerLogin
-	Invoke-Escalate-PrivAlterServerRole
-	Invoke-Escalate-PrivExternalAssembly
-	Invoke-Escalate-PrivAdministerBulkOps
-	Invoke-Escalate-PrivControlServer
-	Invoke-Escalate-DictionaryAttackOnline
-	Invoke-Escalate-DictionaryAttackOffline
+	Invoke-SQLEscalate-PrivAlterServerLogin
+	Invoke-SQLEscalate-PrivAlterServerRole
+	Invoke-SQLEscalate-PrivExternalAssembly
+	Invoke-SQLEscalate-PrivAdministerBulkOps
+	Invoke-SQLEscalate-PrivControlServer
+	Invoke-SQLEscalate-DictionaryAttackOnline
+	Invoke-SQLEscalate-DictionaryAttackOffline
 	Impersonate-SqlDatabaseUser
 
 ### Persistence Functions: 
@@ -165,31 +163,31 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Get-SQLDatabaseOrphanUser             		
 	Get-SQLDatabaseUser- add fuzzing option		
 	Get-SQLDecryptedStoreProcedure            	
-	Get-SQLDomainAccoun				
+	Get-SQLDomainAccount				
 	Get-SQLDomainComputer             		
-	Get-SQLDomainGrou				
-	Get-SQLDownloadFil				
-	Get-SQLDownloadFileAdHocQuer			
+	Get-SQLDomainGroup				
+	Get-SQLDownloadFile				
+	Get-SQLDownloadFileAdHocQuery			
 	Get-SQLDownloadFileAssembly             	
-	Get-SQLDownloadFileBulkInser			
-	Get-SQLDownloadFileServerLin			
-	Get-SQLDownloadFileXpCmdshel			
+	Get-SQLDownloadFileBulkInsert			
+	Get-SQLDownloadFileServerLine			
+	Get-SQLDownloadFileXpCmdshell			
 	Get-SQLInstalledSoftware			
-	Get-SQLSampleDataByColumnNam			
+	Get-SQLSampleDataByColumnName			
 	Get-SQLServerLogin - add fuzzing option		
-	Get-SQLUploadFil				
+	Get-SQLUploadFile				
 	Get-SQLUploadFileAdHocQuery             	
-	Get-SQLUploadFileAgen				
+	Get-SQLUploadFileAgent				
 	Get-SQLUploadFileAssembly             		
 	Get-SQLUploadFileServerLink             	
 	Get-SQLUploadFileXpCmdshell             	
 	Invoke-SqlCmdExe				
 	Invoke-SqlCmdExecAdHoQueryMd			
 	Invoke-SqlCmdExecAgentActiveX            	
-	Invoke-SqlCmdExecAgentAnalysi			
+	Invoke-SqlCmdExecAgentAnalysis			
 	Invoke-SqlCmdExecAgentCmdExe			
 	Invoke-SqlCmdExecAgentPs			
-	Invoke-SqlCmdExecAgentVbscrip			
+	Invoke-SqlCmdExecAgentVbscript			
 	Invoke-SqlCmdExecAssembly             		
 	Invoke-SqlCmdExecServerLinkMd			
 	Invoke-SqlCmdExecSsisExecuteProcessTask		
