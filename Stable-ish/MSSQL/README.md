@@ -31,11 +31,11 @@ Optional Dependencies: None
 	Get-SQLDatabaseSchema		-   [Complete] 	- Returns schema information from target SQL Servers. 					(consider renaming)	
 	Get-SQLDatabaseUser			-   [Complete] 	- Returns database user information from target SQL Servers.
 	Get-SQLServerCredential		-   [Complete] 	- Returns credentials from target SQL Servers.
-	Get-SQLServerInfo		-   [Complete] 	- Returns basic server and user information from target SQL Servers.
-	Get-SQLServerLink		-   [Complete] 	- Returns link servers from target SQL Servers. 
-	Get-SQLServerLogin		-   [Complete] 	- Returns logins from target SQL Servers.
-	Get-SQLServerPriv		-   [Complete] 	- Returns SQL Server login privilege information from target SQL Servers.
-	Get-SQLServerRole		-   [Complete] 	- Returns SQL Server role information from target SQL Servers.
+	Get-SQLServerInfo			-   [Complete] 	- Returns basic server and user information from target SQL Servers.
+	Get-SQLServerLink			-   [Complete] 	- Returns link servers from target SQL Servers. 
+	Get-SQLServerLogin			-   [Complete] 	- Returns logins from target SQL Servers.
+	Get-SQLServerPriv			-   [Complete] 	- Returns SQL Server login privilege information from target SQL Servers.
+	Get-SQLServerRole			-   [Complete] 	- Returns SQL Server role information from target SQL Servers.
 	Get-SQLServerRoleMember		-   [Complete] 	- Returns SQL Server role member information from target SQL Servers.
 	Get-SQLServiceAccount		-   [Complete] 	- Returns a list of local SQL Server services.
 	Get-SQLSession			-   [Complete] 	- Returns active sessions from target SQL Servers.(consider renaming)
