@@ -1,7 +1,5 @@
 To use the module, type `Import-Module PowerUpSQL.psm1`
 
-To see the commands imported, type `Get-Command -Module PowerUpSQL`
-
 ## PowerUpSQL: A SQL Server Recon, Privilege Escalation, and Data Exfiltration Toolkit
 
 The PowerUpSQL is an offensive toolkit designed to accomplish six goals:
