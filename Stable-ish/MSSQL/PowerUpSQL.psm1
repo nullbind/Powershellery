@@ -281,6 +281,11 @@ Function  Get-SQLConnectionTestThreaded {
 
         # Setup data table for pipeline threading
         $PipelineItems = New-Object System.Data.DataTable
+
+        # Ensure provide instance is processed
+        if($Instance){
+            $PipelineItems = $PipelineItems + $Instance
+        }
     }
 
     Process
