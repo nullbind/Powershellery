@@ -29,7 +29,7 @@ Optional Dependencies: None
 	Get-SQLDatabaseRole			-   [Complete]	- Returns database role information from target SQL Servers.
 	Get-SQLDatabaseRoleMember	-   [Complete]	- Returns database role member information from target SQL Servers.
 	Get-SQLDatabaseSchema		-   [Complete] 	- Returns schema information from target SQL Servers. 					(consider renaming)	
-	Get-SQLDatabaseUser		-   [Complete] 	- Returns database user information from target SQL Servers.
+	Get-SQLDatabaseUser			-   [Complete] 	- Returns database user information from target SQL Servers.
 	Get-SQLServerCredential		-   [Complete] 	- Returns credentials from target SQL Servers.
 	Get-SQLServerInfo		-   [Complete] 	- Returns basic server and user information from target SQL Servers.
 	Get-SQLServerLink		-   [Complete] 	- Returns link servers from target SQL Servers. 
