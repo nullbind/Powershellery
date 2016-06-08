@@ -44,7 +44,7 @@ Optional Dependencies: None
 	Get-SQLTable				-   [Complete] 	- Returns table information from target SQL Servers.
 	Get-SQLTriggerDdl			-   [Complete] 	- Returns DDL trigger information from target SQL Servers.  This includes logon triggers.
 	Get-SQLTriggerDml			-   [Complete] 	- Returns DML trigger information from target SQL Servers.
-	Get-SQLView			-   [Complete] 	- Returns view information from target SQL Servers.
+	Get-SQLView				-   [Complete] 	- Returns view information from target SQL Servers.
 
 	Roadmap:
 	
