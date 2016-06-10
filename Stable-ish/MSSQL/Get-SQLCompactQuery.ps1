@@ -1,7 +1,8 @@
 # Script: Get-SQLCompactQuery
-# Author: Scott Sutherland (@_nullbind), NetSPI 2016
-# This script can be used as a template for querying sql server compact edition files
-# Reference: https://technet.microsoft.com/en-us/library/ms173372(v=sql.110).aspx
+# Pseudo Author: Scott Sutherland (@_nullbind), NetSPI 2016
+# This script is a slightly modified version of Jeremiah Clark's example code from the reference below.
+# Reference: https://blogs.msdn.microsoft.com/miah/2011/08/08/powershell-and-sql-server-compact-4-0-a-happy-mix/
+# Reference: https://technet.microsoft.com/en-us/library/gg592946(v=sql.110).aspx
 # Example: .\Get-SQLCompactQuery.ps1 -Query "SELECT TABLE_NAME from information_schema.tables" -DbFilePath c:\temp\file.sdf -Password SecretPassword!
 # Example: .\Get-SQLCompactQuery.ps1 -Query "SELECT TABLE_NAME, COLUMN_NAME from information_schema.columns" -DbFilePath c:\temp\file.sdf -Password SecretPassword!
 
@@ -20,7 +21,7 @@ Param(
    [string]$Query = "SELECT TABLE_NAME, COLUMN_NAME from information_schema.columns"
 )
 
-# Define stuff
+# Define lib path
 if (-not $libpath){
     $libpath = "C:\Program Files (x86)\Microsoft SQL Server Compact Edition\v4.0\Desktop\System.Data.SqlServerCe.dll"
 }
