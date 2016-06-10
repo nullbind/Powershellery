@@ -1,7 +1,9 @@
 # Script: Get-SQLCompactQuery
 # Author: Scott Sutherland (@_nullbind), NetSPI 2016
 # This script can be used as a template for querying sql server compact edition files
-# Example: .\Get-SQLCompactQuery.ps1 -Query "select 2" -DbFilePath c:\temp\file.sdf -Password SecretPassword!
+# Reference: https://technet.microsoft.com/en-us/library/ms173372(v=sql.110).aspx
+# Example: .\Get-SQLCompactQuery.ps1 -Query "SELECT TABLE_NAME from information_schema.tables" -DbFilePath c:\temp\file.sdf -Password SecretPassword!
+# Example: .\Get-SQLCompactQuery.ps1 -Query "SELECT TABLE_NAME, COLUMN_NAME from information_schema.columns" -DbFilePath c:\temp\file.sdf -Password SecretPassword!
 
 [CmdletBinding()]
 Param(
