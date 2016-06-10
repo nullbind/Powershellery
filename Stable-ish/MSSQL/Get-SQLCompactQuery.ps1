@@ -17,7 +17,7 @@ Param(
    [string]$Password,
 
    [Parameter(Mandatory=$false)]
-   [string]$Query = "Select 1"
+   [string]$Query = "SELECT TABLE_NAME, COLUMN_NAME from information_schema.columns"
 )
 
 # Define stuff
