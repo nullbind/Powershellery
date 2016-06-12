@@ -1,6 +1,7 @@
 <#
 Script: PowerUpSQL.psm1
 Version: Super Beta x3002
+Version name: SQL Configuration Offensive Tools and Techniques (SCOTT) ;)
 Author: Scott Sutherland (@_nullbind), NetSPI - 2016
 Description
 PowerUpSQL: A SQL Server Recon, Privilege Escalation, and Data Exfiltration Toolkit
@@ -13,7 +14,8 @@ The PowerUpSQL is an offensive toolkit designed to accomplish six goals:
 * Pipeline Support: Most functions support the pipeline so they can be used with other toolsets.
 #>
 
-########## DISCOVERY and EXECUTION EXAMPLES ##########
+########## EXAMPLES: SQL Server Instance Discovery ##########
+# Locate targets.
 # Example command:  Get-SQLInstanceFromFile -Verbose | Invoke-PowerUpSQL -Verbose
 # Example command:  Get-SQLInstanceLocal    -Verbose | Get-SQLServerRoleMember -Verbose -InformationAction Continue
 # Example command:  Get-SQLInstanceDomain   -Verbose | Get-SQLDatabase -NoDefaults -Verbose -InformationAction Continue
@@ -23,6 +25,28 @@ The PowerUpSQL is an offensive toolkit designed to accomplish six goals:
 # Example command:  Get-SQLInstanceDomain -Verbose -CheckMgmt | select computername -Unique | Get-SQLInstanceScanUDP -Verbose | Get-SQLConnectionTest | ?{$_.state -like "Accessible"} | Get-SQLServerInfo 
 # Example command:  Get-SQLInstanceDomain -Verbose -CheckMgmt | Invoke-Parallel -ScriptBlock { Get-SQLConnectionTest -Instance $_.instance -verbose } -ImportSessionFunctions -ImportVariables -Quiet -Throttle 30 -RunspaceTimeout 2 -ErrorAction SilentlyContinue 
 # Example command:  Get-SQLInstanceDomain -Verbose -CheckMgmt | Get-SQLConnectionTestThreaded -Verbose -Threads 30
+
+########## EXAMPLES: SQL Server - Login Testing ##########
+# Gain initial access. Domain user or weak/default sql server/vendor login.
+#Invoke-SQLLoginTest
+
+########## EXAMPLES: SQL Server - Login Privilege Escalation - Invoke-PowerUpSQL ##########
+# Basic privilege escalation. SQL login to SQL sysadmin.
+#Invoke-PowerUpSQL 
+
+########## EXAMPLES: SQL Server - Login Privilege Escalation - Agressive Checks ##########
+# Agressive (time consuming/multi-step) privilege escalation. SQL Login to SQL sysadmin.
+#Invoke-Escalate-FuzzLoginsBf
+#Invoke-Escalate-CrawlLinks
+#Invoke-Escalate-SvcAcntSmbRelay
+#Invoke-Escalate-SvcAcntCaptureHash
+
+########## EXAMPLES: SQL Server - Local OS Admin Privilege Escalation ##########
+# Local Os admin to SQL Server sysadmin.
+#Invoke-Escalate-DumpLSASecrets
+#Invoke-Escalate-DumpWdigest
+#Invoke-Escalate-DumpHashes
+#Invoke-Escalate-StealToken
 
 ########## General Todo List ############### 
 # Modify all existing functions to support multi-threading (core, common, and utility) - invoke-parallel (runspaces)
