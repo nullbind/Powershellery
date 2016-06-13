@@ -238,7 +238,7 @@ Function  Get-SQLConnectionTest {
             # Connection failed                        
             $ErrorMessage = $_.Exception.Message
             Write-Verbose "$Instance : Connection Failed."
-            Write-Information  " Error: $ErrorMessage"
+            Write-Verbose  " Error: $ErrorMessage"
             
             # Add record
             $TblResults.Rows.Add("$ComputerName","$Instance","Not Accessible") | Out-Null
