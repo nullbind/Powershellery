@@ -1,14 +1,19 @@
-# author: scott sutherland (@_nullbind), NetSPI 2016
-# scripty script 3000
-# this requires powerupsql - pending clean up and role in
 
 #-----------------
-# discover shared sql server accounts here
+# discover share accounts here
 #-----------------
 
-# Get SQL Server service accounts for domain computers and exclude computer accounts
+# Get SQL Server service account for domain computers that are not computer accounts
 Write-output "Querying domain controller for mssql spn..."
-$x = Get-SQLInstanceDomain | Where-Object { $_.DomainAccount -notlike "*$"} | select computername,instance,domainaccount,lastlogon 
+$z = Get-SQLInstanceDomain 
+$zCount = $z.count
+Write-output "$zCount MSSQL SPNs found"
+
+# Filter out the computer accounts
+Write-output "Filtering out computer accounts..."
+$x = $z | Where-Object { $_.DomainAccount -notlike "*$"} | select computername,instance,domainaccount,lastlogon 
+$xCount = $x.Count
+Write-output "$xCount MSSQL SPNs found using domain accounts"
 
 #-----------------
 # Identify targets here
@@ -17,13 +22,13 @@ $x = Get-SQLInstanceDomain | Where-Object { $_.DomainAccount -notlike "*$"} | se
 # check for sql server instances that use domain service accounts
 if(-not $x){
     
-    Write-output "0 shared SQL Server domain service accounts were found."
+    Write-output "0 shared SQL Server domain service accounts found."
 
 }else{
-    
+        
     Write-output "Selecting shared accounts..."
 
-    # Select shared SQL Server service accounts
+    # Select accounts that are shared
     $y = $x | group domainaccount -NoElement | Where-Object {$_.count -ge 2}    
     $sharecount = $y | select name -Unique | measure | select count -ExpandProperty count
     Write-output "$sharecount shared SQL Server domain service accounts were found"
@@ -63,11 +68,11 @@ if(-not $x){
             #-----------------
             # attack here
             #-----------------
-            # start sniff + relay targeting target2
-            # unc path inject target1
+            # start sniff for relay
+            # unc path inject
             # wait 3 seconds
             # check for win
-            # if fail then move to next shared account
+            # if not move on
         
         }else{
 
