@@ -186,7 +186,11 @@ Function  Get-SQLConnectionTest {
 
         [Parameter(Mandatory=$false,
         HelpMessage="Connection timeout.")]
-        [string]$TimeOut
+        [string]$TimeOut,
+
+        [Parameter(Mandatory=$false,
+        HelpMessage="Suppress verbose errors.  Used when function is wrapped.")]
+        [switch]$SuppressVerbose
     )
 
     Begin
@@ -223,7 +227,9 @@ Function  Get-SQLConnectionTest {
             # Open connection
             $Connection.Open()                                              
 
-            Write-Verbose "$Instance : Connection Success."           
+            if(-not $SuppressVerbose){
+                Write-Verbose "$Instance : Connection Success."           
+            }
 
             # Add record
             $TblResults.Rows.Add("$ComputerName","$Instance","Accessible") | Out-Null
@@ -236,10 +242,12 @@ Function  Get-SQLConnectionTest {
         }catch{
 
             # Connection failed                        
-            $ErrorMessage = $_.Exception.Message
-            Write-Verbose "$Instance : Connection Failed."
-            Write-Verbose  " Error: $ErrorMessage"
-            
+            if(-not $SuppressVerbose){
+                $ErrorMessage = $_.Exception.Message
+                Write-Verbose "$Instance : Connection Failed."
+                Write-Verbose  " Error: $ErrorMessage"
+            }
+
             # Add record
             $TblResults.Rows.Add("$ComputerName","$Instance","Not Accessible") | Out-Null
         }          
@@ -288,7 +296,11 @@ Function  Get-SQLConnectionTestThreaded {
 
         [Parameter(Mandatory=$false,
         HelpMessage="Number of threads.")]
-        [int]$Threads = 5
+        [int]$Threads = 5,
+
+        [Parameter(Mandatory=$false,
+        HelpMessage="Suppress verbose errors.  Used when function is wrapped.")]
+        [switch]$SuppressVerbose
     )
 
     Begin
@@ -339,7 +351,9 @@ Function  Get-SQLConnectionTestThreaded {
                 # Open connection
                 $Connection.Open()                                              
 
-                Write-Verbose "$Instance : Connection Success."           
+                if(-not $SuppressVerbose){
+                    Write-Verbose "$Instance : Connection Success."           
+                }
 
                 # Add record
                 $TblResults.Rows.Add("$ComputerName","$Instance","Accessible") | Out-Null
@@ -351,11 +365,14 @@ Function  Get-SQLConnectionTestThreaded {
                 $Connection.Dispose() 
             }catch{
 
-                # Connection failed                        
-                $ErrorMessage = $_.Exception.Message
-                Write-Verbose "$Instance : Connection Failed."
-                Write-Information  " Error: $ErrorMessage"
-            
+                # Connection failed       
+                                 
+                if(-not $SuppressVerbose){
+                    $ErrorMessage = $_.Exception.Message
+                    Write-Verbose "$Instance : Connection Failed."
+                    #Write-Verbose  " Error: $ErrorMessage"
+                }
+
                 # Add record
                 $TblResults.Rows.Add("$ComputerName","$Instance","Not Accessible") | Out-Null
             }                      		
@@ -707,7 +724,7 @@ Function  Get-SQLServerInfo {
     {
 
         # Test connection to server
-        $TestConnection =  Get-SQLConnectionTest -Instance $Instance -Username $Username -Password $Password -Credential $Credential| Where-Object {$_.Status -eq "Accessible"}
+        $TestConnection =  Get-SQLConnectionTest -Instance $Instance -Username $Username -Password $Password -Credential $Credential -SuppressVerbose | Where-Object {$_.Status -eq "Accessible"}
         if(-not $TestConnection){                     
             Return
         }
@@ -5036,7 +5053,7 @@ Function Invoke-SQLEscalate-Template {
         Write-Verbose "$Instance : START VULNERABILITY CHECK: [VULNERABILITY NAME]" 
 
         # Test connection to server
-        $TestConnection =  Get-SQLConnectionTest -Instance $Instance -Username $Username -Password $Password -Credential $Credential| Where-Object {$_.Status -eq "Accessible"}
+        $TestConnection =  Get-SQLConnectionTest -Instance $Instance -Username $Username -Password $Password -Credential $Credential -SuppressVerbose | Where-Object {$_.Status -eq "Accessible"}
         if(-not $TestConnection){   
             
             # Status user
@@ -5171,7 +5188,7 @@ Function Invoke-SQLEscalate-CreateProcedure {
         Write-Verbose "$Instance : START VULNERABILITY CHECK: PERMISSION - CREATE PROCEDURE" 
 
         # Test connection to server
-        $TestConnection =  Get-SQLConnectionTest -Instance $Instance -Username $Username -Password $Password -Credential $Credential| Where-Object {$_.Status -eq "Accessible"}
+        $TestConnection =  Get-SQLConnectionTest -Instance $Instance -Username $Username -Password $Password -Credential $Credential -SuppressVerbose | Where-Object {$_.Status -eq "Accessible"}
         if(-not $TestConnection){   
             
             # Status user
@@ -5357,7 +5374,7 @@ Function Invoke-SQLEscalate-DbOwnerRole {
         Write-Verbose "$Instance : START VULNERABILITY CHECK: DATABASE ROLE - DB_OWNER" 
 
         # Test connection to server
-        $TestConnection =  Get-SQLConnectionTest -Instance $Instance -Username $Username -Password $Password -Credential $Credential| Where-Object {$_.Status -eq "Accessible"}
+        $TestConnection =  Get-SQLConnectionTest -Instance $Instance -Username $Username -Password $Password -Credential $Credential -SuppressVerbose | Where-Object {$_.Status -eq "Accessible"}
         if(-not $TestConnection){   
             
             # Status user
@@ -5550,7 +5567,7 @@ Function Invoke-SQLEscalate-ImpersonateLogin {
         Write-Verbose "$Instance : START VULNERABILITY CHECK: PERMISSION - IMPERSONATE LOGIN"  
    
         # Test connection to server
-        $TestConnection =  Get-SQLConnectionTest -Instance $Instance -Username $Username -Password $Password -Credential $Credential| Where-Object {$_.Status -eq "Accessible"}
+        $TestConnection =  Get-SQLConnectionTest -Instance $Instance -Username $Username -Password $Password -Credential $Credential -SuppressVerbose | Where-Object {$_.Status -eq "Accessible"}
         if(-not $TestConnection){   
             
             # Status user
@@ -5764,7 +5781,7 @@ Function Invoke-SQLEscalate-SampleDataByColumn {
         Write-Verbose "$Instance : START VULNERABILITY CHECK: SEARCH DATA BY COLUMN" 
 
         # Test connection to server
-        $TestConnection =  Get-SQLConnectionTest -Instance $Instance -Username $Username -Password $Password -Credential $Credential | Where-Object {$_.Status -eq "Accessible"}
+        $TestConnection =  Get-SQLConnectionTest -Instance $Instance -Username $Username -Password $Password -Credential $Credential -SuppressVerbose | Where-Object {$_.Status -eq "Accessible"}
         if(-not $TestConnection){   
             
             # Status user
@@ -6614,7 +6631,7 @@ Function Invoke-PowerUpSQL {
     Process
     {              
         # Test connection to server
-        $TestConnection =  Get-SQLConnectionTest -Instance $Instance -Username $Username -Password $Password -Credential $Credential| Where-Object {$_.Status -eq "Accessible"}
+        $TestConnection =  Get-SQLConnectionTest -Instance $Instance -Username $Username -Password $Password -Credential $Credential -SuppressVerbose | Where-Object {$_.Status -eq "Accessible"}
         if(-not $TestConnection){
             Return
         }
