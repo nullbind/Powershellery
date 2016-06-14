@@ -73,11 +73,11 @@ if(-not $x){
             #-----------------
             # attack here
             #-----------------
-            # start sniff for relay
-            # unc path inject
+            # sniff and set relay target to target2
+            # unc path inject into target1
             # wait 3 seconds
             # check for win
-            # if not move on
+            # on file goto next
         
         }else{
 
