@@ -1,4 +1,7 @@
-
+# author: scott sutherland (@_nullbind), NetSPI 2016
+# scripty script 3000
+# this requires powerupsql - pending clean up and role in
+ 
 #-----------------
 # discover share accounts here
 #-----------------
@@ -38,7 +41,9 @@ if(-not $x){
 
         # set shared account name
         $sharedaccount = $_.name
-
+        
+        Write-output "$sharedaccount : START"
+    
         # get instances that match the current shared account
         $instances = $x | select computername,instance,domainaccount,lastlogon | ? {$_.domainaccount -eq $sharedaccount}
 
@@ -79,7 +84,7 @@ if(-not $x){
             # test connection
             Write-output "$sharedaccount : SQL Servers using the $sharedaccount service account could not be logged into."
         }
-    
+        Write-output "$sharedaccount : END"
     }
 }
 
