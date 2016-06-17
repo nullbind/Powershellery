@@ -25,7 +25,7 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Get-SQLConnectionTest			-   [Complete] 	- Tests if the current Windows account or provided SQL Server login can log into an SQL Server.
 	Get-SQLConnectionTestThreaded	-   [Complete] 	- Tests if the current Windows account or provided SQL Server login can log into an SQL Server.  Now with threading.
 	Get-SQLQuery					-   [Complete] 	- Executes a query on target SQL servers.
-	Get-SQLQueryThreaded				-   [Complete] 	- Executes a query on target SQL servers and supports threading.
+	Get-SQLQueryThreaded			-   [Complete] 	- Executes a query on target SQL servers and supports threading.
 	
 ### Common Functions:	
 	Get-SQLAuditDatabaseSpec	-   [Complete] 	- Returns Audit database specifications from target SQL Servers.
