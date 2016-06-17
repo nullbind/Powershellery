@@ -2,7 +2,7 @@
 # script name: Get-SQLServiceAccountPwHash.ps1
 # requirements: import-module powerupsql.psm1 (https://github.com/nullbind/Powershellery/blob/master/Stable-ish/MSSQL/PowerUpSQL.psm1);import-module invoke-inveigh.ps1;import-module Inveigh-Relay.ps1 (https://github.com/Kevin-Robertson/Inveigh)
 # Note: use for alt domain user: runas /noprofile /netonly /user:domain\users powershell.exe
-# Example run as domain user: .\Get-SQLServiceAccountPwHash.ps1 -captureip 10.20.2.1
+# Example run as domain user: .\Get-SQLServiceAccountPwHash.ps1 -captureip 10.20.2.1 -verbose -timeout 10
 #import-module .\powerupsql.psm1
 #import-module .\inveigh.ps1
 
