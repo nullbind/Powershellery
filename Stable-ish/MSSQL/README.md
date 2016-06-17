@@ -25,7 +25,7 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Get-SQLConnectionTest			-   [Complete] 	- Tests if the current Windows account or provided SQL Server login can log into an SQL Server.
 	Get-SQLConnectionTestThreaded	-   [Complete] 	- Tests if the current Windows account or provided SQL Server login can log into an SQL Server.  Now with threading.
 	Get-SQLQuery					-   [Complete] 	- Executes a query on target SQL servers.
-	Get-SQLQueryThreaded					-   [Complete] 	- Executes a query on target SQL servers and supports threading.
+	Get-SQLQueryThreaded				-   [Complete] 	- Executes a query on target SQL servers and supports threading.
 	
 ### Common Functions:	
 	Get-SQLAuditDatabaseSpec	-   [Complete] 	- Returns Audit database specifications from target SQL Servers.
@@ -45,9 +45,9 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Get-SQLServerRole			-   [Complete] 	- Returns SQL Server role information from target SQL Servers.
 	Get-SQLServerRoleMember		-   [Complete] 	- Returns SQL Server role member information from target SQL Servers.
 	Get-SQLServiceAccount		-   [Complete] 	- Returns a list of local SQL Server services.
-	Get-SQLSession				-   [Complete] 	- Returns active sessions from target SQL Servers.(consider renaming)
+	Get-SQLSession				-   [Complete] 	- Returns active sessions from target SQL Servers.
 	Get-SQLStoredProcure		-   [Complete] 	- Returns stored procedures from target SQL Servers.	
-	Get-SQLSysadminCheck		-   [Complete] 	- Check if login is has sysadmin privilege on the target SQL Servers. (consider moving to utility)
+	Get-SQLSysadminCheck		-   [Complete] 	- Check if login is has sysadmin privilege on the target SQL Servers. 
 	Get-SQLTable				-   [Complete] 	- Returns table information from target SQL Servers.
 	Get-SQLTriggerDdl			-   [Complete] 	- Returns DDL trigger information from target SQL Servers.  This includes logon triggers.
 	Get-SQLTriggerDml			-   [Complete] 	- Returns DML trigger information from target SQL Servers.
@@ -59,7 +59,7 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Get-SQLTempObject			-   [Roadmap] 	- Returns temp objects from target SQL Servers.	
 	Get-SQLCachePlan			-   [Roadmap] 	- Returns cache plans from target SQL Servers.	
 	Get-SQLQueryHistory			-   [Roadmap] 	- Returns recent query history from target SQL Servers.	
-	Get-SQLHiddenSystemObject	-   [Roadmap] 	- Returns hidden system objects from target SQL Servers.	 (consider moving to utility)
+	Get-SQLHiddenSystemObject	-   [Roadmap] 	- Returns hidden system objects from target SQL Servers.	 
 	
 	
 ### Discovery Functions:  
