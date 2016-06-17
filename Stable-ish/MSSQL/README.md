@@ -8,7 +8,7 @@ The PowerUpSQL is an offensive toolkit designed to accomplish six goals:
 * Support SQL Server Discovery: Discovery functions help users blindly identify local, domain, and non-domain SQL Server instances.
 * Support SQL Server Auditing: Invoke-PowerUpSQL audits for common high impact vulnerabilities and weak configurations by default.
 * Support SQL Server Exploitation: Invoke-PowerUpSQL can leverage SQL Server vulnerabilities to obtain sysadmin privileges to illistrate risk.
-* Pipeline Support: Most functions support the pipeline so they can be used with other toolsets.
+* Pipeline Support: Most of the PowerUpSQL functions support the PowerShell pipeline so they can be used together, and with other scripts.
 
 Script Information
 * Author: Scott Sutherland (@_nullbind), NetSPI - 2016
