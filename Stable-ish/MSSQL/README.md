@@ -63,7 +63,7 @@ Below are the functions included in this module.  Many are complete, but I've al
 	
 	
 ### Discovery Functions:  
-	Get-SQLInstanceFromFile		-   [Complete] 	- Returns SQL Server instances from a file.  One per line.
+	Get-SQLInstanceFile		-   [Complete] 	- Returns SQL Server instances from a file.  One per line.
 	Get-SQLInstanceLocal		-   [Complete] 	- Returns SQL Server instances from the local system based on a registry search.
 	Get-SQLInstanceDomain		-   [Complete] 	- Returns SQL Server instances from LDAP query results. Based on SPNs and UDP scanning of management servers.
 	Get-SQLInstanceScanUDP		-   [Complete] 	- Returns SQL Server instances from UDP scan results.
