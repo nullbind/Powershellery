@@ -502,18 +502,16 @@ Function  Get-SQLQuery {
 
 
 # ----------------------------------
-#  Get-SQLQueryThreaded - work in progress
+#  Get-SQLQueryThreaded 
 # ----------------------------------
 Function  Get-SQLQueryThreaded {
     [CmdletBinding()]
     Param(
         [Parameter(Mandatory=$false,
-        ValueFromPipelineByPropertyName=$true,
         HelpMessage="SQL Server or domain account to authenticate with.")]
         [string]$Username,
 
         [Parameter(Mandatory=$false,
-        ValueFromPipelineByPropertyName=$true,
         HelpMessage="SQL Server or domain account password to authenticate with.")]
         [string]$Password,
 
@@ -523,22 +521,26 @@ Function  Get-SQLQueryThreaded {
         [System.Management.Automation.Credential()]$Credential = [System.Management.Automation.PSCredential]::Empty,
         
         [Parameter(Mandatory=$false,
+        ValueFromPipeline,
         ValueFromPipelineByPropertyName=$true,
         HelpMessage="SQL Server instance to connection to.")]
-        [string]$Instance,
-        
-        [Parameter(Mandatory=$false,        
-        ValueFromPipelineByPropertyName=$true,
-        HelpMessage="SQL Server query.")]
-        [string]$Query,
+        [string]$Instance,       
 
         [Parameter(Mandatory=$false,
         HelpMessage="Connect using Dedicated Admin Connection.")]
         [Switch]$DAC,
 
+        [Parameter(Mandatory=$true,
+        HelpMessage="Query to be executed.")]
+        [String]$Query,
+
         [Parameter(Mandatory=$false,
         HelpMessage="Connection timeout.")]
         [string]$TimeOut,
+
+        [Parameter(Mandatory=$false,
+        HelpMessage="Number of threads.")]
+        [int]$Threads = 5,
 
         [Parameter(Mandatory=$false,
         HelpMessage="Suppress verbose errors.  Used when function is wrapped.")]
@@ -547,8 +549,8 @@ Function  Get-SQLQueryThreaded {
 
     Begin
     {
-        # Setup up data tables for output
-        $TblQueryResults = New-Object System.Data.DataTable
+        # Setup data table for output
+        $TblResults = New-Object System.Data.DataTable
 
         # Setup data table for pipeline threading
         $PipelineItems = New-Object System.Data.DataTable
@@ -556,17 +558,6 @@ Function  Get-SQLQueryThreaded {
         # Ensure provide instance is processed
         if($Instance){
             $PipelineItems = $PipelineItems + $Instance
-        }
-
-        # Setup parameter to be imported into the runspace session      
-        $Parameter = [pscustomobject]@{
-            Username = $Username
-            Password = $Password
-            Credential = $Credential
-            Query = $Query
-            DAC = $DAC
-            Timeout = $TimeOut
-            SuppressVerbose = $SuppressVerbose
         }
     }
 
@@ -579,98 +570,68 @@ Function  Get-SQLQueryThreaded {
     End
     {   
 	    # Define code to be multi-threaded
-        $MyScriptBlock = {    
-        
-            Param (
-                $Parameter
-            )                    
-             
-            # Import parameters provided in original ps session            
-            $Username = $Parameter.Username
-            $Password = $Parameter.Password
-            $Credential = $Parameter.Credential
-            $Query = $Parameter.Query
-            $DAC = $Parameter.DAC
-            $Timeout = $Parameter.TimeOut
-            $SuppressVerbose = $Parameter.SuppressVerbose            
-                       
-            # Set the instance from what's coming in through the pipeline
+        $MyScriptBlock = {                        
+                        
             $Instance = $_.Instance
             
+            # Parse computer name from the instance
+            $ComputerName = Get-ComputerNameFromInstance -Instance $Instance
+
             # Setup DAC string
             if($DAC){
 
                 # Create connection object
-                $Connection =  Get-SQLConnectionObject -Instance $Instance -Username $Username -Password $Password -Credential $Credential -TimeOut $TimeOut -DAC 
+                $Connection =  Get-SQLConnectionObject -Instance $Instance -Username $Username -Password $Password -Credential $Credential -DAC -TimeOut $TimeOut
             }else{
                 # Create connection object
                 $Connection =  Get-SQLConnectionObject -Instance $Instance -Username $Username -Password $Password -Credential $Credential -TimeOut $TimeOut
             }
-            
-            # Parse SQL Server instance name
-            #$ConnectionString = $Connection.Connectionstring
-            #$Instance = $ConnectionString.split(";")[0].split("=")[1]            
-            
-            Write-Output "Query: $Query"
-            Write-Output "Instance: $Instance"
-            Write-Output "Connection: $Connection"
 
-            # Check for query
-            if($Query){
+            # Attempt connection
+            try{
+                # Open connection
+                $Connection.Open()                                              
 
-                # Attempt connection
-                try{
-                Write-Output "got here 1"
-                    # Open connection
-                    $Connection.Open()
+                if(-not $SuppressVerbose){
+                    Write-Verbose "$Instance : Connection Success."           
+                }
 
-                    if(-not $SuppressVerbose){
-                        Write-Verbose "$Instance : Connection Success."                
-                    }
+                # Setup SQL query
+                $Command = New-Object -TypeName System.Data.SqlClient.SqlCommand -ArgumentList ($Query, $Connection)
 
-                     Write-Output "got here 2"
+                # Grab results
+                $Results = $Command.ExecuteReader()                                         
 
-                    # Setup SQL query
-                    $Command = New-Object -TypeName System.Data.SqlClient.SqlCommand -ArgumentList ($Query, $Connection)
+                # Load results into data table     
+                $TblResults.Load($Results)  
 
-                     Write-Output "got here 3"
+                # Close connection
+                $Connection.Close()
 
-                    # Grab results
-                    $Results = $Command.ExecuteReader()                                             
+                # Dispose connection
+                $Connection.Dispose() 
+            }catch{
 
-                    # Load results into data table     
-                    $TblQueryResults.Load($Results)                                                                                      
+                # Connection failed       
+                                 
+                if(-not $SuppressVerbose){
+                    $ErrorMessage = $_.Exception.Message
+                    Write-Verbose "$Instance : Connection Failed."
+                    #Write-Verbose  " Error: $ErrorMessage"
+                }
 
-                     Write-Output "got here 4"
-
-                    # Close connection
-                    $Connection.Close()
-
-                    # Dispose connection
-                    $Connection.Dispose() 
-                    
-                    Write-Output "got here 5"
-                    
-                }catch{
-                
-                    # Connection failed - for detail error use  Get-SQLConnectionTest
-                    if(-not $SuppressVerbose){
-                        Write-Verbose "$Instance : Connection Failed."
-                    }
-                }          
-
-            }else{
-                Write-Output "No query provided to Get-SQLQueryThreaded function."
-                Break
-            }                		
+                # Add record
+                $TblResults.Rows.Add("$ComputerName","$Instance","Not Accessible") | Out-Null
+            }                      		
         }         
 
         # Run scriptblock using multi-threading
-        $PipelineItems | Invoke-Parallel -ScriptBlock $MyScriptBlock -ImportSessionFunctions -ImportVariables -Throttle $Threads -RunspaceTimeout 2 -Quiet -Parameter $Parameter -ErrorAction SilentlyContinue
+        $PipelineItems | Invoke-Parallel -ScriptBlock $MyScriptBlock -ImportSessionFunctions -ImportVariables -Throttle $Threads -RunspaceTimeout 2 -Quiet -ErrorAction SilentlyContinue                
 
-        return $TblQueryResults
+        return $TblResults
     }
 }
+
 #endregion
 
 #########################################################################
