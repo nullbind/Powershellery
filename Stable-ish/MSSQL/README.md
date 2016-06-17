@@ -3,7 +3,7 @@ To use the module, type `Import-Module PowerUpSQL.psm1`
 ## PowerUpSQL: A SQL Server Recon, Privilege Escalation, and Data Exfiltration Toolkit
 
 The PowerUpSQL is an offensive toolkit designed to accomplish six goals:
-* Scalability: Auto-discovery of sql server instances, pipeline support, and Multi-threading on core functions is supported so commands can be executed against many SQL Servers quickly.  Multi-threading is currently a work in progress.  For now, I'm developing a seperate multi-threaded function for each existing function.
+* Scalability: Auto-discovery of sql server instances, pipeline support, and multi-threading on core functions is supported so commands can be executed against many SQL Servers quickly.  Multi-threading is currently a work in progress.  For now, I'm developing a seperate multi-threaded function for each existing function.
 * Portability: Default .net libraries are used, and there are no SMO dependancies so commands can be run without having to install SQL Server. Also, functions are designed so they can run independantly.
 * Support SQL Server Discovery: Discovery functions help users blindly identify local, domain, and non-domain SQL Server instances.
 * Support SQL Server Auditing: Invoke-PowerUpSQL audits for common high impact vulnerabilities and weak configurations by default.
