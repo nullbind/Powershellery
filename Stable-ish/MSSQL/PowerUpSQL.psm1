@@ -6,8 +6,8 @@ Author: Scott Sutherland (@_nullbind), NetSPI - 2016
 Description
 PowerUpSQL: A SQL Server Recon, Privilege Escalation, and Data Exfiltration Toolkit
 The PowerUpSQL is an offensive toolkit designed to accomplish six goals:
-* Portability: Default .net libraries are used, and there are no SMO dependancies so commands can be run without having to install SQL Server. Also, function are designed so they can run independantly.
 * Scalability: Multi-threading is supported so commands can be executed against many SQL Servers quickly.
+* Portability: Default .net libraries are used, and there are no SMO dependancies so commands can be run without having to install SQL Server. Also, function are designed so they can run independantly.
 * Support SQL Server Discovery: Discovery functions help users blindly identify local, domain, and non-domain SQL Server instances.
 * Support SQL Server Auditing: Invoke-PowerUpSQL audits for common high impact vulnerabilities and weak configurations by default.
 * Support SQL Server Exploitation: Invoke-PowerUpSQL can leverage SQL Server vulnerabilities to obtain sysadmin privileges to illistrate risk.
@@ -15,38 +15,24 @@ The PowerUpSQL is an offensive toolkit designed to accomplish six goals:
 #>
 
 ########## EXAMPLES: SQL Server Instance Discovery ##########
-# Locate targets.
-# Example command:  Get-SQLInstanceFromFile -Verbose | Invoke-PowerUpSQL -Verbose
-# Example command:  Get-SQLInstanceLocal    -Verbose | Get-SQLServerRoleMember -Verbose -InformationAction Continue
-# Example command:  Get-SQLInstanceDomain   -Verbose | Get-SQLDatabase -NoDefaults -Verbose -InformationAction Continue
-# Example command:  Get-SQLInstanceScanUDP  -Verbose | Get-SQLServerInfo -Verbose -InformationAction Continue
-# Example command:  Get-SQLInstanceDomain -Verbose -CheckMgmt | select computername -Unique | Get-SQLInstanceScanUDP -Verbose | Out-GridView
-# Example command:  Get-SQLInstanceDomain -Verbose -CheckMgmt | select computername -Unique | Get-SQLInstanceScanUDP -Verbose | Get-SQLConnectionTest -Verbose
-# Example command:  Get-SQLInstanceDomain -Verbose -CheckMgmt | select computername -Unique | Get-SQLInstanceScanUDP -Verbose | Get-SQLConnectionTest | ?{$_.state -like "Accessible"} | Get-SQLServerInfo 
-# Example command:  Get-SQLInstanceDomain -Verbose -CheckMgmt | Invoke-Parallel -ScriptBlock { Get-SQLConnectionTest -Instance $_.instance -verbose } -ImportSessionFunctions -ImportVariables -Quiet -Throttle 30 -RunspaceTimeout 2 -ErrorAction SilentlyContinue 
-# Example command:  Get-SQLInstanceDomain -Verbose -CheckMgmt | Get-SQLConnectionTestThreaded -Verbose -Threads 30
+# Locate SQL Server targets.
+# Example command:  Get-SQLInstanceFile -Verbose
+# Example command:  Get-SQLInstanceLocal -Verbose
+# Example command:  Get-SQLInstanceDomain -Verbose
+# Example command:  Get-SQLInstanceDomain -Verbose -CheckMgmt
+# Example command:  Get-SQLInstanceScanUDP -Verbose
 
 ########## EXAMPLES: SQL Server - Login Testing ##########
-# Gain initial access. Domain user or weak/default sql server/vendor login.
-#Invoke-SQLLoginTest
+# Check if the SQL Server login, current Windows account, or alternative Windows account can log into target SQL Servers.
+# Example command - SQL Login:  Get-SQLInstanceDomain -Verbose -CheckMgmt | Get-SQLConnectionTestThreaded -Verbose -Threads 20 -Username test -Password test
+# Example command - Current Windows User:  Get-SQLInstanceDomain -Verbose -CheckMgmt | Get-SQLConnectionTestThreaded -Verbose -Threads 20
+# Example command - Alternative Windows User:  runas /noprofile /netonly /user:domain\user powershell.exe -c "Import-Module PowerUpSQL.psm1;Get-SQLInstanceDomain -Verbose -CheckMgmt | Get-SQLConnectionTestThreaded -Verbose -Threads 20"
 
-########## EXAMPLES: SQL Server - Login Privilege Escalation - Invoke-PowerUpSQL ##########
-# Basic privilege escalation. SQL login to SQL sysadmin.
-#Invoke-PowerUpSQL 
-
-########## EXAMPLES: SQL Server - Login Privilege Escalation - Agressive Checks ##########
-# Agressive (time consuming/multi-step) privilege escalation. SQL Login to SQL sysadmin.
-#Invoke-Escalate-FuzzLoginsBf
-#Invoke-Escalate-CrawlLinks
-#Invoke-Escalate-SvcAcntSmbRelay
-#Invoke-Escalate-SvcAcntCaptureHash
-
-########## EXAMPLES: SQL Server - Local OS Admin Privilege Escalation ##########
-# Local Os admin to SQL Server sysadmin.
-#Invoke-Escalate-DumpLSASecrets
-#Invoke-Escalate-DumpWdigest
-#Invoke-Escalate-DumpHashes
-#Invoke-Escalate-StealToken
+########## EXAMPLES: SQL Server - Data Targeting ##########
+# Find accessible domain databases using transparent encryption
+# Example command: Get-SQLInstanceDomain -Verbose -CheckMgmt | Get-SQLConnectionTestThreaded -Verbose -Threads 20 | ? {$_.status -like "Accessible"} | Get-SQLDatabase -Verbose |? {$_.is_encrypted -like "True"}
+# Find potentially sensitive columns
+# Example command: Get-SQLInstanceDomain -Verbose -CheckMgmt | Get-SQLConnectionTestThreaded -Verbose -Threads 20 | ? {$_.status -like "Accessible"} | Get-SQLDatabase -Verbose | Get-SQLColumn -Verbose -ColumnNameSearch Credit
 
 ########## General Todo List ############### 
 # Modify all existing functions to support multi-threading (core, common, and utility) - invoke-parallel (runspaces)
@@ -1081,7 +1067,7 @@ Function  Get-SQLColumn {
 
         [Parameter(Mandatory=$false,
         ValueFromPipelineByPropertyName=$true,
-        HelpMessage="Column name.")]
+        HelpMessage="Filter by exact column name.")]
         [string]$ColumnName,
 
         [Parameter(Mandatory=$false,
@@ -4790,10 +4776,10 @@ function Get-SQLInstanceScanUDP
 
 
 # ----------------------------------
-#  Get-SQLInstanceFromFile
+#  Get-SQLInstanceFile
 # ----------------------------------
 # Author: Scott Sutherland
-Function  Get-SQLInstanceFromFile {
+Function  Get-SQLInstanceFile {
     [CmdletBinding()]
     Param(        
         [Parameter(Mandatory=$true,
