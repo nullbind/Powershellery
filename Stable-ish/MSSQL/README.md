@@ -72,7 +72,7 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Invoke-SQLEscalate-CreateProcedure      -   [Complete] 	- Get sysadmin using create procedure privileges.
 	Invoke-SQLEscalate-DbOwnerRole          -   [Complete] 	- Get sysadmin using dbowner privileges.
 	Invoke-SQLEscalate-ImpersonateLogin     -   [Complete] 	- Get sysadmin using impersonate login privileges.
-	Invoke-SQLEscalate-SampleDataByColumn   -   [Complete] 	- Find password and potentially sensitive data.
+	Invoke-SQLEscalate-SampleDataByColumn   -   [Complete] 	- Find password and potentially sensitive data.  Support column name keyword search and custom data sample size.
 	Invoke-PowerUpSQL                       -   [Complete] 	- Run all privilege escalation checks.  There is an options to auto-escalation to sysadmin.
 
 	Roadmap:
