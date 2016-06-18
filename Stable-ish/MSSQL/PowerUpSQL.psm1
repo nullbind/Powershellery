@@ -904,7 +904,7 @@ Function  Get-SQLDatabase {
                     ORDER BY a.database_id"
 
         # Execute Query
-        $TblResults =  Get-SQLQuery -Instance $Instance -Query $Query -Username $Username -Password $Password -Credential $Credential                          
+        $TblResults =  Get-SQLQuery -Instance $Instance -Query $Query -Username $Username -Password $Password -Credential $Credential -SuppressVerbose                      
 
         # Append results for pipeline items
         $TblDatabases = $TblDatabases + $TblResults                        
@@ -1172,7 +1172,7 @@ Function  Get-SQLColumn {
                         ORDER BY TABLE_CATALOG, TABLE_SCHEMA, TABLE_NAME"
 
             # Execute Query
-            $TblResults =  Get-SQLQuery -Instance $Instance -Query $Query -Username $Username -Password $Password
+            $TblResults =  Get-SQLQuery -Instance $Instance -Query $Query -Username $Username -Password $Password -SuppressVerbose
 
             # Append results             
             $TblColumns = $TblColumns + $TblResults
@@ -1269,7 +1269,7 @@ Function Get-SQLColumnSampleData {
             Write-Verbose "$Instance : - Searching for column names that match criteria..." 
             
             # Search for columns   
-            $Columns = Get-SQLColumn -Instance $Instance -Username $Username -Password $Password -Credential $Credential -ColumnNameSearch $Keywords -NoDefaults
+            $Columns = Get-SQLColumn -Instance $Instance -Username $Username -Password $Password -Credential $Credential -ColumnNameSearch $Keywords -NoDefaults 
         }           
         
         # Check if columns were found
@@ -1296,7 +1296,7 @@ Function Get-SQLColumnSampleData {
                     Write-Verbose "$Instance : - Selecting $SampleSize rows of data sample from column $AffectedColumn."
 
                     # Query for data
-                    $DataSample = Get-SqlQuery -Instance $Instance -Username $Username -Password $Password -Credential $Credential -Query $Query | ConvertTo-Csv -NoTypeInformation | Select-Object -skip 1
+                    $DataSample = Get-SqlQuery -Instance $Instance -Username $Username -Password $Password -Credential $Credential -Query $Query -SuppressVerbose | ConvertTo-Csv -NoTypeInformation | Select-Object -skip 1
                     if($DataSample){ 
                         $Details = "$DataSample" 
                     }else{
