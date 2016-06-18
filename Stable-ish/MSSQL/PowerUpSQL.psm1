@@ -1072,7 +1072,7 @@ Function  Get-SQLColumn {
 
         [Parameter(Mandatory=$false,
         ValueFromPipelineByPropertyName=$true,
-        HelpMessage="Column name using wildcards in search.")]
+        HelpMessage="Column name using wildcards in search.  Supports comma seperated list.")]
         [string]$ColumnNameSearch,
 
         [Parameter(Mandatory=$false,
@@ -1105,6 +1105,24 @@ Function  Get-SQLColumn {
         }else{
             $ColumnSearchFilter = ""
         }
+
+        # Setup column search filter
+        if($ColumnNameSearch){
+            $Keywords = $ColumnNameSearch.split(",")
+            
+            [int]$i = $Keywords.Count
+            while ($i -gt 0)
+            {
+                $i = $i - 1
+                $Keyword = $Keywords[$i]                
+
+                if($i -eq ($keywords.Count -1)){
+                    $ColumnSearchFilter = "and column_name like '%$Keyword%'" 
+                }else{
+                    $ColumnSearchFilter = $ColumnSearchFilter + " or column_name like '%$Keyword%'" 
+                }
+            }             
+        }   
     }
 
     Process
@@ -1135,7 +1153,7 @@ Function  Get-SQLColumn {
         ForEach-Object {
 
             # Get database name
-            $DbName = $_.DatabaseName
+            $DbName = $_.DatabaseName         
 
             # Define Query
             $Query = "  USE $DbName;
