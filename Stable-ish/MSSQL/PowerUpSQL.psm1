@@ -1187,6 +1187,144 @@ Function  Get-SQLColumn {
 }
 
 
+# ---------------------------------------
+# Get-SQLColumnSampleData
+# ---------------------------------------
+Function Get-SQLColumnSampleData {
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory=$false,
+        ValueFromPipelineByPropertyName=$true,
+        HelpMessage="SQL Server or domain account to authenticate with.")]
+        [string]$Username,
+
+        [Parameter(Mandatory=$false,
+        ValueFromPipelineByPropertyName=$true,
+        HelpMessage="SQL Server or domain account password to authenticate with.")]
+        [string]$Password,
+
+        [Parameter(Mandatory=$false,
+        ValueFromPipelineByPropertyName=$true,
+        HelpMessage="Windows credentials.")]
+        [System.Management.Automation.PSCredential]
+        [System.Management.Automation.Credential()]$Credential = [System.Management.Automation.PSCredential]::Empty,
+        
+        [Parameter(Mandatory=$false,
+        ValueFromPipeline=$true,
+        ValueFromPipelineByPropertyName=$true,
+        HelpMessage="SQL Server instance to connection to.")]
+        [string]$Instance,       
+
+        [Parameter(Mandatory=$false,
+        HelpMessage="Don't output anything.")]
+        [string]$NoOutput,
+        
+        [Parameter(Mandatory=$false,
+        HelpMessage="Exploit vulnerable issues.")]
+        [switch]$Exploit,
+
+        [Parameter(Mandatory=$false,
+        HelpMessage="Number of records to sample.")]
+        [int]$SampleSize = 1,
+
+        [Parameter(Mandatory=$false,
+        HelpMessage="Comma seperated list of keywords to search for.")]
+        [string]$Keywords = "Password"
+    )
+
+    Begin
+    {                         
+        # Table for output               
+        $TblData = New-Object System.Data.DataTable 
+        $TblData.Columns.Add("ComputerName") | Out-Null
+        $TblData.Columns.Add("Instance") | Out-Null
+        $TblData.Columns.Add("Database") | Out-Null
+        $TblData.Columns.Add("Schema") | Out-Null
+        $TblData.Columns.Add("Table") | Out-Null
+        $TblData.Columns.Add("Column") | Out-Null
+        $TblData.Columns.Add("Sample") | Out-Null      
+    }
+
+    Process
+    {   
+        # Parse computer name from the instance
+        $ComputerName = Get-ComputerNameFromInstance -Instance $Instance
+
+        # Default connection to local default instance
+        if(-not $Instance){
+            $Instance = $env:COMPUTERNAME
+        }
+
+        # Status User
+        Write-Verbose "$Instance : START SEARCH DATA BY COLUMN" 
+
+        # Test connection to server
+        $TestConnection =  Get-SQLConnectionTest -Instance $Instance -Username $Username -Password $Password -Credential $Credential -SuppressVerbose | Where-Object {$_.Status -eq "Accessible"}
+        if(-not $TestConnection){               
+            Write-Verbose "$Instance : CONNECTION FAILED"
+            Write-Verbose "$Instance : COMPLETED SEARCH DATA BY COLUMN"           
+            Return
+        }else{
+            Write-Verbose "$Instance : CONNECTION SUCCESS"
+            Write-Verbose "$Instance : - Searching for column names that match criteria..." 
+            
+            # Search for columns   
+            $Columns = Get-SQLColumn -Instance $Instance -Username $Username -Password $Password -Credential $Credential -ColumnNameSearch $Keywords -NoDefaults
+        }           
+        
+        # Check if columns were found
+        if($Columns){
+           
+            # List columns found
+            $Columns|
+            ForEach-Object {    
+            
+                $DatabaseName = $_.DatabaseName
+                $SchemaName = $_.SchemaName
+                $TableName = $_.TableName
+                $ColumnName = $_.ColumnName
+                $AffectedColumn = "[$DatabaseName].[$SchemaName].[$TableName].[$ColumnName]"
+                $AffectedTable = "[$DatabaseName].[$SchemaName].[$TableName]"
+                $Query = "USE $DatabaseName; SELECT TOP $SampleSize [$ColumnName] FROM $AffectedTable "
+
+                Write-Verbose "$Instance : - Column match: $AffectedColumn"
+
+                $TblTargetColumns |
+                ForEach-Object {
+
+                    # Add sample data
+                    Write-Verbose "$Instance : - Selecting $SampleSize rows of data sample from column $AffectedColumn."
+
+                    # Query for data
+                    $DataSample = Get-SqlQuery -Instance $Instance -Username $Username -Password $Password -Credential $Credential -Query $Query | ConvertTo-Csv -NoTypeInformation | Select-Object -skip 1
+                    if($DataSample){ 
+                        $Details = "$DataSample" 
+                    }else{
+                        $Details = "No data found in affected column." 
+                    }
+
+                    # Add record
+                    $TblData.Rows.Add($ComputerName, $Instance, $DatabaseName, $SchemaName, $TableName, $ColumnName, $Details) | Out-Null                                                                        
+                }
+            }                             
+        }else{
+            Write-Verbose "$Instance : - No columns were found that matched the search."
+        } 
+                
+        # Status User
+        Write-Verbose "$Instance : COMPLETED SEARCH DATA BY COLUMN" 
+    }
+
+    End
+    {   
+        # Return data  
+        if ( -not $NoOutput){            
+            Return $TblData       
+        }
+    }
+}
+
+
 # ----------------------------------
 #  Get-SQLDatabaseSchema
 # ----------------------------------
