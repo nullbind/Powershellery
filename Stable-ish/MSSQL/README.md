@@ -26,6 +26,12 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Get-SQLConnectionTestThreaded	-   [Complete] 	- Tests if the current Windows account or provided SQL Server login can log into an SQL Server and supports threading.
 	Get-SQLQuery					-   [Complete] 	- Executes a query on target SQL servers.
 	Get-SQLQueryThreaded			-   [Complete] 	- Executes a query on target SQL servers and supports threading.
+
+### Discovery Functions:  
+	Get-SQLInstanceFile			-   [Complete] 	- Returns SQL Server instances from a file.  One per line.
+	Get-SQLInstanceLocal		-   [Complete] 	- Returns SQL Server instances from the local system based on a registry search.
+	Get-SQLInstanceDomain		-   [Complete] 	- Returns SQL Server instances from LDAP query results. Based on SPNs and UDP scanning of management servers.
+	Get-SQLInstanceScanUDP		-   [Complete] 	- Returns SQL Server instances from UDP scan results.
 	
 ### Common Functions:	
 	Get-SQLAuditDatabaseSpec	-   [Complete] 	- Returns Audit database specifications from target SQL Servers.
@@ -61,13 +67,6 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Get-SQLQueryHistory			-   [Roadmap] 	- Returns recent query history from target SQL Servers.	
 	Get-SQLHiddenSystemObject	-   [Roadmap] 	- Returns hidden system objects from target SQL Servers.	 
 	
-	
-### Discovery Functions:  
-	Get-SQLInstanceFile		-   [Complete] 	- Returns SQL Server instances from a file.  One per line.
-	Get-SQLInstanceLocal		-   [Complete] 	- Returns SQL Server instances from the local system based on a registry search.
-	Get-SQLInstanceDomain		-   [Complete] 	- Returns SQL Server instances from LDAP query results. Based on SPNs and UDP scanning of management servers.
-	Get-SQLInstanceScanUDP		-   [Complete] 	- Returns SQL Server instances from UDP scan results.
-
 ### Privilege Escalation Functions:
 	Invoke-SQLEscalate-CreateProcedure      -   [Complete] 	- Get sysadmin using create procedure privileges.
 	Invoke-SQLEscalate-DbOwnerRole          -   [Complete] 	- Get sysadmin using dbowner privileges.
