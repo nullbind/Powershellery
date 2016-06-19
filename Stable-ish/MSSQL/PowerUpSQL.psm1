@@ -1296,15 +1296,12 @@ Function Get-SQLColumnSampleData {
                     Write-Verbose "$Instance : - Selecting $SampleSize rows of data sample from column $AffectedColumn."
 
                     # Query for data
-                    $DataSample = Get-SqlQuery -Instance $Instance -Username $Username -Password $Password -Credential $Credential -Query $Query -SuppressVerbose | ConvertTo-Csv -NoTypeInformation | Select-Object -skip 1
-                    if($DataSample){ 
-                        $Details = "$DataSample" 
-                    }else{
-                        $Details = "No data found in affected column." 
+                    Get-SqlQuery -Instance $Instance -Username $Username -Password $Password -Credential $Credential -Query $Query -SuppressVerbose | Select-Object -ExpandProperty $ColumnName |
+                    ForEach-Object{                                                                                        
+                                       
+                        # Add record
+                        $TblData.Rows.Add($ComputerName, $Instance, $DatabaseName, $SchemaName, $TableName, $ColumnName, $_) | Out-Null                                                                        
                     }
-
-                    # Add record
-                    $TblData.Rows.Add($ComputerName, $Instance, $DatabaseName, $SchemaName, $TableName, $ColumnName, $Details) | Out-Null                                                                        
                 }
             }                             
         }else{
@@ -1319,7 +1316,7 @@ Function Get-SQLColumnSampleData {
     {   
         # Return data  
         if ( -not $NoOutput){            
-            Return $TblData       
+            Return $TblData      
         }
     }
 }
