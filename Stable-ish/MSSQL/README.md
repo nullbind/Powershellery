@@ -77,13 +77,14 @@ Below are the functions included in this module.  Many are complete, but I've al
 
 	Roadmap:
 	
-	Invoke-SQLEscalate-DbOwner
 	Invoke-SQLEscalate-AgentJob 
-	Invoke-SQLEscalate-SQLi-ExecuteAs
-	Invoke-SQLEscalate-SQLi-SignedSp
+	Invoke-SQLEscalate-SQLi-ImpersonateLogin
+	Invoke-SQLEscalate-SQLi-ImpersonateDatabaseUser
+	Invoke-SQLEscalate-SQLi-ImpersonateSignedSp
 	Invoke-SQLEscalate-CreateStartUpSP
+	Invoke-SQLEscalate-CreateServerLink
 	Invoke-SQLEscalate-CrawlServerLink
-	Invoke-SQLEscalate-CreateAssembly
+	Invoke-SQLEscalate-CreateAssembly -CLR -Binary -C
 	Invoke-SQLEscalate-CreateTriggerDDL
 	Invoke-SQLEscalate-CreateTriggerLOGON
 	Invoke-SQLEscalate-CreateTriggerDML
@@ -92,12 +93,10 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Invoke-SQLEscalate-DDLAdmin
 	Invoke-SqlInjectUncPath
 	Create-SqlStoredProcedure - db_owner, db_ddladmin, db_securityadmin, or db_accessadmin
-	Invoke-SqlXpCmdshell
+	Invoke-SqlCmdExecXpCmdshell
 	Create-SqlStoredProcedureStartUp
 	Create-SqlAgentJob
-	Invoke-SQLEscalate-CrawlServerLinks
 	Invoke-SQLEscalate-CrawlOwnershipChain
-	Invoke-SqlInjectSqliSp
 	Invoke-SQLEscalate-PrivAlterServerLogin
 	Invoke-SQLEscalate-PrivAlterServerRole
 	Invoke-SQLEscalate-PrivExternalAssembly
@@ -105,7 +104,7 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Invoke-SQLEscalate-PrivControlServer
 	Invoke-SQLEscalate-DictionaryAttackOnline
 	Invoke-SQLEscalate-DictionaryAttackOffline
-	Impersonate-SqlDatabaseUser
+	Invoke-SQLEscalate-ImpersonateDatabaseUser
 
 ### Persistence Functions: 
 
@@ -131,7 +130,7 @@ Below are the functions included in this module.  Many are complete, but I've al
 	
 	Get-SQLRecoverPwCredential				
 	Get-SQLRecoverPwServerLink					
-	Get-SQLRecoverPWProxyAccount				-
+	Get-SQLRecoverPWProxyAccount
 	Get-SQLRecoverPwAutoLogon					 
 	Get-SQLRecoverLoginHash						 
 	Get-SQLRecoverMasterKey						 
@@ -144,7 +143,7 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Get-SQLExfilHttp							   
 	Get-SQLExfilHttps							      
 	Get-SQLExfilDns								      
-	Get-SQLExfilUnc								     
+	Get-SQLExfilSmb								     
 	Get-SQLExfilSmtp							     
 	Get-SQLExfilFtp								      
 	Get-SQLExfilServerLink						  
@@ -184,7 +183,7 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Get-SQLUploadFileAssembly             		
 	Get-SQLUploadFileServerLink             	
 	Get-SQLUploadFileXpCmdshell             	
-	Invoke-SqlCmdExe				
+	Invoke-SqlCmdExec				
 	Invoke-SqlCmdExecAdHoQueryMd			
 	Invoke-SqlCmdExecAgentActiveX            	
 	Invoke-SqlCmdExecAgentAnalysis			
