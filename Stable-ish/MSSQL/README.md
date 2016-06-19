@@ -21,6 +21,7 @@ Note: This was largely inspired by twitter requests and Harmj0y's PowerUp Window
 Below are the functions included in this module.  Many are complete, but I've also outlined the intended roadmap.
 
 ### Discovery Functions:  
+These functions can be used to blindly enumerate SQL Servers from various sources or import a list from a file.
 	Get-SQLInstanceFile			-   [Complete] 	- Returns SQL Server instances from a file.  One per line.
 	Get-SQLInstanceLocal		-   [Complete] 	- Returns SQL Server instances from the local system based on a registry search.
 	Get-SQLInstanceDomain		-   [Complete] 	- Returns SQL Server instances from LDAP query results. Based on SPNs and UDP scanning of management servers.
