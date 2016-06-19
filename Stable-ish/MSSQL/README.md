@@ -37,7 +37,7 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Get-SQLAuditDatabaseSpec	-   [Complete] 	- Returns Audit database specifications from target SQL Servers.
 	Get-SQLAuditServerSpec		-   [Complete] 	- Returns Audit server specifications from target SQL Servers.
 	Get-SQLColumn				-   [Complete] 	- Returns column information from target SQL Servers. Supports keyword search.
-	Get-SQLColumnSampleData			-   [Complete] 	- Returns column information from target SQL Servers. Supports search by keywords, sampling data, and validating credit card numbers.
+	Get-SQLColumnSampleData		-   [Complete] 	- Returns column information from target SQL Servers. Supports search by keywords, sampling data, and validating credit card numbers.
 	Get-SQLDatabase				-   [Complete] 	- Returns database information from target SQL Servers.
 	Get-SQLDatabasePriv			-   [Complete] 	- Returns database user privilege information from target SQL Servers.
 	Get-SQLDatabaseRole			-   [Complete]	- Returns database role information from target SQL Servers.
