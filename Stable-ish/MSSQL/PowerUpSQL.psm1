@@ -1295,7 +1295,7 @@ Function Get-SQLColumnSampleData {
                 $AffectedColumn = "[$DatabaseName].[$SchemaName].[$TableName].[$ColumnName]"
                 $AffectedTable = "[$DatabaseName].[$SchemaName].[$TableName]"
                 $Query = "USE $DatabaseName; SELECT TOP $SampleSize [$ColumnName] FROM $AffectedTable WHERE [$ColumnName] is not null"
-                $QueryRowCount = "USE $DatabaseName; SELECT count([$ColumnName]) as NumRows FROM $AffectedTable WHERE [$ColumnName] is not null"
+                $QueryRowCount = "USE $DatabaseName; SELECT count(CAST([$ColumnName] as VARCHAR(1))) as NumRows FROM $AffectedTable WHERE [$ColumnName] is not null"
 
                 Write-Verbose "$Instance : - Column match: $AffectedColumn"               
 
