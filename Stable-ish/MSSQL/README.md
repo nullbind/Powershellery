@@ -151,10 +151,10 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Get-SQLExfilAdHocQuery					
 	
 ### Utility Functions:
-	Get-SQLFuzzObjectName			-   [Complete] 	- Enumerates objects based on object id using OBJECT_NAME().
-	Get-SQLFuzzDatabaseName			-   [Complete] 	- Enumerates databases based on database id using DB_NAME().
-	Get-SQLFuzzServerLogin			-   [Complete] 	- Enumerates SQL Server Logins based on login id using SUSER_NAME().
-	Get-SQLFuzzDomainAccount		-   [Complete] 	- Enumerates domain accounts based on domain RID using SUSER_SNAME().
+	Get-SQLFuzzObjectName			-   [Complete] 	- Enumerates objects based on object id using OBJECT_NAME() and only the Public role.
+	Get-SQLFuzzDatabaseName			-   [Complete] 	- Enumerates databases based on database id using DB_NAME() and only the Public role.
+	Get-SQLFuzzServerLogin			-   [Complete] 	- Enumerates SQL Server Logins based on login id using SUSER_NAME() and only the Public role.
+	Get-SQLFuzzDomainAccount		-   [Complete] 	- Enumerates domain accounts based on domain RID using SUSER_SNAME() and only the Public role.
 	Get-ComputerNameFromInstance	-   [Complete] 	- Parses computer name form a provided instance.
 	Get-SQLServiceLocal				-   [Complete] 	- Returns local SQL Server services.
 	Create-SQLFile-XPDLL			-   [Complete] 	- Used to create DLLs with exported functions that can be imported as extended stored procedures in SQL Server. Supports arbitrary command execution.
