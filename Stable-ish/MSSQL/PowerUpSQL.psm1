@@ -33,6 +33,8 @@ The PowerUpSQL is an offensive toolkit designed to accomplish six goals:
 # Example command: Get-SQLInstanceDomain -Verbose -CheckMgmt | Get-SQLConnectionTestThreaded -Verbose -Threads 20 | ? {$_.status -like "Accessible"} | Get-SQLDatabase -Verbose |? {$_.is_encrypted -like "True"}
 # Find potentially sensitive columns
 # Example command: Get-SQLInstanceDomain -Verbose -CheckMgmt | Get-SQLConnectionTestThreaded -Verbose -Threads 20 | ? {$_.status -like "Accessible"} | Get-SQLDatabase -Verbose | Get-SQLColumn -Verbose -ColumnNameSearch Credit
+# Find potentialy credit card number and validate them
+# Example command: Get-SQLInstanceLocal | Get-SQLColumnSampleData -Keywords "account,credit,card" -SampleSize 5 -CheckCC | ft -AutoSize
 
 ########## General Todo List ############### 
 # Modify all existing functions to support multi-threading (core, common, and utility) - invoke-parallel (runspaces)
