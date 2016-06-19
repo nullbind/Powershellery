@@ -175,7 +175,6 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Get-SQLDownloadFileServerLine			
 	Get-SQLDownloadFileXpCmdshell			
 	Get-SQLInstalledSoftware			
-	Get-SQLSampleDataByColumnName			
 	Get-SQLServerLogin - add fuzzing option		
 	Get-SQLUploadFile				
 	Get-SQLUploadFileAdHocQuery             	
