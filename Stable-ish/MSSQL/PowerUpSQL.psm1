@@ -1229,7 +1229,11 @@ Function Get-SQLColumnSampleData {
 
         [Parameter(Mandatory=$false,
         HelpMessage="Comma seperated list of keywords to search for.")]
-        [string]$Keywords = "Password"
+        [string]$Keywords = "Password",
+
+        [Parameter(Mandatory=$false,
+        HelpMessage="Use Luhn formula to check if sample is a valid credit card.")]
+        [switch]$CheckCC 
     )
 
     Begin
@@ -1243,6 +1247,10 @@ Function Get-SQLColumnSampleData {
         $TblData.Columns.Add("Table") | Out-Null
         $TblData.Columns.Add("Column") | Out-Null
         $TblData.Columns.Add("Sample") | Out-Null      
+
+        if($CheckCC){
+            $TblData.Columns.Add("IsCC") | Out-Null      
+        }
     }
 
     Process
@@ -1299,8 +1307,22 @@ Function Get-SQLColumnSampleData {
                     Get-SqlQuery -Instance $Instance -Username $Username -Password $Password -Credential $Credential -Query $Query -SuppressVerbose | Select-Object -ExpandProperty $ColumnName |
                     ForEach-Object{                                                                                        
                                        
-                        # Add record
-                        $TblData.Rows.Add($ComputerName, $Instance, $DatabaseName, $SchemaName, $TableName, $ColumnName, $_) | Out-Null                                                                        
+                        if($CheckCC){
+
+                            # Check if value is CC
+                            $Value = 0                                                   
+                            if([uint64]::TryParse($_,[ref]$Value)){                            
+                                $LuhnCheck = Test-IsLuhnValid $_ -ErrorAction SilentlyContinue
+                            }else{
+                                $LuhnCheck = "False"
+                            }
+
+                            # Add record
+                            $TblData.Rows.Add($ComputerName, $Instance, $DatabaseName, $SchemaName, $TableName, $ColumnName, $_, $LuhnCheck) | Out-Null                                                                        
+                        }else{
+                            # Add record
+                            $TblData.Rows.Add($ComputerName, $Instance, $DatabaseName, $SchemaName, $TableName, $ColumnName, $_) | Out-Null                                                                        
+                        }
                     }
                 }
             }                             
@@ -6000,6 +6022,96 @@ Function Invoke-SQLEscalate-SampleDataByColumn {
 #region          THIRD PARTY FUNCTIONS
 #
 #########################################################################
+
+# -------------------------------------------
+# Function: Test-IsLuhnValid 
+# -------------------------------------------
+# Author: ØYVIND KALLSTAD
+# Source: https://communary.net/2016/02/19/the-luhn-algorithm/
+function Test-IsLuhnValid {
+    <#
+        .SYNOPSIS
+            Valdidate a number based on the Luhn Algorithm.
+        .DESCRIPTION
+            This function uses the Luhn algorithm to validate a number that includes
+            the Luhn checksum digit.
+        .EXAMPLE
+            Test-IsLuhnValid -Number 1234567890123452
+            This will validate whether the number is valid according to the Luhn Algorithm.
+        .INPUTS
+            System.UInt64
+        .OUTPUTS
+            System.Boolean
+        .NOTES
+            Author: Øyvind Kallstad
+            Date: 19.02.2016
+            Version: 1.0
+            Dependencies: Get-LuhnCheckSum, ConvertTo-Digits
+        .LINKS
+            https://en.wikipedia.org/wiki/Luhn_algorithm
+            https://communary.wordpress.com/
+            https://github.com/gravejester/Communary.ToolBox
+    #>
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)]
+        [uint64]$Number
+    )
+
+    $numberDigits = ConvertTo-Digits -Number $Number
+    $checksumDigit = $numberDigits[-1]
+    $numberWithoutChecksumDigit = $numberDigits[0..($numberDigits.Count - 2)] -join ''
+    $checksum = Get-LuhnCheckSum -Number $numberWithoutChecksumDigit
+
+    if ((($checksum + $checksumDigit) % 10) -eq 0) {
+        Write-Output $true
+    }
+    else {
+        Write-Output $false
+    }
+}
+
+
+# -------------------------------------------
+# Function: ConvertTo-Digits
+# -------------------------------------------
+# Author: ØYVIND KALLSTAD
+# Source: https://communary.net/2016/02/19/the-luhn-algorithm/
+function ConvertTo-Digits {
+    <#
+        .SYNOPSIS
+            Convert an integer into an array of bytes of its individual digits.
+        .DESCRIPTION
+            Convert an integer into an array of bytes of its individual digits.
+        .EXAMPLE
+            ConvertTo-Digits 145
+        .INPUTS
+            System.UInt64
+        .LINK
+            https://communary.wordpress.com/
+            https://github.com/gravejester/Communary.ToolBox
+        .NOTES
+            Author: Øyvind Kallstad
+            Date: 09.05.2015
+            Version: 1.0
+    #>
+    [OutputType([System.Byte[]])]
+    [CmdletBinding()]
+    param(
+        [Parameter(Position = 0, Mandatory = $true, ValueFromPipeline = $true)]
+        [uint64]$Number
+    )
+    $n = $Number
+    $numberOfDigits = 1 + [convert]::ToUInt64([math]::Floor(([math]::Log10($n))))
+    $digits = New-Object Byte[] $numberOfDigits
+    for ($i = ($numberOfDigits - 1); $i -ge 0; $i--) {
+        $digit = $n % 10
+        $digits[$i] = $digit
+        $n = [math]::Floor($n / 10)
+    }
+    Write-Output $digits
+}
+
 
 # -------------------------------------------
 # Function: Invoke-Parallel
