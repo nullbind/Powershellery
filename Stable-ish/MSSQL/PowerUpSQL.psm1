@@ -1284,9 +1284,9 @@ Function Get-SQLColumnSampleData {
         # Check if columns were found
         if($Columns){
            
-            # List columns found
-            $Columns|
-            ForEach-Object {    
+           # List columns found
+           $Columns|
+           ForEach-Object {    
             
                 $DatabaseName = $_.DatabaseName
                 $SchemaName = $_.SchemaName
@@ -1297,38 +1297,33 @@ Function Get-SQLColumnSampleData {
                 $Query = "USE $DatabaseName; SELECT TOP $SampleSize [$ColumnName] FROM $AffectedTable WHERE [$ColumnName] is not null"
                 $QueryRowCount = "USE $DatabaseName; SELECT count([$ColumnName]) as NumRows FROM $AffectedTable WHERE [$ColumnName] is not null"
 
-                Write-Verbose "$Instance : - Column match: $AffectedColumn"
+                Write-Verbose "$Instance : - Column match: $AffectedColumn"               
 
-                $TblTargetColumns |
-                ForEach-Object {
+                # Add sample data
+                Write-Verbose "$Instance : - Selecting $SampleSize rows of data sample from column $AffectedColumn."
 
-                    # Add sample data
-                    Write-Verbose "$Instance : - Selecting $SampleSize rows of data sample from column $AffectedColumn."
+                # Query for data
+                $RowCount = Get-SqlQuery -Instance $Instance -Username $Username -Password $Password -Credential $Credential -Query $QueryRowCount -SuppressVerbose | Select-Object NumRows -ExpandProperty NumRows
+                Get-SqlQuery -Instance $Instance -Username $Username -Password $Password -Credential $Credential -Query $Query -SuppressVerbose | Select-Object -ExpandProperty $ColumnName |
+                ForEach-Object{                                                                                                              
+                    if($CheckCC){
 
-                    # Query for data
-                    $RowCount = Get-SqlQuery -Instance $Instance -Username $Username -Password $Password -Credential $Credential -Query $QueryRowCount -SuppressVerbose | Select-Object NumRows -ExpandProperty NumRows
-                    Get-SqlQuery -Instance $Instance -Username $Username -Password $Password -Credential $Credential -Query $Query -SuppressVerbose | Select-Object -ExpandProperty $ColumnName |
-                    ForEach-Object{                                                                                        
-                                       
-                        if($CheckCC){
-
-                            # Check if value is CC
-                            $Value = 0                                                   
-                            if([uint64]::TryParse($_,[ref]$Value)){                            
-                                $LuhnCheck = Test-IsLuhnValid $_ -ErrorAction SilentlyContinue
-                            }else{
-                                $LuhnCheck = "False"
-                            }
-
-                            # Add record
-                            $TblData.Rows.Add($ComputerName, $Instance, $DatabaseName, $SchemaName, $TableName, $ColumnName, $_, $RowCount, $LuhnCheck) | Out-Null                                                                        
+                        # Check if value is CC
+                        $Value = 0                                                   
+                        if([uint64]::TryParse($_,[ref]$Value)){                            
+                            $LuhnCheck = Test-IsLuhnValid $_ -ErrorAction SilentlyContinue
                         }else{
-                            # Add record
-                            $TblData.Rows.Add($ComputerName, $Instance, $DatabaseName, $SchemaName, $TableName, $ColumnName, $_, $RowCount) | Out-Null                                                                        
+                            $LuhnCheck = "False"
                         }
+
+                        # Add record
+                        $TblData.Rows.Add($ComputerName, $Instance, $DatabaseName, $SchemaName, $TableName, $ColumnName, $_, $RowCount, $LuhnCheck) | Out-Null                                                                        
+                    }else{
+                        # Add record
+                        $TblData.Rows.Add($ComputerName, $Instance, $DatabaseName, $SchemaName, $TableName, $ColumnName, $_, $RowCount) | Out-Null                                                                        
                     }
                 }
-            }                             
+           }                                          
         }else{
             Write-Verbose "$Instance : - No columns were found that matched the search."
         } 
