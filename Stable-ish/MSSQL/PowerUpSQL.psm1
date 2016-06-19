@@ -1246,7 +1246,8 @@ Function Get-SQLColumnSampleData {
         $TblData.Columns.Add("Schema") | Out-Null
         $TblData.Columns.Add("Table") | Out-Null
         $TblData.Columns.Add("Column") | Out-Null
-        $TblData.Columns.Add("Sample") | Out-Null      
+        $TblData.Columns.Add("Sample") | Out-Null   
+        $TblData.Columns.Add("RowCount") | Out-Null    
 
         if($CheckCC){
             $TblData.Columns.Add("IsCC") | Out-Null      
@@ -1293,7 +1294,8 @@ Function Get-SQLColumnSampleData {
                 $ColumnName = $_.ColumnName
                 $AffectedColumn = "[$DatabaseName].[$SchemaName].[$TableName].[$ColumnName]"
                 $AffectedTable = "[$DatabaseName].[$SchemaName].[$TableName]"
-                $Query = "USE $DatabaseName; SELECT TOP $SampleSize [$ColumnName] FROM $AffectedTable "
+                $Query = "USE $DatabaseName; SELECT TOP $SampleSize [$ColumnName] FROM $AffectedTable WHERE [$ColumnName] is not null"
+                $QueryRowCount = "USE $DatabaseName; SELECT count([$ColumnName]) as NumRows FROM $AffectedTable WHERE [$ColumnName] is not null"
 
                 Write-Verbose "$Instance : - Column match: $AffectedColumn"
 
@@ -1304,6 +1306,7 @@ Function Get-SQLColumnSampleData {
                     Write-Verbose "$Instance : - Selecting $SampleSize rows of data sample from column $AffectedColumn."
 
                     # Query for data
+                    $RowCount = Get-SqlQuery -Instance $Instance -Username $Username -Password $Password -Credential $Credential -Query $QueryRowCount -SuppressVerbose | Select-Object NumRows -ExpandProperty NumRows
                     Get-SqlQuery -Instance $Instance -Username $Username -Password $Password -Credential $Credential -Query $Query -SuppressVerbose | Select-Object -ExpandProperty $ColumnName |
                     ForEach-Object{                                                                                        
                                        
@@ -1318,10 +1321,10 @@ Function Get-SQLColumnSampleData {
                             }
 
                             # Add record
-                            $TblData.Rows.Add($ComputerName, $Instance, $DatabaseName, $SchemaName, $TableName, $ColumnName, $_, $LuhnCheck) | Out-Null                                                                        
+                            $TblData.Rows.Add($ComputerName, $Instance, $DatabaseName, $SchemaName, $TableName, $ColumnName, $_, $RowCount, $LuhnCheck) | Out-Null                                                                        
                         }else{
                             # Add record
-                            $TblData.Rows.Add($ComputerName, $Instance, $DatabaseName, $SchemaName, $TableName, $ColumnName, $_) | Out-Null                                                                        
+                            $TblData.Rows.Add($ComputerName, $Instance, $DatabaseName, $SchemaName, $TableName, $ColumnName, $_, $RowCount) | Out-Null                                                                        
                         }
                     }
                 }
