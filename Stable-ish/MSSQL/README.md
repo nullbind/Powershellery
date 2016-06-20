@@ -129,9 +129,9 @@ Below are the functions included in this module.  Many are complete, but I've al
 	
 	Roadmap:
 	
-	Get-SQLRecoverPwCredential				
-	Get-SQLRecoverPwServerLink					
-	Get-SQLRecoverPWProxyAccount
+	Get-SQLRecoverPwCredential - https://github.com/NetSPI/Powershell-Modules/blob/master/Get-MSSQLAllCredentials.psm1	
+	Get-SQLRecoverPwServerLink - https://github.com/NetSPI/Powershell-Modules/blob/master/Get-MSSQLLinkPasswords.psm1	
+	Get-SQLRecoverPWProxyAccount - https://github.com/NetSPI/Powershell-Modules/blob/master/Get-MSSQLAllCredentials.psm1	
 	Get-SQLRecoverPwAutoLogon					 
 	Get-SQLRecoverLoginHash						 
 	Get-SQLRecoverMasterKey						 
@@ -166,9 +166,6 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Get-SQLDatabaseOrphanUser             		
 	Get-SQLDatabaseUser- add fuzzing option		
 	Get-SQLDecryptedStoreProcedure            	
-	Get-SQLDomainAccount				
-	Get-SQLDomainComputer             		
-	Get-SQLDomainGroup				
 	Get-SQLDownloadFile				
 	Get-SQLDownloadFileAdHocQuery			
 	Get-SQLDownloadFileAssembly             	
