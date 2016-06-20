@@ -78,9 +78,9 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Roadmap:
 	
 	Invoke-SQLEscalate-AgentJob 
-	Invoke-SQLEscalate-SQLi-ImpersonateLogin
-	Invoke-SQLEscalate-SQLi-ImpersonateDatabaseUser
-	Invoke-SQLEscalate-SQLi-ImpersonateSignedSp
+	Invoke-SQLEscalate-SQLi-ImpersonateLogin - https://blog.netspi.com/hacking-sql-server-stored-procedures-part-3-sqli-and-user-impersonation/
+	Invoke-SQLEscalate-SQLi-ImpersonateDatabaseUser - https://blog.netspi.com/hacking-sql-server-stored-procedures-part-3-sqli-and-user-impersonation/
+	Invoke-SQLEscalate-SQLi-ImpersonateSignedSp - https://blog.netspi.com/hacking-sql-server-stored-procedures-part-3-sqli-and-user-impersonation/
 	Invoke-SQLEscalate-CreateStartUpSP
 	Invoke-SQLEscalate-CreateServerLink
 	Invoke-SQLEscalate-CrawlServerLink
