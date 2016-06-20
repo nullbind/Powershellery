@@ -91,7 +91,7 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Invoke-SQLEscalate-StealServiceToken
 	Invoke-SQLEscalate-ControlServer
 	Invoke-SQLEscalate-DDLAdmin
-	Invoke-SqlInjectUncPath
+	Invoke-SqlInjectUncPath - https://github.com/nullbind/Powershellery/blob/master/Stable-ish/MSSQL/Get-SQLServiceAccountPwHash.ps1
 	Create-SqlStoredProcedure - db_owner, db_ddladmin, db_securityadmin, or db_accessadmin
 	Invoke-SqlCmdExecXpCmdshell
 	Create-SqlStoredProcedureStartUp
@@ -105,6 +105,7 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Invoke-SQLEscalate-DictionaryAttackOnline
 	Invoke-SQLEscalate-DictionaryAttackOffline
 	Invoke-SQLEscalate-ImpersonateDatabaseUser
+	Invoke-SQLOSAdmintoSysadmin - https://github.com/nullbind/Powershellery/blob/master/Stable-ish/MSSQL/Invoke-SqlServerServiceImpersonation-Cmd.ps1
 
 ### Persistence Functions: 
 
@@ -112,10 +113,10 @@ Below are the functions included in this module.  Many are complete, but I've al
 	
 	Get-SQLPersistAssembly						  
 	Get-SQLPersistSp						
-	Get-SQLPersistSpStartup						 
+	Get-SQLPersistSpStartup	- https://github.com/nullbind/Powershellery/blob/master/Stable-ish/MSSQL/Invoke-SqlServer-Persist-StartupSp.psm1					 
 	Get-SQLPersistTriggerDml					  
-	Get-SQLPersistTriggerDdl					  
-	Get-SQLPersistTriggerLogon					
+	Get-SQLPersistTriggerDdl - https://github.com/nullbind/Powershellery/blob/master/Stable-ish/MSSQL/Invoke-SqlServer-Persist-TriggerDDL.psm1					  
+	Get-SQLPersistTriggerLogon - https://github.com/nullbind/Powershellery/blob/master/Stable-ish/MSSQL/Invoke-SqlServer-Persist-TriggerLogon.psm1					
 	Get-SQLPersistView							   
 	Get-SQLPersistInternalObject				
 	Get-SQLPersistAgentJob						 
