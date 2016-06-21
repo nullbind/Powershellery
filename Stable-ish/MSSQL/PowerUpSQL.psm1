@@ -638,9 +638,9 @@ Function  Get-SQLQueryThreaded {
 
 
 # ----------------------------------
-#  Invoke-SQLOSExec
+#  Invoke-SQLOSCmd
 # ----------------------------------
-Function  Invoke-SQLOSExec {
+Function  Invoke-SQLOSCmd {
     [CmdletBinding()]
     Param(
         [Parameter(Mandatory=$false,
