@@ -181,16 +181,15 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Get-SQLUploadFileAssembly             		
 	Get-SQLUploadFileServerLink             	
 	Get-SQLUploadFileXpCmdshell             	
-	Invoke-SqlOSExecAdHoQueryMd			
-	Invoke-SqlOSExecAgentActiveX            	
-	Invoke-SqlOSExecAgentAnalysis			
-	Invoke-SqlOSExecAgentCmdExe			
-	Invoke-SqlOSExecAgentPs			
-	Invoke-SqlOSExecAgentVbscript			
-	Invoke-SqlOSExecAssembly             		
-	Invoke-SqlOSExecServerLinkMd			
-	Invoke-SqlOSExecSsisExecuteProcessTask		
-	Invoke-SqlOSExecXpCmdshell             	
+	Invoke-SqlOSCmdAdHoQueryMd			
+	Invoke-SqlOSCmdAgentActiveX            	
+	Invoke-SqlOSCmdAgentAnalysis			
+	Invoke-SqlOSCmdAgentCmdExe			
+	Invoke-SqlOSCmdAgentPs			
+	Invoke-SqlOSCmdAgentVbscript			
+	Invoke-SqlOSCmdAssembly             		
+	Invoke-SqlOSCmdServerLinkMd			
+	Invoke-SqlOSCmdSsisExecuteProcessTask		
 
 ### Third Party Functions:
 	Invoke-Parallel					-   [Complete] 	- Modified version of RamblingCookieMonster's function that supports importing functions from the current session.
