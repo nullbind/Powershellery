@@ -59,6 +59,7 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Get-SQLTriggerDdl			-   [Complete] 	- Returns DDL trigger information from target SQL Servers.  This includes logon triggers.
 	Get-SQLTriggerDml			-   [Complete] 	- Returns DML trigger information from target SQL Servers.
 	Get-SQLView					-   [Complete] 	- Returns view information from target SQL Servers.
+	Invoke-SqlOSExec			-   [Complete] 	- Execute command on the operating system as the SQL Server service account using xp_cmdshell.
 
 	Roadmap:
 	
@@ -180,17 +181,16 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Get-SQLUploadFileAssembly             		
 	Get-SQLUploadFileServerLink             	
 	Get-SQLUploadFileXpCmdshell             	
-	Invoke-SqlCmdExec				
-	Invoke-SqlCmdExecAdHoQueryMd			
-	Invoke-SqlCmdExecAgentActiveX            	
-	Invoke-SqlCmdExecAgentAnalysis			
-	Invoke-SqlCmdExecAgentCmdExe			
-	Invoke-SqlCmdExecAgentPs			
-	Invoke-SqlCmdExecAgentVbscript			
-	Invoke-SqlCmdExecAssembly             		
-	Invoke-SqlCmdExecServerLinkMd			
-	Invoke-SqlCmdExecSsisExecuteProcessTask		
-	Invoke-SqlCmdExecXpCmdshell             	
+	Invoke-SqlOSExecAdHoQueryMd			
+	Invoke-SqlOSExecAgentActiveX            	
+	Invoke-SqlOSExecAgentAnalysis			
+	Invoke-SqlOSExecAgentCmdExe			
+	Invoke-SqlOSExecAgentPs			
+	Invoke-SqlOSExecAgentVbscript			
+	Invoke-SqlOSExecAssembly             		
+	Invoke-SqlOSExecServerLinkMd			
+	Invoke-SqlOSExecSsisExecuteProcessTask		
+	Invoke-SqlOSExecXpCmdshell             	
 
 ### Third Party Functions:
 	Invoke-Parallel					-   [Complete] 	- Modified version of RamblingCookieMonster's function that supports importing functions from the current session.
