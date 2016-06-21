@@ -42,7 +42,7 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Get-SQLDatabasePriv			-   [Complete] 	- Returns database user privilege information from target SQL Servers.
 	Get-SQLDatabaseRole			-   [Complete]	- Returns database role information from target SQL Servers.
 	Get-SQLDatabaseRoleMember	-   [Complete]	- Returns database role member information from target SQL Servers.
-	Get-SQLDatabaseSchema		-   [Complete] 	- Returns schema information from target SQL Servers. 					(consider renaming)	
+	Get-SQLDatabaseSchema		-   [Complete] 	- Returns schema information from target SQL Servers. 			
 	Get-SQLDatabaseUser			-   [Complete] 	- Returns database user information from target SQL Servers.
 	Get-SQLServerCredential		-   [Complete] 	- Returns credentials from target SQL Servers.
 	Get-SQLServerInfo			-   [Complete] 	- Returns basic server and user information from target SQL Servers.
