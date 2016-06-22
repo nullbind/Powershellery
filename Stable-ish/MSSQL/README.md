@@ -32,7 +32,7 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Get-SQLConnectionTestThreaded	-   [Complete] 	- Tests if the current Windows account or provided SQL Server login can log into an SQL Server and supports threading.
 	Get-SQLQuery					-   [Complete] 	- Executes a query on target SQL servers.
 	Get-SQLQueryThreaded			-   [Complete] 	- Executes a query on target SQL servers and supports threading.
-	Invoke-SQLOSCmd				-   [Complete] 	- Execute command on the operating system as the SQL Server service account using xp_cmdshell. Supports threading, raw output, and table output.
+	Invoke-SQLOSCmd					-   [Complete] 	- Execute command on the operating system as the SQL Server service account using xp_cmdshell. Supports threading, raw output, and table output.
 	
 ### Common Functions:	
 	Get-SQLAuditDatabaseSpec	-   [Complete] 	- Returns Audit database specifications from target SQL Servers.
