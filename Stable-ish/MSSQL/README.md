@@ -38,7 +38,7 @@ Below are the functions included in this module.  Many are complete, but I've al
 |Get-SQLQueryThreaded|Executes a query on target SQL servers and supports threading.|Complete|
 |Invoke-SQLOSCmd|Execute command on the operating system as the SQL Server service account using xp_cmdshell. Supports threading, raw output, and table output.|Complete|
 	
-### Common Functions:
+### Common Functions
 |Function Name                 |Description |Status    |
 |:-----------------------------|:-----------|:---------|
 |Get-SQLAuditDatabaseSpec|Returns Audit database specifications from target SQL Servers.|Complete|
