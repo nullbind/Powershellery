@@ -5,7 +5,7 @@ To use the module, type `Import-Module PowerUpSQL.psm1`
 The PowerUpSQL module includes functions to support common attack workflows against SQL Server. However, I've also included many functions that could be used by administrators for SQL Server inventory and other auditing tasks.
 
 It was designed with six objectives in mind:
-* #####Scalability: Auto-discovery of sql server instances, pipeline support, and multi-threading on core functions is supported so commands can be executed against many SQL Servers quickly.  Multi-threading is currently a work in progress.  For now, I'm developing a seperate multi-threaded function for each existing function.
+* Scalability: Auto-discovery of sql server instances, pipeline support, and multi-threading on core functions is supported so commands can be executed against many SQL Servers quickly.  Multi-threading is currently a work in progress.  For now, I'm developing a seperate multi-threaded function for each existing function.
 * Portability: Default .net libraries are used, and there are no SMO dependancies so commands can be run without having to install SQL Server. Also, functions are designed so they can run independantly.
 * Flexibility: Most of the PowerUpSQL functions support the PowerShell pipeline so they can be used together, and with other scripts.
 * Support Easy SQL Server Discovery: Discovery functions help users blindly identify local, domain, and non-domain SQL Server instances.
