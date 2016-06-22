@@ -760,6 +760,9 @@ Function  Invoke-SQLOSCmd {
                     $IsShowAdvancedEnabled =  Get-SQLQuery -Instance $Instance -Query "sp_configure 'Show Advanced Options'" -Username $Username -Password $Password -Credential $Credential -SuppressVerbose | Select-Object config_value -ExpandProperty config_value
                 }else{
                     Write-Verbose "$Instance : You are not a sysadmin. This command requires sysadmin privileges." 
+                     
+                     # Add record
+                    $TblResults.Rows.Add("$ComputerName","$Instance","No sysadmin privileges.") | Out-Null
                     return
                 }
 
@@ -780,6 +783,9 @@ Function  Invoke-SQLOSCmd {
                         Write-Verbose "$Instance : Enabled Show Advanced Options."
                      }else{
                         Write-Verbose "$Instance : Enabling Show Advanced Options failed. Aborting."
+
+                        # Add record
+                        $TblResults.Rows.Add("$ComputerName","$Instance","Could not enable Show Advanced Options.") | Out-Null
                         return
                      }
                 }
@@ -800,7 +806,11 @@ Function  Invoke-SQLOSCmd {
                      if ($IsXpCmdshellEnabled2 -eq 1){
                         Write-Verbose "$Instance : Enabled xp_cmdshell."
                      }else{
-                        Write-Verbose "$Instance : Enabling xp_cmdshell failed. Aborting."
+                        Write-Verbose "$Instance : Enabling xp_cmdshell failed. Aborting."                
+                        
+                        # Add record
+                        $TblResults.Rows.Add("$ComputerName","$Instance","Could not enable xp_cmdshell.") | Out-Null
+
                         return
                      }
                 }
