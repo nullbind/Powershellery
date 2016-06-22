@@ -59,7 +59,7 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Get-SQLTriggerDdl			-   [Complete] 	- Returns DDL trigger information from target SQL Servers.  This includes logon triggers.
 	Get-SQLTriggerDml			-   [Complete] 	- Returns DML trigger information from target SQL Servers.
 	Get-SQLView					-   [Complete] 	- Returns view information from target SQL Servers.
-	Invoke-SQLOSCmd				-   [Complete] 	- Execute command on the operating system as the SQL Server service account using xp_cmdshell.
+	Invoke-SQLOSCmd				-   [Complete] 	- Execute command on the operating system as the SQL Server service account using xp_cmdshell. Supports threading, raw output, and table output.
 
 	Roadmap:
 	
