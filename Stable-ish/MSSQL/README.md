@@ -29,12 +29,14 @@ Below are the functions included in this module.  Many are complete, but I've al
 |Get-SQLInstanceDomain	       |Returns SQL Server instances from LDAP query results. Based on SPNs and UDP scanning of management servers.|Complete|
 |Get-SQLInstanceScanUDP	       |Returns SQL Server instances from UDP scan results.|Complete|
 
-### Core Functions:
-	Get-SQLConnectionTest			-   [Complete] 	- Tests if the current Windows account or provided SQL Server login can log into an SQL Server.
-	Get-SQLConnectionTestThreaded	-   [Complete] 	- Tests if the current Windows account or provided SQL Server login can log into an SQL Server and supports threading.
-	Get-SQLQuery					-   [Complete] 	- Executes a query on target SQL servers.
-	Get-SQLQueryThreaded			-   [Complete] 	- Executes a query on target SQL servers and supports threading.
-	Invoke-SQLOSCmd					-   [Complete] 	- Execute command on the operating system as the SQL Server service account using xp_cmdshell. Supports threading, raw output, and table output.
+### Core Functions
+|Function Name                 |Description |Status    |
+|:-----------------------------|:-----------|:---------|
+Get-SQLConnectionTest|Tests if the current Windows account or provided SQL Server login can log into an SQL Server.|Complete|
+Get-SQLConnectionTestThreaded|Tests if the current Windows account or provided SQL Server login can log into an SQL Server and supports threading.|Complete|
+Get-SQLQuery|Executes a query on target SQL servers.|Complete|
+Get-SQLQueryThreaded|Executes a query on target SQL servers and supports threading.|Complete|
+Invoke-SQLOSCmd|Execute command on the operating system as the SQL Server service account using xp_cmdshell. Supports threading, raw output, and table output.|Complete|
 	
 ### Common Functions:	
 	Get-SQLAuditDatabaseSpec	-   [Complete] 	- Returns Audit database specifications from target SQL Servers.
