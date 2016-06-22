@@ -76,11 +76,13 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Get-SQLHiddenSystemObject	-   [Roadmap] 	- Returns hidden system objects from target SQL Servers.	 
 	
 ### Privilege Escalation Functions:
-	Invoke-SQLEscalate-CreateProcedure      -   [Complete] 	- Get sysadmin using create procedure privileges.
-	Invoke-SQLEscalate-DbOwnerRole          -   [Complete] 	- Get sysadmin using dbowner privileges.
-	Invoke-SQLEscalate-ImpersonateLogin     -   [Complete] 	- Get sysadmin using impersonate login privileges.
-	Invoke-SQLEscalate-SampleDataByColumn   -   [Complete] 	- Find password and potentially sensitive data.  Support column name keyword search and custom data sample size.
-	Invoke-PowerUpSQL                       -   [Complete] 	- Run all privilege escalation checks.  There is an options to auto-escalation to sysadmin.
+|Function Name                 |Description |Status    |
+|:-----------------------------|:-----------|:---------|
+|Invoke-SQLEscalate-CreateProcedure|Get sysadmin using create procedure privileges.|Complete|
+|Invoke-SQLEscalate-DbOwnerRole|Get sysadmin using dbowner privileges.|Complete|
+|Invoke-SQLEscalate-ImpersonateLogin|Get sysadmin using impersonate login privileges.|Complete|
+|Invoke-SQLEscalate-SampleDataByColumn|Find password and potentially sensitive data.  Support column name keyword search and custom data sample size.|Complete|
+|Invoke-PowerUpSQL|Run all privilege escalation checks.  There is an options to auto-escalation to sysadmin.|Complete|
 
 	Roadmap:
 	
@@ -158,16 +160,18 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Get-SQLExfilAdHocQuery					
 	
 ### Utility Functions:
-	Get-SQLConnectionObject			-   [Complete] 	- Creates a object for connecting to SQL Server.
-	Get-SQLFuzzObjectName			-   [Complete] 	- Enumerates objects based on object id using OBJECT_NAME() and only the Public role.
-	Get-SQLFuzzDatabaseName			-   [Complete] 	- Enumerates databases based on database id using DB_NAME() and only the Public role.
-	Get-SQLFuzzServerLogin			-   [Complete] 	- Enumerates SQL Server Logins based on login id using SUSER_NAME() and only the Public role.
-	Get-SQLFuzzDomainAccount		-   [Complete] 	- Enumerates domain accounts based on domain RID using SUSER_SNAME() and only the Public role.
-	Get-ComputerNameFromInstance	-   [Complete] 	- Parses computer name form a provided instance.
-	Get-SQLServiceLocal				-   [Complete] 	- Returns local SQL Server services.
-	Create-SQLFile-XPDLL			-   [Complete] 	- Used to create DLLs with exported functions that can be imported as extended stored procedures in SQL Server. Supports arbitrary command execution.
-	Get-DomainSpn					-   [Complete] 	- Returns a list of SPNs for the target domain. Supports authentication from non domain systems. (consider moving to utility)
-	Get-DomainObject				-   [Complete] 	- Used to query domain controllers via LDAP.  Based on @Harmj0y's function to query LDAP.		 (consider moving to utility)
+|Function Name                 |Description |Status    |
+|:-----------------------------|:-----------|:---------|
+|Get-SQLConnectionObject | Creates a object for connecting to SQL Server.|Complete|
+|Get-SQLFuzzObjectName | Enumerates objects based on object id using OBJECT_NAME() and only the Public role.|Complete|	
+|Get-SQLFuzzDatabaseName | Enumerates databases based on database id using DB_NAME() and only the Public role.|Complete|
+|Get-SQLFuzzServerLogin | Enumerates SQL Server Logins based on login id using SUSER_NAME() and only the Public role.|Complete|
+|Get-SQLFuzzDomainAccount | Enumerates domain accounts based on domain RID using SUSER_SNAME() and only the Public role.|Complete|
+|Get-ComputerNameFromInstance | Parses computer name form a provided instance.|Complete|
+|Get-SQLServiceLocal | Returns local SQL Server services.|Complete|
+|Create-SQLFile-XPDLL | Used to create DLLs with exported functions that can be imported as extended stored procedures in SQL Server. Supports arbitrary command execution.|Complete|
+|Get-DomainSpn | Returns a list of SPNs for the target domain. Supports authentication from non domain systems.|Complete|
+|Get-DomainObject | Used to query domain controllers via LDAP.  Based on @Harmj0y's function to query LDAP.|Complete|
 	
 	Roadmap:
 
@@ -198,6 +202,8 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Invoke-SqlOSCmdServerLinkMd			
 	Invoke-SqlOSCmdSsisExecuteProcessTask		
 
-### Third Party Functions:
-	Invoke-Parallel					-   [Complete] 	- Modified version of RamblingCookieMonster's function that supports importing functions from the current session.
-	Test-IsLuhnValid				-   [Complete] 	- Valdidate a number based on the Luhn Algorithm.  Function written by ØYVIND KALLSTAD.
+### Third Party Functions
+|Function Name                 |Description |Status    |
+|:-----------------------------|:-----------|:---------|
+|Invoke-Parallel|Modified version of RamblingCookieMonster's function that supports importing functions from the current session.|Complete|
+|Test-IsLuhnValid|Valdidate a number based on the Luhn Algorithm.  Function written by ØYVIND KALLSTAD.|Complete|
