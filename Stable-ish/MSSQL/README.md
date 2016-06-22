@@ -75,7 +75,7 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Get-SQLQueryHistory			-   [Roadmap] 	- Returns recent query history from target SQL Servers.	
 	Get-SQLHiddenSystemObject	-   [Roadmap] 	- Returns hidden system objects from target SQL Servers.	 
 	
-### Privilege Escalation Functions:
+### Privilege Escalation Functions
 |Function Name                 |Description |Status    |
 |:-----------------------------|:-----------|:---------|
 |Invoke-SQLEscalate-CreateProcedure|Get sysadmin using create procedure privileges.|Complete|
@@ -116,7 +116,7 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Invoke-SQLEscalate-ImpersonateDatabaseUser
 	Invoke-SQLOSAdmintoSysadmin - https://github.com/nullbind/Powershellery/blob/master/Stable-ish/MSSQL/Invoke-SqlServerServiceImpersonation-Cmd.ps1
 
-### Persistence Functions: 
+### Persistence Functions
 
 	Roadmap:
 	
@@ -134,7 +134,7 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Get-SQLPersistFullPrivLogin					
 	Get-SQLPersistImpersonateSysadmin	
 
-### Password Recovery Functions:
+### Password Recovery Functions
 	
 	Roadmap:
 	
@@ -146,7 +146,7 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Get-SQLRecoverMasterKey						 
 	Get-SQLRecoverMachineKey		
 
-### Data Exfiltration Functions:
+### Data Exfiltration Functions
 
 	Roadmap:
 	
@@ -159,7 +159,7 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Get-SQLExfilServerLink						  
 	Get-SQLExfilAdHocQuery					
 	
-### Utility Functions:
+### Utility Functions
 |Function Name                 |Description |Status    |
 |:-----------------------------|:-----------|:---------|
 |Get-SQLConnectionObject | Creates a object for connecting to SQL Server.|Complete|
