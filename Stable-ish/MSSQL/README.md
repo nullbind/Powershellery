@@ -19,8 +19,6 @@ Script Information
 * Required Dependencies: PowerShell v3 (or later)
 * Optional Dependencies: None 
 
-Note: This was largely inspired by twitter requests and Harmj0y's PowerUp Windows privilege escalation toolkit.
-
 Below are the functions included in this module.  Many are complete, but I've also outlined the intended roadmap.
 
 ### Discovery Functions:  
@@ -197,7 +195,3 @@ Below are the functions included in this module.  Many are complete, but I've al
 ### Third Party Functions:
 	Invoke-Parallel					-   [Complete] 	- Modified version of RamblingCookieMonster's function that supports importing functions from the current session.
 	Test-IsLuhnValid				-   [Complete] 	- Valdidate a number based on the Luhn Algorithm.  Function written by ØYVIND KALLSTAD.
-
-
-
-
