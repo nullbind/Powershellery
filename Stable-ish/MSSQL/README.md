@@ -27,11 +27,11 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Get-SQLInstanceScanUDP		-   [Complete] 	- Returns SQL Server instances from UDP scan results.
 
 ### Core Functions:
-	Get-SQLConnectionObject			-   [Complete] 	- Creates a object for connecting to SQL Server.
 	Get-SQLConnectionTest			-   [Complete] 	- Tests if the current Windows account or provided SQL Server login can log into an SQL Server.
 	Get-SQLConnectionTestThreaded	-   [Complete] 	- Tests if the current Windows account or provided SQL Server login can log into an SQL Server and supports threading.
 	Get-SQLQuery					-   [Complete] 	- Executes a query on target SQL servers.
 	Get-SQLQueryThreaded			-   [Complete] 	- Executes a query on target SQL servers and supports threading.
+	Invoke-SQLOSCmd				-   [Complete] 	- Execute command on the operating system as the SQL Server service account using xp_cmdshell. Supports threading, raw output, and table output.
 	
 ### Common Functions:	
 	Get-SQLAuditDatabaseSpec	-   [Complete] 	- Returns Audit database specifications from target SQL Servers.
@@ -59,7 +59,6 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Get-SQLTriggerDdl			-   [Complete] 	- Returns DDL trigger information from target SQL Servers.  This includes logon triggers.
 	Get-SQLTriggerDml			-   [Complete] 	- Returns DML trigger information from target SQL Servers.
 	Get-SQLView					-   [Complete] 	- Returns view information from target SQL Servers.
-	Invoke-SQLOSCmd				-   [Complete] 	- Execute command on the operating system as the SQL Server service account using xp_cmdshell. Supports threading, raw output, and table output.
 
 	Roadmap:
 	
@@ -152,6 +151,7 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Get-SQLExfilAdHocQuery					
 	
 ### Utility Functions:
+	Get-SQLConnectionObject			-   [Complete] 	- Creates a object for connecting to SQL Server.
 	Get-SQLFuzzObjectName			-   [Complete] 	- Enumerates objects based on object id using OBJECT_NAME() and only the Public role.
 	Get-SQLFuzzDatabaseName			-   [Complete] 	- Enumerates databases based on database id using DB_NAME() and only the Public role.
 	Get-SQLFuzzServerLogin			-   [Complete] 	- Enumerates SQL Server Logins based on login id using SUSER_NAME() and only the Public role.
