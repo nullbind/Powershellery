@@ -22,14 +22,26 @@ Script Information
 Below are the functions included in this module.  Many are complete, but I've also outlined the intended roadmap.
 
 ### Discovery Functions 
-|Function Name                 |Description |Status    |
-|:-----------------------------|:-----------|:---------|
-|Get-SQLInstanceFile           |Returns SQL Server instances from a file.  One per line. |Complete|
-|Get-SQLInstanceLocal          |Returns SQL Server instances from the local system based on a registry search.|Complete|
-|Get-SQLInstanceDomain	       |Returns SQL Server instances from LDAP query results. Search is based on MSSQL SPNs and UDP scanning of management servers. Will default to current user's domain, but domain,user,and password can be provided for alternative domains.|Complete|
-|Get-SQLInstanceScanUDP	       |Returns SQL Server instances from UDP scan results.|Complete|
+
+These functions can be used for enumerating SQL Server instances.  Discovered instances can then be piped into other PowerUpSQL functions.
+
+Example: Get-SQLInstanceDomain -Verbose | Get-SQLServerInfo -Verbose
+
+|Function Name|Description |Status    |
+|:--------------------------------|:-----------|:---------|
+|Get-SQLInstanceFile|Returns SQL Server instances from a file.  One per line. |Complete|
+|Get-SQLInstanceLocal|Returns SQL Server instances from the local system based on a registry search.|Complete|
+|Get-SQLInstanceDomain|Returns SQL Server instances from LDAP query results. Search is based on MSSQL SPNs and UDP scanning of management servers. Will default to current user's domain, but domain,user,and password can be provided for alternative domains.|Complete|
+|Get-SQLInstanceScanUDP|Returns SQL Server instances from UDP scan results.|Complete|
 
 ### Core Functions
+
+These functions are used to test connections, execute SQL Server queries, and execute OS commands.  All other functions use these core functions.  However, they can also be executed independently. 
+
+Example: Get-SQLInstanceDomain -Verbose | Get-SQLConnectionTestThreaded -Verbose -Threads 20 
+
+Example: Get-SQLInstanceDomain -Verbose | Invoke-SQLOSCmd -Verbose -Threads 20 -Command "whoami"
+
 |Function Name                 |Description |Status    |
 |:-----------------------------|:-----------|:---------|
 |Get-SQLConnectionTest|Tests if the current Windows account or provided SQL Server login can log into an SQL Server.|Complete|
@@ -39,6 +51,13 @@ Below are the functions included in this module.  Many are complete, but I've al
 |Invoke-SQLOSCmd|Execute command on the operating system as the SQL Server service account using xp_cmdshell. Supports threading, raw output, and table output.|Complete|
 	
 ### Common Functions
+
+These functions are used for common information gathering tasks.  Similar to core functions, the common functions can be executed as standalone functions, but are also used other functions in the PowerUpSQL module.
+
+Example: Get-SQLInstanceLocal | Get-SQLDatabase -Verbose -NoDefaults
+
+Example: Get-SQLInstanceLocal | Get-SQLColumnSampleData -Keywords "account,credit,card" -SampleSize 5 -CheckCC 
+
 |Function Name                 |Description |Status    |
 |:-----------------------------|:-----------|:---------|
 |Get-SQLAuditDatabaseSpec|Returns Audit database specifications from target SQL Servers.|Complete|
@@ -69,13 +88,20 @@ Below are the functions included in this module.  Many are complete, but I've al
 
 	Roadmap:
 	
-	Get-SQLProxyAccount			-   [Roadmap]	- Returns proxy accounts from target SQL Servers.
-	Get-SQLTempObject			-   [Roadmap] 	- Returns temp objects from target SQL Servers.	
-	Get-SQLCachePlan			-   [Roadmap] 	- Returns cache plans from target SQL Servers.	
-	Get-SQLQueryHistory			-   [Roadmap] 	- Returns recent query history from target SQL Servers.	
-	Get-SQLHiddenSystemObject	-   [Roadmap] 	- Returns hidden system objects from target SQL Servers.	 
+	Get-SQLProxyAccount - Returns proxy accounts from target SQL Servers.
+	Get-SQLTempObject - Returns temp objects from target SQL Servers.	
+	Get-SQLCachePlan - Returns cache plans from target SQL Servers.	
+	Get-SQLQueryHistory - Returns recent query history from target SQL Servers.	
+	Get-SQLHiddenSystemObject - Returns hidden system objects from target SQL Servers.	 
 	
 ### Privilege Escalation Functions
+
+These functions are used for obtaining sysadmin privileges from various levels of access in SQL Server.  Invoke-PowerUpSQL can be used to run all privileges escalation functions against provided SQL Server instances.
+
+Example: Get-SQLInstanceLocal | Invoke-SQLEscalate-ImpersonateLogin -Verbose
+
+Example: Get-SQLInstanceLocal | Invoke-PowerUpSQL -Verbose
+
 |Function Name                 |Description |Status    |
 |:-----------------------------|:-----------|:---------|
 |Invoke-SQLEscalate-CreateProcedure|Get sysadmin using create procedure privileges.|Complete|
@@ -118,6 +144,8 @@ Below are the functions included in this module.  Many are complete, but I've al
 
 ### Persistence Functions
 
+These functions are used for maintaining access to the SQL Server using various methods.  The roadmap for development is below.  I've included a few links to standalone scripts that have not been integrated yet.
+
 	Roadmap:
 	
 	Get-SQLPersistAssembly						  
@@ -135,6 +163,8 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Get-SQLPersistImpersonateSysadmin	
 
 ### Password Recovery Functions
+
+These functions are used for recovering authentication tokens of varous types.  The roadmap for development is below.  I've included a few links to standalone scripts that have not been integrated yet.
 	
 	Roadmap:
 	
@@ -148,6 +178,8 @@ Below are the functions included in this module.  Many are complete, but I've al
 
 ### Data Exfiltration Functions
 
+These functions are used for exfiltrating data out of SQL Server.  The roadmap for development is below.  
+
 	Roadmap:
 	
 	Get-SQLExfilHttp							   
@@ -160,6 +192,11 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Get-SQLExfilAdHocQuery					
 	
 ### Utility Functions
+
+These are essentially helper functions.  Some of them are used by other PowerUpSQL functions, but all of them can be run independently.
+
+Example: Get-SQLFuzzServerLogin -Verbose -Instance "SQLSVR1\Instance1"
+
 |Function Name                 |Description |Status    |
 |:-----------------------------|:-----------|:---------|
 |Get-SQLConnectionObject | Creates a object for connecting to SQL Server.|Complete|
@@ -169,9 +206,9 @@ Below are the functions included in this module.  Many are complete, but I've al
 |Get-SQLFuzzDomainAccount | Enumerates domain accounts based on domain RID using SUSER_SNAME() and only the Public role.|Complete|
 |Get-ComputerNameFromInstance | Parses computer name form a provided instance.|Complete|
 |Get-SQLServiceLocal | Returns local SQL Server services.|Complete|
-|Create-SQLFile-XPDLL | Used to create DLLs with exported functions that can be imported as extended stored procedures in SQL Server. Supports arbitrary command execution.|Complete|
+|Create-SQLFile-XPDLL | Used to create CPP DLLs with exported functions that can be imported as extended stored procedures in SQL Server. Supports arbitrary command execution.|Complete|
 |Get-DomainSpn | Returns a list of SPNs for the target domain. Supports authentication from non domain systems.|Complete|
-|Get-DomainObject | Used to query domain controllers via LDAP.  Based on @Harmj0y's function to query LDAP.|Complete|
+|Get-DomainObject | Used to query domain controllers via LDAP.  Supports alternative credentials form non-domain system.|Complete|
 	
 	Roadmap:
 
@@ -200,10 +237,15 @@ Below are the functions included in this module.  Many are complete, but I've al
 	Invoke-SqlOSCmdAgentVbscript			
 	Invoke-SqlOSCmdAssembly             		
 	Invoke-SqlOSCmdServerLinkMd			
-	Invoke-SqlOSCmdSsisExecuteProcessTask		
+	Invoke-SqlOSCmdSsisExecuteProcessTask
+	Create-SQLFile-XPDLLCLR
+	Create-SQLFile-XPDLLBinary
 
 ### Third Party Functions
+
+These are functions developed by third parties.  Most of them have been modified slightly.
+
 |Function Name                 |Description |Status    |
 |:-----------------------------|:-----------|:---------|
-|Invoke-Parallel|Modified version of RamblingCookieMonster's function that supports importing functions from the current session.|Complete|
+|Invoke-Parallel|Modified version of RamblingCookieMonster's (Warren F) function that supports importing functions from the current session.|Complete|
 |Test-IsLuhnValid|Valdidate a number based on the Luhn Algorithm.  Function written by ØYVIND KALLSTAD.|Complete|
