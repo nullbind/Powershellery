@@ -24,10 +24,10 @@ Below are the functions included in this module.  Many are complete, but I've al
 ### Discovery Functions 
 |Function Name                 |Description |Status    |
 |:-----------------------------|:-----------|:---------|
-|Get-SQLInstanceFile           |Returns SQL Server instances from a file.  One per line. |Complete       |
-|Get-SQLInstanceLocal          |Returns SQL Server instances from the local system based on a registry search.|Complete       |
-|Get-SQLInstanceDomain	       |Returns SQL Server instances from LDAP query results. Based on SPNs and UDP scanning of management servers.|Complete       |
-|Get-SQLInstanceScanUDP	       |Returns SQL Server instances from UDP scan results.|Complete       |
+|Get-SQLInstanceFile           |Returns SQL Server instances from a file.  One per line. |Complete|
+|Get-SQLInstanceLocal          |Returns SQL Server instances from the local system based on a registry search.|Complete|
+|Get-SQLInstanceDomain	       |Returns SQL Server instances from LDAP query results. Based on SPNs and UDP scanning of management servers.|Complete|
+|Get-SQLInstanceScanUDP	       |Returns SQL Server instances from UDP scan results.|Complete|
 
 ### Core Functions:
 	Get-SQLConnectionTest			-   [Complete] 	- Tests if the current Windows account or provided SQL Server login can log into an SQL Server.
