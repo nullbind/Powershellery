@@ -810,13 +810,13 @@ Function  Invoke-SQLOSCmd {
                 $Query = "EXEC master..xp_cmdshell '$Command' WITH RESULT SETS ((output VARCHAR(MAX)))"
 
                 # Execute OS command
-                [string]$CmdResults = Get-SQLQuery -Instance $Instance -Query $Query -Username $Username -Password $Password -Credential $Credential -SuppressVerbose | Select-Object output -ExpandProperty output
+                $CmdResults = Get-SQLQuery -Instance $Instance -Query $Query -Username $Username -Password $Password -Credential $Credential -SuppressVerbose | Select-Object output -ExpandProperty output
 
                 # Display results or add to final results table
                 if($RawResults){
                     $CmdResults
                 }else{
-                    $TblResults.Rows.Add($ComputerName, $Instance, $CmdResults) | Out-Null                
+                    $TblResults.Rows.Add($ComputerName, $Instance, [string]$CmdResults) | Out-Null                
                 }
                 
                 # Restore xp_cmdshell state if needed                
