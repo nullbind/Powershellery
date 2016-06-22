@@ -32,38 +32,40 @@ Below are the functions included in this module.  Many are complete, but I've al
 ### Core Functions
 |Function Name                 |Description |Status    |
 |:-----------------------------|:-----------|:---------|
-Get-SQLConnectionTest|Tests if the current Windows account or provided SQL Server login can log into an SQL Server.|Complete|
-Get-SQLConnectionTestThreaded|Tests if the current Windows account or provided SQL Server login can log into an SQL Server and supports threading.|Complete|
-Get-SQLQuery|Executes a query on target SQL servers.|Complete|
-Get-SQLQueryThreaded|Executes a query on target SQL servers and supports threading.|Complete|
-Invoke-SQLOSCmd|Execute command on the operating system as the SQL Server service account using xp_cmdshell. Supports threading, raw output, and table output.|Complete|
+|Get-SQLConnectionTest|Tests if the current Windows account or provided SQL Server login can log into an SQL Server.|Complete|
+|Get-SQLConnectionTestThreaded|Tests if the current Windows account or provided SQL Server login can log into an SQL Server and supports threading.|Complete|
+|Get-SQLQuery|Executes a query on target SQL servers.|Complete|
+|Get-SQLQueryThreaded|Executes a query on target SQL servers and supports threading.|Complete|
+|Invoke-SQLOSCmd|Execute command on the operating system as the SQL Server service account using xp_cmdshell. Supports threading, raw output, and table output.|Complete|
 	
-### Common Functions:	
-	Get-SQLAuditDatabaseSpec	-   [Complete] 	- Returns Audit database specifications from target SQL Servers.
-	Get-SQLAuditServerSpec		-   [Complete] 	- Returns Audit server specifications from target SQL Servers.
-	Get-SQLColumn				-   [Complete] 	- Returns column information from target SQL Servers. Supports keyword search.
-	Get-SQLColumnSampleData		-   [Complete] 	- Returns column information from target SQL Servers. Supports search by keywords, sampling data, and validating credit card numbers.
-	Get-SQLDatabase				-   [Complete] 	- Returns database information from target SQL Servers.
-	Get-SQLDatabasePriv			-   [Complete] 	- Returns database user privilege information from target SQL Servers.
-	Get-SQLDatabaseRole			-   [Complete]	- Returns database role information from target SQL Servers.
-	Get-SQLDatabaseRoleMember	-   [Complete]	- Returns database role member information from target SQL Servers.
-	Get-SQLDatabaseSchema		-   [Complete] 	- Returns schema information from target SQL Servers. 			
-	Get-SQLDatabaseUser			-   [Complete] 	- Returns database user information from target SQL Servers.
-	Get-SQLServerCredential		-   [Complete] 	- Returns credentials from target SQL Servers.
-	Get-SQLServerInfo			-   [Complete] 	- Returns basic server and user information from target SQL Servers.
-	Get-SQLServerLink			-   [Complete] 	- Returns link servers from target SQL Servers. 
-	Get-SQLServerLogin			-   [Complete] 	- Returns logins from target SQL Servers.
-	Get-SQLServerPriv			-   [Complete] 	- Returns SQL Server login privilege information from target SQL Servers.
-	Get-SQLServerRole			-   [Complete] 	- Returns SQL Server role information from target SQL Servers.
-	Get-SQLServerRoleMember		-   [Complete] 	- Returns SQL Server role member information from target SQL Servers.
-	Get-SQLServiceAccount		-   [Complete] 	- Returns a list of local SQL Server services.
-	Get-SQLSession				-   [Complete] 	- Returns active sessions from target SQL Servers.
-	Get-SQLStoredProcure		-   [Complete] 	- Returns stored procedures from target SQL Servers.	
-	Get-SQLSysadminCheck		-   [Complete] 	- Check if login is has sysadmin privilege on the target SQL Servers. 
-	Get-SQLTable				-   [Complete] 	- Returns table information from target SQL Servers.
-	Get-SQLTriggerDdl			-   [Complete] 	- Returns DDL trigger information from target SQL Servers.  This includes logon triggers.
-	Get-SQLTriggerDml			-   [Complete] 	- Returns DML trigger information from target SQL Servers.
-	Get-SQLView					-   [Complete] 	- Returns view information from target SQL Servers.
+### Common Functions:
+|Function Name                 |Description |Status    |
+|:-----------------------------|:-----------|:---------|
+|Get-SQLAuditDatabaseSpec|Returns Audit database specifications from target SQL Servers.|Complete|
+|Get-SQLAuditServerSpec|Returns Audit server specifications from target SQL Servers.|Complete|
+|Get-SQLColumn|Returns column information from target SQL Servers. Supports keyword search.|Complete|
+|Get-SQLColumnSampleData|Returns column information from target SQL Servers. Supports search by keywords, sampling data, and validating credit card numbers.|Complete|
+|Get-SQLDatabase|Returns database information from target SQL Servers.|Complete|
+|Get-SQLDatabasePriv|Returns database user privilege information from target SQL Servers.|Complete|
+|Get-SQLDatabaseRole|Returns database role information from target SQL Servers.|Complete|
+|Get-SQLDatabaseRoleMember|Returns database role member information from target SQL Servers.|Complete|
+|Get-SQLDatabaseSchema|Returns schema information from target SQL Servers. |Complete|	
+|Get-SQLDatabaseUser|Returns database user information from target SQL Servers.|Complete|
+|Get-SQLServerCredential|Returns credentials from target SQL Servers.|Complete|
+|Get-SQLServerInfo|Returns basic server and user information from target SQL Servers.|Complete|
+|Get-SQLServerLink|Returns link servers from target SQL Servers.|Complete|
+|Get-SQLServerLogin|Returns logins from target SQL Servers.|Complete|
+|Get-SQLServerPriv|Returns SQL Server login privilege information from target SQL Servers.|Complete|
+|Get-SQLServerRole|Returns SQL Server role information from target SQL Servers.|Complete|
+|Get-SQLServerRoleMember|Returns SQL Server role member information from target SQL Servers.|Complete|
+|Get-SQLServiceAccount|Returns a list of local SQL Server services.|Complete|
+|Get-SQLSession|Returns active sessions from target SQL Servers.|Complete|
+|Get-SQLStoredProcure|Returns stored procedures from target SQL Servers.|Complete|	
+|Get-SQLSysadminCheck|Check if login is has sysadmin privilege on the target SQL Servers.|Complete|
+|Get-SQLTable|Returns table information from target SQL Servers.|Complete|
+|Get-SQLTriggerDdl|Returns DDL trigger information from target SQL Servers.  This includes logon triggers.|Complete|
+|Get-SQLTriggerDml|Returns DML trigger information from target SQL Servers.|Complete|
+|Get-SQLView|Returns view information from target SQL Servers.|Complete|
 
 	Roadmap:
 	
