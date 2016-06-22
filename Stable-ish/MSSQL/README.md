@@ -1,6 +1,6 @@
 To use the module, type `Import-Module PowerUpSQL.psm1`
 
-## PowerUpSQL: A SQL Server Recon, Privilege Escalation, and Data Exfiltration Toolkit
+## PowerUpSQL: An Offensive Toolkit for SQL Server
 
 The PowerUpSQL is an offensive toolkit designed to accomplish six goals:
 * Scalability: Auto-discovery of sql server instances, pipeline support, and multi-threading on core functions is supported so commands can be executed against many SQL Servers quickly.  Multi-threading is currently a work in progress.  For now, I'm developing a seperate multi-threaded function for each existing function.
