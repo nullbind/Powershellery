@@ -21,7 +21,7 @@ Script Information
 
 Below are the functions included in this module.  Many are complete, but I've also outlined the intended roadmap.
 
-### Discovery Functions:  
+### Discovery Functions 
 |Function Name                 |Description                          |Status    |
 |:-----------------------------|:-------------------------------------|:-----------|
 |Get-SQLInstanceFile         |Returns SQL Server instances from a file.  One per line. |Complete       |
