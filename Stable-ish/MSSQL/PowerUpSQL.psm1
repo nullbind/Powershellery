@@ -676,17 +676,26 @@ Function  Invoke-SQLOSCmd {
 
         [Parameter(Mandatory=$false,
         HelpMessage="Number of threads.")]
-        [int]$Threads = 5,
+        [int]$Threads = 1,
 
         [Parameter(Mandatory=$false,
         HelpMessage="Suppress verbose errors.  Used when function is wrapped.")]
-        [switch]$SuppressVerbose
+        [switch]$SuppressVerbose,
+        
+        [Parameter(Mandatory=$false,
+        HelpMessage="Just show the raw results without the computer or instance name.")]
+        [switch]$RawResults
     )
 
     Begin
     {
         # Setup data table for output
+        $TblCommands = New-Object System.Data.DataTable
         $TblResults = New-Object System.Data.DataTable
+        $TblResults.Columns.Add("ComputerName") | Out-Null
+        $TblResults.Columns.Add("Instance") | Out-Null
+        $TblResults.Columns.Add("CommandResults") | Out-Null
+        
 
         # Setup data table for pipeline threading
         $PipelineItems = New-Object System.Data.DataTable
@@ -712,6 +721,11 @@ Function  Invoke-SQLOSCmd {
             
             # Parse computer name from the instance
             $ComputerName = Get-ComputerNameFromInstance -Instance $Instance
+
+            # Default connection to local default instance
+            if(-not $Instance){
+                $Instance = $env:COMPUTERNAME
+            }
 
             # Setup DAC string
             if($DAC){
@@ -793,17 +807,18 @@ Function  Invoke-SQLOSCmd {
 
                 # Setup OS command
                 Write-Verbose "$Instance : Running command: $Command"
-                $Query = "exec master..xp_cmdshell '$Command'"
+                $Query = "EXEC master..xp_cmdshell '$Command' WITH RESULT SETS ((output VARCHAR(MAX)))"
 
-                # Setup SQL query
-                $SqlCommand = New-Object -TypeName System.Data.SqlClient.SqlCommand -ArgumentList ($Query, $Connection)
+                # Execute OS command
+                [string]$CmdResults = Get-SQLQuery -Instance $Instance -Query $Query -Username $Username -Password $Password -Credential $Credential -SuppressVerbose | Select-Object output -ExpandProperty output
 
-                # Grab results
-                $Results = $SqlCommand.ExecuteReader()                                         
-
-                # Load results into data table     
-                $TblResults.Load($Results)  
-
+                # Display results or add to final results table
+                if($RawResults){
+                    $CmdResults
+                }else{
+                    $TblResults.Rows.Add($ComputerName, $Instance, $CmdResults) | Out-Null                
+                }
+                
                 # Restore xp_cmdshell state if needed                
                 if($DisableXpCmdshell -eq 1){
                     
