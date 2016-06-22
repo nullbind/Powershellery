@@ -1,5 +1,7 @@
 To use the module, type `Import-Module PowerUpSQL.psm1`
 
+To list functions from the module, type `Get-Command -Module PowerUpSQL`
+
 ## PowerUpSQL: An Offensive Toolkit for SQL Server
 
 The PowerUpSQL module includes functions to support common attack workflows against SQL Server. However, I've also included many functions that could be used by administrators for SQL Server inventory and other auditing tasks.
@@ -12,14 +14,16 @@ It was designed with six objectives in mind:
 * Support Easy SQL Server Auditing: Invoke-PowerUpSQL audits for common high impact vulnerabilities and weak configurations by default.
 * Support Easy SQL Server Exploitation: Invoke-PowerUpSQL can leverage SQL Server vulnerabilities to obtain sysadmin privileges to illistrate risk.
 
-
 Script Information
 * Author: Scott Sutherland (@_nullbind), NetSPI - 2016
+* Version: 1.0.0.0
+* Version Name: SQL Configuration Offensive Tools and Techniques (SCOTT) Edition
+* Description: PowerUpSQL is a offensive toolkit that supports common attack workflow against SQL Server.
 * License: BSD 3-Clause
-* Required Dependencies: PowerShell v3 (or later)
-* Optional Dependencies: None 
+* Required Dependencies: None
+* Optional Dependencies: None
 
-Below are the functions included in this module.  Many are complete, but I've also outlined the intended roadmap.
+Below are the functions included in this module.  Many of them are complete, but I've also outlined the intended evelopment roadmap. High levle roadmap Goals include adding roadmapped modules, adding multi-threading to all common functions, and  testing against SQL Server version 2000 to 2014.
 
 ### Discovery Functions 
 
@@ -31,7 +35,7 @@ Example: Get-SQLInstanceDomain -Verbose | Get-SQLServerInfo -Verbose
 |:--------------------------------|:-----------|:---------|
 |Get-SQLInstanceFile|Returns SQL Server instances from a file.  One per line. |Complete|
 |Get-SQLInstanceLocal|Returns SQL Server instances from the local system based on a registry search.|Complete|
-|Get-SQLInstanceDomain|Returns SQL Server instances from LDAP query results. Search is based on MSSQL SPNs and UDP scanning of management servers. Will default to current user's domain, but domain,user,and password can be provided for alternative domains.|Complete|
+|Get-SQLInstanceDomain|Returns a list of SQL Server instances discovered by querying a domain controller for systems with registered MSSQL service principal names.  The function will default to the current user's domain and logon server, but an alternative domain controller can be provided. UDP scanning of management servers is optional.|Complete|
 |Get-SQLInstanceScanUDP|Returns SQL Server instances from UDP scan results.|Complete|
 
 ### Core Functions
