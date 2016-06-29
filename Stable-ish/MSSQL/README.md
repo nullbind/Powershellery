@@ -2,13 +2,17 @@ To use the module, type `Import-Module PowerUpSQL.psm1`
 
 To list functions from the module, type `Get-Command -Module PowerUpSQL`
 
+To run as an alternative domain user, use the runas command to launch PowerShell first.
+
+Example: `runas /noprofile /netonly /user:domain\user PowerShell.exe`
+
 ## PowerUpSQL: A PowerShell Toolkit for Attacking SQL Server
 
 The PowerUpSQL module includes functions to support common attack workflows against SQL Server. However, I've also included many functions that could be used by administrators for SQL Server inventory and other auditing tasks.
 
 It was designed with six objectives in mind:
 * Scalability: Auto-discovery of sql server instances, pipeline support, and multi-threading on core functions is supported so commands can be executed against many SQL Servers quickly.  Multi-threading is currently a work in progress.  For now, I'm developing a seperate multi-threaded function for each existing function.
-* Portability: Default .net libraries are used, and there are no SMO dependancies so commands can be run without having to install SQL Server. Also, functions are designed so they can run independantly.
+* Portability: Default .net libraries are used, and there are no dependancies on smo library or sqlps so commands can be run without having to install SQL Server. Also, functions are designed so they can run independantly.
 * Flexibility: Most of the PowerUpSQL functions support the PowerShell pipeline so they can be used together, and with other scripts.
 * Support Easy SQL Server Discovery: Discovery functions help users blindly identify local, domain, and non-domain SQL Server instances.
 * Support Easy SQL Server Auditing: Invoke-PowerUpSQL audits for common high impact vulnerabilities and weak configurations by default.
@@ -37,6 +41,11 @@ Example: Get-SQLInstanceDomain -Verbose | Get-SQLServerInfo -Verbose
 |Get-SQLInstanceLocal|Returns SQL Server instances from the local system based on a registry search.|Complete|
 |Get-SQLInstanceDomain|Returns a list of SQL Server instances discovered by querying a domain controller for systems with registered MSSQL service principal names.  The function will default to the current user's domain and logon server, but an alternative domain controller can be provided. UDP scanning of management servers is optional.|Complete|
 |Get-SQLInstanceScanUDP|Returns SQL Server instances from UDP scan results.|Complete|
+
+	Roadmap:
+	
+	Get-SQLInstanceScanTCP - Returns SQL Server instances from TCP scan results.
+	Get-SQLInstanceBroadcast - Returns SQL Server instances from UDP broadcast.
 
 ### Core Functions
 
@@ -81,7 +90,7 @@ Example: Get-SQLInstanceLocal | Get-SQLColumnSampleData -Keywords "account,credi
 |Get-SQLServerPriv|Returns SQL Server login privilege information from target SQL Servers.|Complete|
 |Get-SQLServerRole|Returns SQL Server role information from target SQL Servers.|Complete|
 |Get-SQLServerRoleMember|Returns SQL Server role member information from target SQL Servers.|Complete|
-|Get-SQLServiceAccount|Returns a list of local SQL Server services.|Complete|
+|Get-SQLServiceAccount|Returns a list of service account names for SQL Servers services by querying the registry with xp_regread.  This can be executed against remote systems.|Complete|
 |Get-SQLSession|Returns active sessions from target SQL Servers.|Complete|
 |Get-SQLStoredProcure|Returns stored procedures from target SQL Servers.|Complete|	
 |Get-SQLSysadminCheck|Check if login is has sysadmin privilege on the target SQL Servers.|Complete|
@@ -108,10 +117,11 @@ Example: Get-SQLInstanceLocal | Invoke-PowerUpSQL -Verbose
 
 |Function Name                 |Description |Status    |
 |:-----------------------------|:-----------|:---------|
-|Invoke-SQLEscalate-CreateProcedure|Get sysadmin using create procedure privileges.|Complete|
-|Invoke-SQLEscalate-DbOwnerRole|Get sysadmin using dbowner privileges.|Complete|
-|Invoke-SQLEscalate-ImpersonateLogin|Get sysadmin using impersonate login privileges.|Complete|
-|Invoke-SQLEscalate-SampleDataByColumn|Find password and potentially sensitive data.  Support column name keyword search and custom data sample size.|Complete|
+|Invoke-SQLEscalate-CreateProcedure|Check if the current login has the CREATE PROCEDURE permission.  Attempt to use permission to obtain sysadmin privileges.|Complete|
+|Invoke-SQLEscalate-DbOwnerRole|Check if the current login has the DB_OWNER role in any databases.  Attempt to use permission to obtain sysadmin privileges.|Complete|
+|Invoke-SQLEscalate-DbDdlAdmin|Check if the current login has the DB_DdlAdmin role in any databases.  Attempt to use permission to obtain sysadmin privileges.|Complete|
+|Invoke-SQLEscalate-ImpersonateLogin|Check if the current login has the IMPERSONATE permission on any sysadmin logins. Attempt to use permission to obtain sysadmin privileges.|Complete|
+|Invoke-SQLEscalate-SampleDataByColumn|Check if the current login can access any database columns that contain the word password. Supports column name keyword search and custom data sample size.  For better data searches use Get-SQLColumnSampleData.|Complete|
 |Invoke-PowerUpSQL|Run all privilege escalation checks.  There is an options to auto-escalation to sysadmin.|Complete|
 
 	Roadmap:
@@ -207,12 +217,12 @@ Example: Get-SQLFuzzServerLogin -Verbose -Instance "SQLSVR1\Instance1"
 |Get-SQLFuzzObjectName | Enumerates objects based on object id using OBJECT_NAME() and only the Public role.|Complete|	
 |Get-SQLFuzzDatabaseName | Enumerates databases based on database id using DB_NAME() and only the Public role.|Complete|
 |Get-SQLFuzzServerLogin | Enumerates SQL Server Logins based on login id using SUSER_NAME() and only the Public role.|Complete|
-|Get-SQLFuzzDomainAccount | Enumerates domain accounts based on domain RID using SUSER_SNAME() and only the Public role.|Complete|
-|Get-ComputerNameFromInstance | Parses computer name form a provided instance.|Complete|
+|Get-SQLFuzzDomainAccount | Enumerates domain groups, computer accounts, and user accounts based on domain RID using SUSER_SNAME() and only the Public role.  Note: In a typical domain 10000 or more is recommended for the EndId.|Complete|
+|Get-ComputerNameFromInstance | Parses computer name from a provided instance.|Complete|
 |Get-SQLServiceLocal | Returns local SQL Server services.|Complete|
 |Create-SQLFile-XPDLL | Used to create CPP DLLs with exported functions that can be imported as extended stored procedures in SQL Server. Supports arbitrary command execution.|Complete|
 |Get-DomainSpn | Returns a list of SPNs for the target domain. Supports authentication from non domain systems.|Complete|
-|Get-DomainObject | Used to query domain controllers via LDAP.  Supports alternative credentials form non-domain system.|Complete|
+|Get-DomainObject | Used to query domain controllers via LDAP.  Supports alternative credentials from non-domain system.|Complete|
 	
 	Roadmap:
 
