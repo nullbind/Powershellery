@@ -47,6 +47,17 @@ Example: Get-SQLInstanceDomain -Verbose | Get-SQLServerInfo -Verbose
 	Get-SQLInstanceScanTCP - Returns SQL Server instances from TCP scan results.
 	Get-SQLInstanceBroadcast - Returns SQL Server instances from UDP broadcast.
 
+### Primary Attack Functions
+
+These are the functions used to quickly dump databse information, audit for common vulnerabilities, and attempt to obtain sysadmin privileges.
+
+|Function Name                 |Description |Status    |
+|:-----------------------------|:-----------|:---------|
+|Get-SQLDumpInfo|This can be used to dump SQL Server and database information to csv or xml files.  This can be handy for doing a quick inventory of databases, logins, privileges etc.|Complete|
+|Get-SQLAudit|This can be used to review the SQL Server and databases for common configuration weaknesses and provide a vulnerability report along with recommendations for each item.|Complete|
+|Get-SQLEscalatePriv|This can be used to obtain sysadmin privileges via the identify weak configurations.  Think of it like get-system, but for SQL Server.|Complete|
+
+
 ### Core Functions
 
 These functions are used to test connections, execute SQL Server queries, and execute OS commands.  All other functions use these core functions.  However, they can also be executed independently. 
@@ -107,56 +118,54 @@ Example: Get-SQLInstanceLocal | Get-SQLColumnSampleData -Keywords "account,credi
 	Get-SQLQueryHistory - Returns recent query history from target SQL Servers.	
 	Get-SQLHiddenSystemObject - Returns hidden system objects from target SQL Servers.	 
 	
-### Privilege Escalation Functions
+### Audit Functions
 
-These functions are used for obtaining sysadmin privileges from various levels of access in SQL Server.  Invoke-PowerUpSQL can be used to run all privileges escalation functions against provided SQL Server instances.
+These functions are used for identifying weak configurations that can lead to unauthorized access.  Invoke-SQLAudit can be used to run all of them at once.
 
-Example: Get-SQLInstanceLocal | Invoke-SQLEscalate-ImpersonateLogin -Verbose
-
-Example: Get-SQLInstanceLocal | Invoke-PowerUpSQL -Verbose
+Example: Get-SQLInstanceLocal | Invoke-SQLAuditPrivImpersonateLogin -Verbose
 
 |Function Name                 |Description |Status    |
 |:-----------------------------|:-----------|:---------|
-|Invoke-SQLEscalate-CreateProcedure|Check if the current login has the CREATE PROCEDURE permission.  Attempt to use permission to obtain sysadmin privileges.|Complete|
-|Invoke-SQLEscalate-DbOwnerRole|Check if the current login has the DB_OWNER role in any databases.  Attempt to use permission to obtain sysadmin privileges.|Complete|
-|Invoke-SQLEscalate-DbDdlAdmin|Check if the current login has the DB_DdlAdmin role in any databases.  Attempt to use permission to obtain sysadmin privileges.|Complete|
-|Invoke-SQLEscalate-ImpersonateLogin|Check if the current login has the IMPERSONATE permission on any sysadmin logins. Attempt to use permission to obtain sysadmin privileges.|Complete|
-|Invoke-SQLEscalate-SampleDataByColumn|Check if the current login can access any database columns that contain the word password. Supports column name keyword search and custom data sample size.  For better data searches use Get-SQLColumnSampleData.|Complete|
-|Invoke-SQLEscalate-ServerLink|Check if SQL Server links exist that are preconfigured with alternative credentials that can be impersonated. Provide example queries for execution on remote servers.|Complete|
-|Invoke-SQLEscalate-WeakLoginPw|This can be used for online dictionary attacks. It also support auto-discovery of SQL Logins for testing if you already have a least privilege account.|Complete|
-|Invoke-SQLEscalate-TrustedDatabase|Check if any database have been flagged as trusted.|Complete|
-|Invoke-PowerUpSQL|Run all privilege escalation checks.  There is an options to auto-escalation to sysadmin.|Complete|
+|Invoke-SQLAuditPrivCreateProcedure|Check if the current login has the CREATE PROCEDURE permission.  Attempt to use permission to obtain sysadmin privileges.|Complete|
+|Invoke-SQLAuditPrivImpersonateLogin|Check if the current login has the IMPERSONATE permission on any sysadmin logins. Attempt to use permission to obtain sysadmin privileges.|Complete|
+|Invoke-SQLAuditPrivServerLink|Check if SQL Server links exist that are preconfigured with alternative credentials that can be impersonated. Provide example queries for execution on remote servers.|Complete|
+|Invoke-SQLAuditPrivTrustworthy|Check if any database have been flagged as trusted.|Complete|
+|Invoke-SQLAuditRoleDbDdlAdmin|Check if the current login has the DB_DdlAdmin role in any databases.  Attempt to use permission to obtain sysadmin privileges.|In Progress|
+|Invoke-SQLAuditRoleDbOwner|Check if the current login has the DB_OWNER role in any databases.  Attempt to use permission to obtain sysadmin privileges.|Complete|
+|Invoke-SQLAuditSampleDataByColumn|Check if the current login can access any database columns that contain the word password. Supports column name keyword search and custom data sample size.  For better data searches use Get-SQLColumnSampleData.|Complete|
+|Invoke-SQLAuditWeakLoginPw|This can be used for online dictionary attacks. It also support auto-discovery of SQL Logins for testing if you already have a least privilege account.|Complete|
+
 
 	Roadmap:
 	
-	Invoke-SQLEscalate-AgentJob 
-	Invoke-SQLEscalate-SQLi-ImpersonateLogin - https://blog.netspi.com/hacking-sql-server-stored-procedures-part-3-sqli-and-user-impersonation/
-	Invoke-SQLEscalate-SQLi-ImpersonateDatabaseUser - https://blog.netspi.com/hacking-sql-server-stored-procedures-part-3-sqli-and-user-impersonation/
-	Invoke-SQLEscalate-SQLi-ImpersonateSignedSp - https://blog.netspi.com/hacking-sql-server-stored-procedures-part-3-sqli-and-user-impersonation/
-	Invoke-SQLEscalate-CreateStartUpSP
-	Invoke-SQLEscalate-CrawlServerLink
-	Invoke-SQLEscalate-CreateAssembly -CLR -Binary -C
-	Invoke-SQLEscalate-CreateTriggerDDL
-	Invoke-SQLEscalate-CreateTriggerLOGON
-	Invoke-SQLEscalate-CreateTriggerDML
-	Invoke-SQLEscalate-StealServiceToken
-	Invoke-SQLEscalate-ControlServer
-	Invoke-SqlInjectUncPath - https://github.com/nullbind/Powershellery/blob/master/Stable-ish/MSSQL/Get-SQLServiceAccountPwHash.ps1
-	Create-SqlStoredProcedure - db_owner, db_ddladmin, db_securityadmin, or db_accessadmin
-	Invoke-SqlCmdExecXpCmdshell
-	Create-SqlStoredProcedureStartUp
-	Create-SqlAgentJob
-	Invoke-SQLEscalate-CrawlOwnershipChain
-	Invoke-SQLEscalate-PrivAlterServerLogin
-	Invoke-SQLEscalate-PrivAlterServerRole
-	Invoke-SQLEscalate-PrivExternalAssembly
-	Invoke-SQLEscalate-PrivAlterAssembly	
-	Invoke-SQLEscalate-PrivAdministerBulkOps
-	Invoke-SQLEscalate-PrivControlServer
-	Invoke-SQLEscalate-DictionaryAttackOnline
-	Invoke-SQLEscalate-DictionaryAttackOffline
-	Invoke-SQLEscalate-ImpersonateDatabaseUser
+	Create-SqlAuditPrivCreateStartUpProc
+	Invoke-SQLAuditCrawlOwnershipChain	
+	Invoke-SQLAuditCrawlServerLink
+	Invoke-SQLAuditDictionaryAttackOffline
+	Invoke-SQLAuditDictionaryAttackOnline
+	Invoke-SQLAuditImpersonateDatabaseUser
+	Invoke-SQLAuditPrivAdministerBulkOps
+	Invoke-SQLAuditPrivAgentJob 
+	Invoke-SQLAuditPrivAlterAssembly	
+	Invoke-SQLAuditPrivAlterServerLogin
+	Invoke-SQLAuditPrivAlterServerRole
+	Invoke-SQLAuditPrivControlServer
+	Invoke-SQLAuditPrivControlServer
+	Invoke-SQLAuditPrivCreateAssembly -CLR -Binary -C
+	Invoke-SQLAuditPrivCreateStartUpSP
+	Invoke-SQLAuditPrivCreateTriggerDDL
+	Invoke-SQLAuditPrivCreateTriggerDML
+	Invoke-SQLAuditPrivCreateTriggerLOGON
+	Invoke-SQLAuditPrivExternalAssembly
+	Invoke-SqlAuditPrivInjectUncPath - https://github.com/nullbind/Powershellery/blob/master/Stable-ish/MSSQL/Get-SQLServiceAccountPwHash.ps1
+	Invoke-SqlAuditPrivXpCmdshell
+	Invoke-SQLAuditRoledbAccessAdmin	
+	Invoke-SQLAuditRoledbSecurityAdmin
+	Invoke-SQLAuditSQLi-ImpersonateDatabaseUser - https://blog.netspi.com/hacking-sql-server-stored-procedures-part-3-sqli-and-user-impersonation/
+	Invoke-SQLAuditSQLi-ImpersonateLogin - https://blog.netspi.com/hacking-sql-server-stored-procedures-part-3-sqli-and-user-impersonation/
+	Invoke-SQLAuditSQLi-ImpersonateSignedSp - https://blog.netspi.com/hacking-sql-server-stored-procedures-part-3-sqli-and-user-impersonation/
 	Invoke-SQLOSAdmintoSysadmin - https://github.com/nullbind/Powershellery/blob/master/Stable-ish/MSSQL/Invoke-SqlServerServiceImpersonation-Cmd.ps1
+
 
 ### Persistence Functions
 
