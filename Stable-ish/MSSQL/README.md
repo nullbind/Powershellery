@@ -11,17 +11,16 @@ Example: `runas /noprofile /netonly /user:domain\user PowerShell.exe`
 The PowerUpSQL module includes functions to support common attack workflows against SQL Server. However, I've also included many functions that could be used by administrators for SQL Server inventory and other auditing tasks.
 
 It was designed with six objectives in mind:
-* Scalability: Auto-discovery of sql server instances, pipeline support, and multi-threading on core functions is supported so commands can be executed against many SQL Servers quickly.  Multi-threading is currently a work in progress.  For now, I'm developing a seperate multi-threaded function for each existing function.
-* Portability: Default .net libraries are used, and there are no dependancies on smo library or sqlps so commands can be run without having to install SQL Server. Also, functions are designed so they can run independantly.
-* Flexibility: Most of the PowerUpSQL functions support the PowerShell pipeline so they can be used together, and with other scripts.
-* Support Easy SQL Server Discovery: Discovery functions help users blindly identify local, domain, and non-domain SQL Server instances.
-* Support Easy SQL Server Auditing: Invoke-PowerUpSQL audits for common high impact vulnerabilities and weak configurations by default.
-* Support Easy SQL Server Exploitation: Invoke-PowerUpSQL can leverage SQL Server vulnerabilities to obtain sysadmin privileges to illistrate risk.
+* Scalability: Auto-discovery of sql server instances, pipeline support, and multi-threading on core functions is supported so commands can be executed against many SQL Servers quickly.
+* Portability: Default .net libraries are used and there are no dependancies on SQLPS or the SMO libraries. Also, functions are designed so they can run independantly.
+* Flexibility: PowerUpSQL functions support the PowerShell pipeline so they can be used together, and with other scripts.
+* Easy Server Discovery: Blindly identify local, domain, and non-domain SQL Server instances on scale using discovery functions.
+* Easy Server Auditing: Invoke-SQLAudit audits for common high impact vulnerabilities and weak configurations.  Also, Invoke-SQLDumpInfo can be used to quickly inventory databases, privileges, and other information.
+* Easy Server Exploitation: Invoke-SQLEscalatePriv uses identify vulnerabilities to obtain sysadmin privileges.
 
 Script Information
 * Author: Scott Sutherland (@_nullbind), NetSPI - 2016
 * Version: 1.0.0.0
-* Version Name: SQL Configuration Offensive Tools and Techniques (SCOTT) Edition
 * Description: PowerUpSQL is a offensive toolkit that supports common attack workflow against SQL Server.
 * License: BSD 3-Clause
 * Required Dependencies: None
@@ -35,12 +34,12 @@ These functions can be used for enumerating SQL Server instances.  Discovered in
 
 Example: Get-SQLInstanceDomain -Verbose | Get-SQLServerInfo -Verbose
 
-|Function Name|Description |Status    |
-|:--------------------------------|:-----------|:---------|
-|Get-SQLInstanceFile|Returns SQL Server instances from a file.  One per line. |Complete|
-|Get-SQLInstanceLocal|Returns SQL Server instances from the local system based on a registry search.|Complete|
-|Get-SQLInstanceDomain|Returns a list of SQL Server instances discovered by querying a domain controller for systems with registered MSSQL service principal names.  The function will default to the current user's domain and logon server, but an alternative domain controller can be provided. UDP scanning of management servers is optional.|Complete|
-|Get-SQLInstanceScanUDP|Returns SQL Server instances from UDP scan results.|Complete|
+|Function Name|Description |
+|:--------------------------------|:-----------|
+|Get-SQLInstanceFile|Returns SQL Server instances from a file.  One per line.| 
+|Get-SQLInstanceLocal|Returns SQL Server instances from the local system based on a registry search.|
+|Get-SQLInstanceDomain|Returns a list of SQL Server instances discovered by querying a domain controller for systems with registered MSSQL service principal names.  The function will default to the current user's domain and logon server, but an alternative domain controller can be provided. UDP scanning of management servers is optional.|
+|Get-SQLInstanceScanUDP|Returns SQL Server instances from UDP scan results.|
 
 	Roadmap:
 	
@@ -51,11 +50,11 @@ Example: Get-SQLInstanceDomain -Verbose | Get-SQLServerInfo -Verbose
 
 These are the functions used to quickly dump databse information, audit for common vulnerabilities, and attempt to obtain sysadmin privileges.
 
-|Function Name                 |Description |Status    |
-|:-----------------------------|:-----------|:---------|
-|Get-SQLDumpInfo|This can be used to dump SQL Server and database information to csv or xml files.  This can be handy for doing a quick inventory of databases, logins, privileges etc.|Complete|
-|Get-SQLAudit|This can be used to review the SQL Server and databases for common configuration weaknesses and provide a vulnerability report along with recommendations for each item.|Complete|
-|Get-SQLEscalatePriv|This can be used to obtain sysadmin privileges via the identify weak configurations.  Think of it like get-system, but for SQL Server.|Complete|
+|Function Name                 |Description |
+|:-----------------------------|:-----------|
+|Get-SQLDumpInfo|This can be used to dump SQL Server and database information to csv or xml files.  This can be handy for doing a quick inventory of databases, logins, privileges etc.|
+|Get-SQLAudit|This can be used to review the SQL Server and databases for common configuration weaknesses and provide a vulnerability report along with recommendations for each item.|
+|Get-SQLEscalatePriv|This can be used to obtain sysadmin privileges via the identify weak configurations.  Think of it like get-system, but for SQL Server.|
 
 
 ### Core Functions
@@ -66,13 +65,13 @@ Example: Get-SQLInstanceDomain -Verbose | Get-SQLConnectionTestThreaded -Verbose
 
 Example: Get-SQLInstanceDomain -Verbose | Invoke-SQLOSCmd -Verbose -Threads 20 -Command "whoami"
 
-|Function Name                 |Description |Status    |
-|:-----------------------------|:-----------|:---------|
-|Get-SQLConnectionTest|Tests if the current Windows account or provided SQL Server login can log into an SQL Server.|Complete|
-|Get-SQLConnectionTestThreaded|Tests if the current Windows account or provided SQL Server login can log into an SQL Server and supports threading.|Complete|
-|Get-SQLQuery|Executes a query on target SQL servers.|Complete|
-|Get-SQLQueryThreaded|Executes a query on target SQL servers and supports threading.|Complete|
-|Invoke-SQLOSCmd|Execute command on the operating system as the SQL Server service account using xp_cmdshell. Supports threading, raw output, and table output.|Complete|
+|Function Name                 |Description |
+|:-----------------------------|:-----------|
+|Get-SQLConnectionTest|Tests if the current Windows account or provided SQL Server login can log into an SQL Server.
+|Get-SQLConnectionTestThreaded|Tests if the current Windows account or provided SQL Server login can log into an SQL Server and supports threading.|
+|Get-SQLQuery|Executes a query on target SQL servers.|
+|Get-SQLQueryThreaded|Executes a query on target SQL servers and supports threading.|
+|Invoke-SQLOSCmd|Execute command on the operating system as the SQL Server service account using xp_cmdshell. Supports threading, raw output, and table output.|
 	
 ### Common Functions
 
@@ -82,33 +81,33 @@ Example: Get-SQLInstanceLocal | Get-SQLDatabase -Verbose -NoDefaults
 
 Example: Get-SQLInstanceLocal | Get-SQLColumnSampleData -Keywords "account,credit,card" -SampleSize 5 -CheckCC 
 
-|Function Name                 |Description |Status    |
-|:-----------------------------|:-----------|:---------|
-|Get-SQLAuditDatabaseSpec|Returns Audit database specifications from target SQL Servers.|Complete|
-|Get-SQLAuditServerSpec|Returns Audit server specifications from target SQL Servers.|Complete|
-|Get-SQLColumn|Returns column information from target SQL Servers. Supports keyword search.|Complete|
-|Get-SQLColumnSampleData|Returns column information from target SQL Servers. Supports search by keywords, sampling data, and validating credit card numbers.|Complete|
-|Get-SQLDatabase|Returns database information from target SQL Servers.|Complete|
-|Get-SQLDatabasePriv|Returns database user privilege information from target SQL Servers.|Complete|
-|Get-SQLDatabaseRole|Returns database role information from target SQL Servers.|Complete|
-|Get-SQLDatabaseRoleMember|Returns database role member information from target SQL Servers.|Complete|
-|Get-SQLDatabaseSchema|Returns schema information from target SQL Servers. |Complete|	
-|Get-SQLDatabaseUser|Returns database user information from target SQL Servers.|Complete|
-|Get-SQLServerCredential|Returns credentials from target SQL Servers.|Complete|
-|Get-SQLServerInfo|Returns basic server and user information from target SQL Servers.|Complete|
-|Get-SQLServerLink|Returns link servers from target SQL Servers.|Complete|
-|Get-SQLServerLogin|Returns logins from target SQL Servers.|Complete|
-|Get-SQLServerPriv|Returns SQL Server login privilege information from target SQL Servers.|Complete|
-|Get-SQLServerRole|Returns SQL Server role information from target SQL Servers.|Complete|
-|Get-SQLServerRoleMember|Returns SQL Server role member information from target SQL Servers.|Complete|
-|Get-SQLServiceAccount|Returns a list of service account names for SQL Servers services by querying the registry with xp_regread.  This can be executed against remote systems.|Complete|
-|Get-SQLSession|Returns active sessions from target SQL Servers.|Complete|
-|Get-SQLStoredProcure|Returns stored procedures from target SQL Servers.|Complete|	
-|Get-SQLSysadminCheck|Check if login is has sysadmin privilege on the target SQL Servers.|Complete|
-|Get-SQLTable|Returns table information from target SQL Servers.|Complete|
-|Get-SQLTriggerDdl|Returns DDL trigger information from target SQL Servers.  This includes logon triggers.|Complete|
-|Get-SQLTriggerDml|Returns DML trigger information from target SQL Servers.|Complete|
-|Get-SQLView|Returns view information from target SQL Servers.|Complete|
+|Function Name                 |Description |
+|:-----------------------------|:-----------|
+|Get-SQLAuditDatabaseSpec|Returns Audit database specifications from target SQL Servers.|
+|Get-SQLAuditServerSpec|Returns Audit server specifications from target SQL Servers.|
+|Get-SQLColumn|Returns column information from target SQL Servers. Supports keyword search.|
+|Get-SQLColumnSampleData|Returns column information from target SQL Servers. Supports search by keywords, sampling data, and validating credit card numbers.|
+|Get-SQLDatabase|Returns database information from target SQL Servers.|
+|Get-SQLDatabasePriv|Returns database user privilege information from target SQL Servers.|
+|Get-SQLDatabaseRole|Returns database role information from target SQL Servers.|
+|Get-SQLDatabaseRoleMember|Returns database role member information from target SQL Servers.|
+|Get-SQLDatabaseSchema|Returns schema information from target SQL Servers. |	
+|Get-SQLDatabaseUser|Returns database user information from target SQL Servers.|
+|Get-SQLServerCredential|Returns credentials from target SQL Servers.|
+|Get-SQLServerInfo|Returns basic server and user information from target SQL Servers.|
+|Get-SQLServerLink|Returns link servers from target SQL Servers.|
+|Get-SQLServerLogin|Returns logins from target SQL Servers.|
+|Get-SQLServerPriv|Returns SQL Server login privilege information from target SQL Servers.|
+|Get-SQLServerRole|Returns SQL Server role information from target SQL Servers.|
+|Get-SQLServerRoleMember|Returns SQL Server role member information from target SQL Servers.|
+|Get-SQLServiceAccount|Returns a list of service account names for SQL Servers services by querying the registry with xp_regread.  This can be executed against remote systems.|
+|Get-SQLSession|Returns active sessions from target SQL Servers.|
+|Get-SQLStoredProcure|Returns stored procedures from target SQL Servers.|	
+|Get-SQLSysadminCheck|Check if login is has sysadmin privilege on the target SQL Servers.|
+|Get-SQLTable|Returns table information from target SQL Servers.|
+|Get-SQLTriggerDdl|Returns DDL trigger information from target SQL Servers.  This includes logon triggers.|
+|Get-SQLTriggerDml|Returns DML trigger information from target SQL Servers.|
+|Get-SQLView|Returns view information from target SQL Servers.|
 
 	Roadmap:
 	
@@ -124,16 +123,16 @@ These functions are used for identifying weak configurations that can lead to un
 
 Example: Get-SQLInstanceLocal | Invoke-SQLAuditPrivImpersonateLogin -Verbose
 
-|Function Name                 |Description |Status    |
+|Function Name                 |Description |Provide Sysadmin   |
 |:-----------------------------|:-----------|:---------|
-|Invoke-SQLAuditPrivCreateProcedure|Check if the current login has the CREATE PROCEDURE permission.  Attempt to use permission to obtain sysadmin privileges.|Complete|
-|Invoke-SQLAuditPrivImpersonateLogin|Check if the current login has the IMPERSONATE permission on any sysadmin logins. Attempt to use permission to obtain sysadmin privileges.|Complete|
-|Invoke-SQLAuditPrivServerLink|Check if SQL Server links exist that are preconfigured with alternative credentials that can be impersonated. Provide example queries for execution on remote servers.|Complete|
-|Invoke-SQLAuditPrivTrustworthy|Check if any database have been flagged as trusted.|Complete|
-|Invoke-SQLAuditRoleDbDdlAdmin|Check if the current login has the DB_DdlAdmin role in any databases.  Attempt to use permission to obtain sysadmin privileges.|In Progress|
-|Invoke-SQLAuditRoleDbOwner|Check if the current login has the DB_OWNER role in any databases.  Attempt to use permission to obtain sysadmin privileges.|Complete|
-|Invoke-SQLAuditSampleDataByColumn|Check if the current login can access any database columns that contain the word password. Supports column name keyword search and custom data sample size.  For better data searches use Get-SQLColumnSampleData.|Complete|
-|Invoke-SQLAuditWeakLoginPw|This can be used for online dictionary attacks. It also support auto-discovery of SQL Logins for testing if you already have a least privilege account.|Complete|
+|Invoke-SQLAuditPrivCreateProcedure|Check if the current login has the CREATE PROCEDURE permission.  Attempt to use permission to obtain sysadmin privileges.|No|
+|Invoke-SQLAuditPrivImpersonateLogin|Check if the current login has the IMPERSONATE permission on any sysadmin logins. Attempt to use permission to obtain sysadmin privileges.|Yes|
+|Invoke-SQLAuditPrivServerLink|Check if SQL Server links exist that are preconfigured with alternative credentials that can be impersonated. Provide example queries for execution on remote servers.|Yes|
+|Invoke-SQLAuditPrivTrustworthy|Check if any database have been flagged as trusted.|No|
+|Invoke-SQLAuditRoleDbDdlAdmin|Check if the current login has the DB_DdlAdmin role in any databases.  Attempt to use permission to obtain sysadmin privileges.|No|
+|Invoke-SQLAuditRoleDbOwner|Check if the current login has the DB_OWNER role in any databases.  Attempt to use permission to obtain sysadmin privileges.|Yes|
+|Invoke-SQLAuditSampleDataByColumn|Check if the current login can access any database columns that contain the word password. Supports column name keyword search and custom data sample size.  For better data searches use Get-SQLColumnSampleData.|No|
+|Invoke-SQLAuditWeakLoginPw|This can be used for online dictionary attacks. It also support auto-discovery of SQL Logins for testing if you already have a least privilege account.|Yes|
 
 
 	Roadmap:
@@ -222,18 +221,18 @@ These are essentially helper functions.  Some of them are used by other PowerUpS
 
 Example: Get-SQLFuzzServerLogin -Verbose -Instance "SQLSVR1\Instance1"
 
-|Function Name                 |Description |Status    |
-|:-----------------------------|:-----------|:---------|
-|Get-SQLConnectionObject | Creates a object for connecting to SQL Server.|Complete|
-|Get-SQLFuzzObjectName | Enumerates objects based on object id using OBJECT_NAME() and only the Public role.|Complete|	
-|Get-SQLFuzzDatabaseName | Enumerates databases based on database id using DB_NAME() and only the Public role.|Complete|
-|Get-SQLFuzzServerLogin | Enumerates SQL Server Logins based on login id using SUSER_NAME() and only the Public role.|Complete|
-|Get-SQLFuzzDomainAccount | Enumerates domain groups, computer accounts, and user accounts based on domain RID using SUSER_SNAME() and only the Public role.  Note: In a typical domain 10000 or more is recommended for the EndId.|Complete|
-|Get-ComputerNameFromInstance | Parses computer name from a provided instance.|Complete|
-|Get-SQLServiceLocal | Returns local SQL Server services.|Complete|
-|Create-SQLFile-XPDLL | Used to create CPP DLLs with exported functions that can be imported as extended stored procedures in SQL Server. Supports arbitrary command execution.|Complete|
-|Get-DomainSpn | Returns a list of SPNs for the target domain. Supports authentication from non domain systems.|Complete|
-|Get-DomainObject | Used to query domain controllers via LDAP.  Supports alternative credentials from non-domain system.|Complete|
+|Function Name                 |Description |
+|:-----------------------------|:-----------|
+|Get-SQLConnectionObject | Creates a object for connecting to SQL Server.|
+|Get-SQLFuzzObjectName | Enumerates objects based on object id using OBJECT_NAME() and only the Public role.|	
+|Get-SQLFuzzDatabaseName | Enumerates databases based on database id using DB_NAME() and only the Public role.|
+|Get-SQLFuzzServerLogin | Enumerates SQL Server Logins based on login id using SUSER_NAME() and only the Public role.|
+|Get-SQLFuzzDomainAccount | Enumerates domain groups, computer accounts, and user accounts based on domain RID using SUSER_SNAME() and only the Public role.  Note: In a typical domain 10000 or more is recommended for the EndId.|
+|Get-ComputerNameFromInstance | Parses computer name from a provided instance.|
+|Get-SQLServiceLocal | Returns local SQL Server services.|
+|Create-SQLFile-XPDLL | Used to create CPP DLLs with exported functions that can be imported as extended stored procedures in SQL Server. Supports arbitrary command execution.|
+|Get-DomainSpn | Returns a list of SPNs for the target domain. Supports authentication from non domain systems.|
+|Get-DomainObject | Used to query domain controllers via LDAP.  Supports alternative credentials from non-domain system.|
 	
 	Roadmap:
 
@@ -270,7 +269,7 @@ Example: Get-SQLFuzzServerLogin -Verbose -Instance "SQLSVR1\Instance1"
 
 These are functions developed by third parties.  Most of them have been modified slightly.
 
-|Function Name                 |Description |Status    |
-|:-----------------------------|:-----------|:---------|
-|Invoke-Parallel|Modified version of RamblingCookieMonster's (Warren F) function that supports importing functions from the current session.|Complete|
-|Test-IsLuhnValid|Valdidate a number based on the Luhn Algorithm.  Function written by ØYVIND KALLSTAD.|Complete|
+|Function Name                 |Description |
+|:-----------------------------|:-----------|
+|Invoke-Parallel|Modified version of RamblingCookieMonster's (Warren F) function that supports importing functions from the current session.|
+|Test-IsLuhnValid|Valdidate a number based on the Luhn Algorithm.  Function written by ØYVIND KALLSTAD.|
