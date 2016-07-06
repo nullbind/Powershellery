@@ -67,15 +67,17 @@ These are the functions used to quickly dump databse information, audit for comm
 |Invoke-SQLAudit|This can be used to review the SQL Server and databases for common configuration weaknesses and provide a vulnerability report along with recommendations for each item.|
 |Invoke-SQLEscalatePriv|This can be used to obtain sysadmin privileges via the identify weak configurations.  Think of it like get-system, but for SQL Server.|
 
-	Example: Dump information from the all accessible SQL Servers on the domain.
+**Examples:**
+
+	# Example 1 - Dump information from the all accessible SQL Servers on the domain.
 	
 	Get-SQLInstanceDomain -Verbose | Invoke-SQLDumpInfo -Verbose
 
-	Example: Audit the local instances as the current Windows user for high impact issues.
+	# Example 2 - Audit the local instances as the current Windows user for high impact issues.
 	
 	Get-SQLInstanceLocal -Verbose | Invoke-SQLAudit -Verbose
 
-	Example: Attempt to escalate the provided user's privileges to sysadmin.
+	# Example 3 - Attempt to escalate the provided user's privileges to sysadmin.
 	
 	Invoke-SQLEscalatePriv -Verbose -Instance "SQLSERVER1\MyInstance" -Username MyUser -Password MyPassword
 
@@ -99,10 +101,6 @@ Example: Get-SQLInstanceDomain -Verbose | Invoke-SQLOSCmd -Verbose -Threads 20 -
 ### Common Functions
 
 These functions are used for common information gathering tasks.  Similar to core functions, the common functions can be executed as standalone functions, but are also used other functions in the PowerUpSQL module.
-
-Example: Get-SQLInstanceLocal | Get-SQLDatabase -Verbose -NoDefaults
-
-Example: Get-SQLInstanceLocal | Get-SQLColumnSampleData -Keywords "account,credit,card" -SampleSize 5 -CheckCC 
 
 |Function Name                 |Description |
 |:-----------------------------|:-----------|
@@ -133,7 +131,12 @@ Example: Get-SQLInstanceLocal | Get-SQLColumnSampleData -Keywords "account,credi
 |Get-SQLTriggerDml|Returns DML trigger information from target SQL Servers.|
 |Get-SQLView|Returns view information from target SQL Servers.|
 
-	Roadmap:
+**Examples:**
+
+	Get-SQLInstanceLocal | Get-SQLDatabase -Verbose -NoDefaults
+	Get-SQLInstanceLocal | Get-SQLColumnSampleData -Keywords "account,credit,card" -SampleSize 5 -CheckCC 
+
+**Roadmap:**
 	
 	Get-SQLProxyAccount - Returns proxy accounts from target SQL Servers.
 	Get-SQLTempObject - Returns temp objects from target SQL Servers.	
