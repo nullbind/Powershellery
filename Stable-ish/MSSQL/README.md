@@ -137,8 +137,6 @@ These functions are used for common information gathering tasks.  Similar to cor
 
 These functions are used for identifying weak configurations that can lead to unauthorized access.  Invoke-SQLAudit can be used to run all of them at once.
 
-Example: Get-SQLInstanceLocal | Invoke-SQLAuditPrivImpersonateLogin -Verbose
-
 |Function Name                 |Description |Provide Sysadmin   |
 |:-----------------------------|:-----------|:---------|
 |Invoke-SQLAuditPrivCreateProcedure|Check if the current login has the CREATE PROCEDURE permission.  Attempt to use permission to obtain sysadmin privileges.|No|
@@ -150,8 +148,11 @@ Example: Get-SQLInstanceLocal | Invoke-SQLAuditPrivImpersonateLogin -Verbose
 |Invoke-SQLAuditSampleDataByColumn|Check if the current login can access any database columns that contain the word password. Supports column name keyword search and custom data sample size.  For better data searches use Get-SQLColumnSampleData.|No|
 |Invoke-SQLAuditWeakLoginPw|This can be used for online dictionary attacks. It also support auto-discovery of SQL Logins for testing if you already have a least privilege account.|Yes|
 
+**Examples:** 
 
-	Roadmap:
+	Get-SQLInstanceLocal | Invoke-SQLAuditPrivImpersonateLogin -Verbose
+	
+**Roadmap:**
 	
 	Create-SqlAuditPrivCreateStartUpProc
 	Invoke-SQLAuditCrawlOwnershipChain	
@@ -186,7 +187,7 @@ Example: Get-SQLInstanceLocal | Invoke-SQLAuditPrivImpersonateLogin -Verbose
 
 These functions are used for maintaining access to the SQL Server using various methods.  The roadmap for development is below.  I've included a few links to standalone scripts that have not been integrated yet.
 
-	Roadmap:
+**Roadmap:**
 	
 	Get-SQLPersistAssembly						  
 	Get-SQLPersistSp						
@@ -206,7 +207,7 @@ These functions are used for maintaining access to the SQL Server using various 
 
 These functions are used for recovering authentication tokens of varous types.  The roadmap for development is below.  I've included a few links to standalone scripts that have not been integrated yet.
 	
-	Roadmap:
+**Roadmap:**
 	
 	Get-SQLRecoverPwCredential - https://github.com/NetSPI/Powershell-Modules/blob/master/Get-MSSQLAllCredentials.psm1	
 	Get-SQLRecoverPwServerLink - https://github.com/NetSPI/Powershell-Modules/blob/master/Get-MSSQLLinkPasswords.psm1	
@@ -220,7 +221,7 @@ These functions are used for recovering authentication tokens of varous types.  
 
 These functions are used for exfiltrating data out of SQL Server.  The roadmap for development is below.  
 
-	Roadmap:
+**Roadmap:**
 	
 	Get-SQLExfilHttp							   
 	Get-SQLExfilHttps							      
@@ -235,8 +236,6 @@ These functions are used for exfiltrating data out of SQL Server.  The roadmap f
 
 These are essentially helper functions.  Some of them are used by other PowerUpSQL functions, but all of them can be run independently.
 
-Example: Get-SQLFuzzServerLogin -Verbose -Instance "SQLSVR1\Instance1"
-
 |Function Name                 |Description |
 |:-----------------------------|:-----------|
 |Get-SQLConnectionObject | Creates a object for connecting to SQL Server.|
@@ -249,8 +248,12 @@ Example: Get-SQLFuzzServerLogin -Verbose -Instance "SQLSVR1\Instance1"
 |Create-SQLFile-XPDLL | Used to create CPP DLLs with exported functions that can be imported as extended stored procedures in SQL Server. Supports arbitrary command execution.|
 |Get-DomainSpn | Returns a list of SPNs for the target domain. Supports authentication from non domain systems.|
 |Get-DomainObject | Used to query domain controllers via LDAP.  Supports alternative credentials from non-domain system.|
-	
-	Roadmap:
+
+**Examples:** 
+
+	Get-SQLFuzzServerLogin -Verbose -Instance "SQLSVR1\Instance1"
+
+**Roadmap:**
 
 	Get-SQLDatabaseOrphanUser             		
 	Get-SQLDatabaseUser- add fuzzing option		
