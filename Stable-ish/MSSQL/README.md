@@ -40,9 +40,17 @@ These functions can be used for enumerating SQL Server instances.  Discovered in
 |Get-SQLInstanceDomain|Returns a list of SQL Server instances discovered by querying a domain controller for systems with registered MSSQL service principal names.  The function will default to the current user's domain and logon server, but an alternative domain controller can be provided. UDP scanning of management servers is optional.|
 |Get-SQLInstanceScanUDP|Returns SQL Server instances from UDP scan results.|
 
-	Example: Grab basic server information from accessible domain systems.
+	Examples: 
 	
 	Get-SQLInstanceDomain -Verbose | Get-SQLServerInfo -Verbose
+	
+	Get-SQLInstanceLocal -Verbose | Get-SQLServerInfo -Verbose
+	
+	Get-SQLServerInfo -Verbose -Instance "SQLSERVER1\MYINSTANCE"
+	
+	Get-SQLServerInfo -Verbose -Instance "SQLSERVER1\MYINSTANCE" -Username MyUser -Password MyPassword
+	
+	Get-SQLServerInfo -Verbose -Instance "SQLSERVER1\MYINSTANCE" -Credential MyUser
 	
 	Roadmap:
 	
@@ -53,17 +61,23 @@ These functions can be used for enumerating SQL Server instances.  Discovered in
 
 These are the functions used to quickly dump databse information, audit for common vulnerabilities, and attempt to obtain sysadmin privileges.
 
-Example - All Domain Instances: Get-SQLInstanceDomain -Verbose | Invoke-SQLDumpInfo -Verbose
-
-Example - All Local Instances: Get-SQLInstanceLocal -Verbose | Invoke-SQLAudit -Verbose
-
-Example - Single Instance: Invoke-SQLEscalatePriv -Verbose -Instance "SQLSERVER1\MyInstance"
-
 |Function Name                 |Description |
 |:-----------------------------|:-----------|
 |Invoke-SQLDumpInfo|This can be used to dump SQL Server and database information to csv or xml files.  This can be handy for doing a quick inventory of databases, logins, privileges etc.|
 |Invoke-SQLAudit|This can be used to review the SQL Server and databases for common configuration weaknesses and provide a vulnerability report along with recommendations for each item.|
 |Invoke-SQLEscalatePriv|This can be used to obtain sysadmin privileges via the identify weak configurations.  Think of it like get-system, but for SQL Server.|
+
+	Example: Dump information from the all accessible SQL Servers on the domain.
+	
+	Get-SQLInstanceDomain -Verbose | Invoke-SQLDumpInfo -Verbose
+
+	Example: Audit the local instances as the current Windows user for high impact issues.
+	
+	Get-SQLInstanceLocal -Verbose | Invoke-SQLAudit -Verbose
+
+	Example: Attempt to escalate the provided user's privileges to sysadmin.
+	
+	Invoke-SQLEscalatePriv -Verbose -Instance "SQLSERVER1\MyInstance" -Username MyUser -Password MyPassword
 
 
 ### Core Functions
