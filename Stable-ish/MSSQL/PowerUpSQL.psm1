@@ -2,6 +2,7 @@
 <#
     File: PowerUpSQL.ps1
     Author: Scott Sutherland (@_nullbind), NetSPI - 2016
+    Contributors: Antti Rantasaari and Eric Gruber
     Version: 1.0.0.0
     Description: PowerUpSQL is a PowerShell toolkit that supports common SQL Server attack workflows.
     License: BSD 3-Clause
@@ -1060,7 +1061,8 @@ Function  Invoke-SQLOSCmd {
 
                 # Setup OS command
                 Write-Verbose "$Instance : Running command: $Command"
-                $Query = "EXEC master..xp_cmdshell '$Command' WITH RESULT SETS ((output VARCHAR(MAX)))"
+                #$Query = "EXEC master..xp_cmdshell '$Command' WITH RESULT SETS ((output VARCHAR(MAX)))"
+                $Query = "EXEC master..xp_cmdshell '$Command'"
 
                 # Execute OS command
                 $CmdResults = Get-SQLQuery -Instance $Instance -Query $Query -Username $Username -Password $Password -Credential $Credential -SuppressVerbose | Select-Object output -ExpandProperty output
