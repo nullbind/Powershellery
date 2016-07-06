@@ -40,7 +40,7 @@ These functions can be used for enumerating SQL Server instances.  Discovered in
 |Get-SQLInstanceDomain|Returns a list of SQL Server instances discovered by querying a domain controller for systems with registered MSSQL service principal names.  The function will default to the current user's domain and logon server, but an alternative domain controller can be provided. UDP scanning of management servers is optional.|
 |Get-SQLInstanceScanUDP|Returns SQL Server instances from UDP scan results.|
 
-	**Examples:**
+**Examples:**
 	
 	Get-SQLInstanceDomain -Verbose | Get-SQLServerInfo -Verbose
 	
@@ -52,7 +52,7 @@ These functions can be used for enumerating SQL Server instances.  Discovered in
 	
 	Get-SQLServerInfo -Verbose -Instance "SQLSERVER1\MYINSTANCE" -Credential MyUser
 	
-	**Roadmap:**
+**Roadmap:**
 	
 	Get-SQLInstanceScanTCP - Returns SQL Server instances from TCP scan results.
 	Get-SQLInstanceBroadcast - Returns SQL Server instances from UDP broadcast.
