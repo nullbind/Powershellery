@@ -43,13 +43,9 @@ These functions can be used for enumerating SQL Server instances.  Discovered in
 **Examples:**
 	
 	Get-SQLInstanceDomain -Verbose | Get-SQLServerInfo -Verbose
-	
 	Get-SQLInstanceLocal -Verbose | Get-SQLServerInfo -Verbose
-	
 	Get-SQLServerInfo -Verbose -Instance "SQLSERVER1\MYINSTANCE"
-	
 	Get-SQLServerInfo -Verbose -Instance "SQLSERVER1\MYINSTANCE" -Username MyUser -Password MyPassword
-	
 	Get-SQLServerInfo -Verbose -Instance "SQLSERVER1\MYINSTANCE" -Credential MyUser
 	
 **Roadmap:**
@@ -69,26 +65,14 @@ These are the functions used to quickly dump databse information, audit for comm
 
 **Examples:**
 
-	# Example 1 - Dump information from the all accessible SQL Servers on the domain.
-	
 	Get-SQLInstanceDomain -Verbose | Invoke-SQLDumpInfo -Verbose
-
-	# Example 2 - Audit the local instances as the current Windows user for high impact issues.
-	
 	Get-SQLInstanceLocal -Verbose | Invoke-SQLAudit -Verbose
-
-	# Example 3 - Attempt to escalate the provided user's privileges to sysadmin.
-	
 	Invoke-SQLEscalatePriv -Verbose -Instance "SQLSERVER1\MyInstance" -Username MyUser -Password MyPassword
 
 
 ### Core Functions
 
 These functions are used to test connections, execute SQL Server queries, and execute OS commands.  All other functions use these core functions.  However, they can also be executed independently. 
-
-Example: Get-SQLInstanceDomain -Verbose | Get-SQLConnectionTestThreaded -Verbose -Threads 20 
-
-Example: Get-SQLInstanceDomain -Verbose | Invoke-SQLOSCmd -Verbose -Threads 20 -Command "whoami"
 
 |Function Name                 |Description |
 |:-----------------------------|:-----------|
@@ -97,6 +81,11 @@ Example: Get-SQLInstanceDomain -Verbose | Invoke-SQLOSCmd -Verbose -Threads 20 -
 |Get-SQLQuery|Executes a query on target SQL servers.|
 |Get-SQLQueryThreaded|Executes a query on target SQL servers and supports threading.|
 |Invoke-SQLOSCmd|Execute command on the operating system as the SQL Server service account using xp_cmdshell. Supports threading, raw output, and table output.|
+
+**Examples:**
+
+	Get-SQLInstanceDomain -Verbose | Get-SQLConnectionTestThreaded -Verbose -Threads 20 
+	Get-SQLInstanceDomain -Verbose | Invoke-SQLOSCmd -Verbose -Threads 20 -Command "whoami"
 	
 ### Common Functions
 
