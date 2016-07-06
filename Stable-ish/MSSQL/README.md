@@ -2,6 +2,8 @@ To use the module, type `Import-Module PowerUpSQL.psm1`
 
 To list functions from the module, type `Get-Command -Module PowerUpSQL`
 
+To lits help for a function, type `Get-Help <thefunction>;Example: Get-Help Invoke-SQLAudit`
+
 To run as an alternative domain user, use the runas command to launch PowerShell first.
 
 Example: `runas /noprofile /netonly /user:domain\user PowerShell.exe`
