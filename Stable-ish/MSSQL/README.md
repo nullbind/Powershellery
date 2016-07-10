@@ -24,9 +24,9 @@ Script Information
 * Author: Scott Sutherland (@_nullbind), NetSPI - 2016
 * Contributors: Antti Rantasaari and Eric Gruber
 * Version: 1.0.0.0
-* Description: PowerUpSQL is a offensive toolkit that supports common attack workflow against SQL Server.
+* Description: PowerUpSQL is a PowerShell Toolkit for Attacking SQL Server.
 * License: BSD 3-Clause
-* Required Dependencies: None
+* Required Dependencies: PowerShell v.3
 * Optional Dependencies: None
 
 Below are the functions included in this module.  I've provided a list of the ones completed so far, but I've also outlined the intended development roadmap. High level roadmap Goals include adding functions, adding multi-threading to all common functions, and testing against SQL Server version 2000 to 2014.  At the moment most of the testing was done on versions 2008-2014.
@@ -102,6 +102,7 @@ These functions are used for common information gathering tasks.  Similar to cor
 |Get-SQLColumnSampleData|Returns column information from target SQL Servers. Supports search by keywords, sampling data, and validating credit card numbers.|
 |Get-SQLColumnSampleDataThreaded|Returns column information from target SQL Servers. Supports search by keywords, sampling data, and validating credit card numbers. Supports host threading.|
 |Get-SQLDatabase|Returns database information from target SQL Servers.|
+|Get-SQLDatabase|Returns database information from target SQL Servers. Supports host threading.|
 |Get-SQLDatabasePriv|Returns database user privilege information from target SQL Servers.|
 |Get-SQLDatabaseRole|Returns database role information from target SQL Servers.|
 |Get-SQLDatabaseRoleMember|Returns database role member information from target SQL Servers.|
@@ -110,6 +111,7 @@ These functions are used for common information gathering tasks.  Similar to cor
 |Get-SQLServerConfiguration|Returns configuration settings from sp_configure.  Output includes advanced options if the connecting user is a sysadmin.|
 |Get-SQLServerCredential|Returns credentials from target SQL Servers.|
 |Get-SQLServerInfo|Returns basic server and user information from target SQL Servers.|
+|Get-SQLServerInfoThreaded|Returns basic server and user information from target SQL Servers. Supports host threading.|
 |Get-SQLServerLink|Returns link servers from target SQL Servers.|
 |Get-SQLServerLogin|Returns logins from target SQL Servers.|
 |Get-SQLServerPriv|Returns SQL Server login privilege information from target SQL Servers.|
