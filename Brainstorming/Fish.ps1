@@ -1,9 +1,9 @@
-# Generates 10 fish for fun 
-1..10 | 
+# Generates 10 fish
+1..1000| 
 ForEach-Object{       
 
     # Set random number of spaces
-    $Spaces = " "* (Get-Random -Maximum 50)
+    $Spaces = " "* (Get-Random -Maximum 80)
     
     # Bubbles object 1
     $Bubbles1 = "       
@@ -21,6 +21,26 @@ ForEach-Object{
     # Fish 2 object
     $Fish2 = "       
     $Spaces     ><(((o>" 
+
+    # Fish 3 object
+    $Fish3 = "        
+    $Spaces       _____
+    $Spaces     /       \
+    $Spaces     | O .   |
+    $Spaces     \ .     /  
+    $Spaces      |     |
+    $Spaces      ( O O )
+    $Spaces      / / \ \__  
+    $Spaces    )/ /|||\ \( 
+    $Spaces  _(( /(( ))\ ))(("    
+    
+    # Fish 4 object
+    $Fish4 = "        
+    $Spaces      ^
+    $Spaces    -----
+    $Spaces  <--o-0-->
+    $Spaces   -------  
+    $Spaces    -----"        
     
     # Choose random bubbles
     $myBubbles = New-Object System.Collections.ArrayList
@@ -33,12 +53,14 @@ ForEach-Object{
     $myFish = New-Object System.Collections.ArrayList
     $myFish.Add("$Fish1") | Out-Null
     $myFish.Add("$Fish2") | Out-Null
-    $RandomFish = Get-Random -Maximum 3
+    $myFish.Add("$Fish3") | Out-Null
+    $myFish.Add("$Fish4") | Out-Null
+    $RandomFish = Get-Random -Maximum 4
     $DisplayFish = $myFish[$RandomFish]
 
     Write-Output "$DisplayBubbles"
     Write-Output "$DisplayFish"
 
     # Delay the print
-    sleep 1
+    sleep .75
 }
