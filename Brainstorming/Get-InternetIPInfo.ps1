@@ -1,4 +1,5 @@
 # Get IPs from pcap - "tshark.exe -r file.cap -T fields -e ip.dst -e ip.src > output.txt"
+# `tshark.exe -r file.cap -T text | gawk "{print $3}" | sort | uniq`
 # This script just take an list of ips and checks the owner and ip blocks they are associated with
 # Note: just update the file name, and consider using runspace for threading, its super slow
 
