@@ -1,0 +1,63 @@
+# Invoke-CheckHttpFilter
+# Author: scott sutherland
+# the basic idea is to build out a quick script to check for access to code repo, file share, and online clipboards used by common malware. 
+# below is basic poc
+
+# Setup http handler
+$HTTP_Handle = New-Object net.webclient
+#$HTTP_Handle.UseDefaultCredentials
+
+# Create data table for list of websites
+$mytable = new-object System.Data.DataTable
+$mytable.Columns.Add("URL") | Out-Null
+
+# Add sites to table
+$MyTable.rows.add("https://bitbucket.org/") | out-null
+$MyTable.rows.add("https://pastebin.com/") | out-null
+$MyTable.rows.add("https://github.com/") | out-null
+$MyTable.rows.add("https://www.dropbox.com") | out-null
+$MyTable.rows.add("https://www.mediafire.com/") | out-null
+$MyTable.rows.add("http://www.4shared.com/") | out-null
+$MyTable.rows.add("https://www.google.com/drive/") | out-null
+$MyTable.rows.add("https://onedrive.live.com/") | out-null
+$MyTable.rows.add("https://www.icloud.com/") | out-null
+$MyTable.rows.add("http://box.com") | out-null
+$MyTable.rows.add("http://www.zippyshare.com/") | out-null
+$MyTable.rows.add("http://uploaded.net/") | out-null
+$MyTable.rows.add("https://www.sendspace.com/") | out-null
+$MyTable.rows.add("http://www.filecrop.com/") | out-null
+$MyTable.rows.add("http://pastebin.com/") | out-null
+$MyTable.rows.add("https://landing.hightail.com") | Out-Null
+$MyTable.rows.add("http://www.filedropper.com/") | out-null
+$MyTable.rows.add("FriendPaste.com") | out-null
+$MyTable.rows.add("FreeTextHost.com")| out-null
+$MyTable.rows.add("CopyTaste.com")| out-null
+$MyTable.rows.add("Cl1p.net")| out-null
+$MyTable.rows.add("ShortText.com")| out-null
+$MyTable.rows.add("TextSave.de")| out-null
+$MyTable.rows.add("TextSnip.com")| out-null
+$MyTable.rows.add("TxtB.in")| out-null
+
+# Set proxy block string
+$BlockString = "URL Category Warning Acknowledgement"
+
+$MyTable | 
+ForEach-Object {
+
+    $CurrentUrl = $_.URL
+    Write-Output "$CurrentUrl - Checking access..."
+    try {
+
+        # Send request
+        $Results = $HTTP_Handle.DownloadString("$CurrentUrl")
+
+        # Check results
+        if($Results -like "$CurrentUrl - $BlockString*"){
+            Write-Output "$CurrentUrl - Blocked"
+        }else{
+            Write-Output "$CurrentUrl - Allowed"
+        }
+    }catch{
+         Write-Output "$CurrentUrl - URL is dead..."
+    }
+}
