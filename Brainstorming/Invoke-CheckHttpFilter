@@ -52,7 +52,7 @@ ForEach-Object {
         $Results = $HTTP_Handle.DownloadString("$CurrentUrl")
 
         # Check results
-        if($Results -like "$CurrentUrl - $BlockString*"){
+        if($Results -contains "$BlockString"){
             Write-Output "$CurrentUrl - Blocked"
         }else{
             Write-Output "$CurrentUrl - Allowed"
