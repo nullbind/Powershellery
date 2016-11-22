@@ -14,13 +14,12 @@ Function Invoke-CheckWebFilter{
 
     Begin
     { 
-
         # Create data table for list of block strings
         $BlockStrings = new-object System.Data.DataTable
         $BlockStrings.Columns.Add("Product") | Out-Null
         $BlockStrings.Columns.Add("String") | Out-Null
 
-        # Add block page strings to table
+        # Add block strings
         $BlockStrings.rows.add("Barracuda","The link you are accessing has been blocked by the Barracuda Web Filter") | Out-Null 
         $BlockStrings.rows.add("Blue Coat","Blue Coat Systems") | Out-Null
         $BlockStrings.rows.add("Blue Coat","Your request was denied because of its content categorization:") | Out-Null
@@ -30,12 +29,13 @@ Function Invoke-CheckWebFilter{
         $BlockStrings.rows.add("SonicWall","This site has been blocked by the network.") | Out-Null
         $BlockStrings.rows.add("SonicWall","The site has been blocked by the network") | Out-Null  
         $BlockStrings.rows.add("UnTangled","This web page is blocked because it violates network policy.") | Out-Null    
+        $BlockStrings.rows.add("Unknown","URL Category Warning Acknowledgement") | Out-Null
 
-        # Create data table for list of websites + categories
+        # Create data table for list of target websites
         $WebSites = new-object System.Data.DataTable
         $WebSites.Columns.Add("URL") | Out-Null
 
-        # Add sites to table
+        # Add target websites
         $WebSites.rows.add("https://bitbucket.org/") | Out-Null
         $WebSites.rows.add("https://pastebin.com/") | Out-Null
         $WebSites.rows.add("https://github.com/") | Out-Null
@@ -61,7 +61,7 @@ Function Invoke-CheckWebFilter{
         $WebSites.rows.add("http://TextSnip.com")| Out-Null
         $WebSites.rows.add("http://TxtB.in")| Out-Null
 
-        # Check for provided file of URLs
+        # Check for target websites from provide file path
         If ($ListPath){ 
             if (Test-Path $ListPath){
                 Write-Verbose "Path is valid."
@@ -74,14 +74,10 @@ Function Invoke-CheckWebFilter{
             }
         }
 
-        # Print count of websites
+        # Print count of target websites
         $WebSiteCount = $WebSites | Measure-Object -Line | Select-Object Lines -ExpandProperty Lines
         Write-Verbose "Testing access to $WebSiteCount websites..."
-
-        # Set proxy block string
-        # Note:  Need to get list of common web filter signatures
-        $BlockString = "URL Category Warning Acknowledgement"
-
+     
         # Create data table results
         $ResultsTbl = new-object System.Data.DataTable
         $ResultsTbl.Columns.Add("WebSite") | Out-Null
