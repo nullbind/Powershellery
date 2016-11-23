@@ -1,6 +1,6 @@
 
 # Author: scott sutherland
-# Get info from .cap file - "C:\Program Files\Wireshark\tshark.exe" -r packetcapture.cap -T fields -e ip.src -e ip.dst -e tcp.dstport  > output.txt
+# Get info from .cap file - "C:\Program Files\Wireshark\tshark.exe" -r packetcapture-4.cap -T fields -e ip.src -e ip.dst -e tcp.dstport -Y ip.dst==IPHERE > output.txt
 # This script just take an list of ips and checks the owner and ip blocks they are associated with
 # Note: just update the file name, and consider using runspace for threading, its super slow
 # should be a function; parse source,dst and port, and return in output; add src dst port filters;accept tshark option/path
