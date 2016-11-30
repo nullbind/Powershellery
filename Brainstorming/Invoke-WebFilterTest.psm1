@@ -1,10 +1,10 @@
-Function Invoke-CheckWebFilter{
-    # Invoke-CheckHttpFilter
+Function Invoke-WebFilterTest{
+    # Invoke-WebFilterTest
     # Author: scott sutherland
     # Description The basic idea is to build out a quick script to check for access to code repo, file share, and online clipboards used by common malware. 
     # Note: This is a very basic poc.  Ideally it would be nice to include common web filter categories and summary data in output. Also, runspaces for larger lists.
-    # Invoke-CheckWebFilter -Verbose
-    # Invoke-CheckWebFilter -Verbose | Export-Csv -NoTypeInformation c:\temp\webfiltertest.csv
+    # Invoke-WebFilterTest -Verbose
+    # Invoke-WebFilterTest -Verbose | Export-Csv -NoTypeInformation c:\temp\webfiltertest.csv
 
     [CmdletBinding()]
     param
@@ -104,8 +104,9 @@ Function Invoke-CheckWebFilter{
                 $BlockStrings | 
                 ForEach-Object {
                     $CurrentBlockString = $_.String
+                    $WebFilterProduct = $_.Product
                     if($Results -like "*$CurrentBlockString*"){
-                        Write-Verbose "Status: Blocked - $CurrentUrl"
+                        Write-Verbose "Status: Blocked ($WebFilterProduct) - $CurrentUrl"
                         $ResultsTbl.Rows.Add($CurrentUrl,"No") | Out-Null
                         $Block = 1
                     }
