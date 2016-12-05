@@ -3,6 +3,7 @@
 # Todo: add src/port filters, add threading (its super slow).
 
 # Example commands
+# Get-ChildItem *.cap | select fullname -ExpandProperty fullname | Get-IpInfoFromCap -Verbose -DstIp 1.1.1.1
 # Get-IpInfoFromCap -capPath "c:\temp\packetcapture.cap" -Verbose -DstIp 1.1.1.1
 # Get-IpInfoFromCap -capPath "c:\temp\packetcapture.cap" -Verbose -DstIp 1.1.1.1 | Out-GridView
 # Get-IpInfoFromCap -capPath "c:\temp\packetcapture.cap" -Verbose -DstIp 1.1.1.1 | Export-Csv c:\temp\output.csv
