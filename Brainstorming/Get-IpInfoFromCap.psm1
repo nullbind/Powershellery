@@ -1,6 +1,7 @@
 # Author: scott sutherland
 # This script uses tshark to parse the src.ip, dst.ip, and dst.port from a provided .cap file. It then looks up owner information.
 # Todo: add ports grouping, add src/port filters, add threading (its super slow).
+# Note: currently udp ports are not imported and show up as 0
 
 # Example commands
 # Get-ChildItem *.cap | select fullname -ExpandProperty fullname | Get-IpInfoFromCap -Verbose -DstIp 1.1.1.1
