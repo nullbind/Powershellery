@@ -258,7 +258,10 @@ Function Get-IpInfoFromCap{
     }
 
     End
-    {
+    {    
+        # Status user
+        Write-Host "Done."     
+        
         # Return the full result set
         $OutputTbl | Sort-Object Owner -Unique                
     }
