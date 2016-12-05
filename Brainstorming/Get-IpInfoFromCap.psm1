@@ -1,6 +1,12 @@
 # Author: scott sutherland
 # This script uses tshark to parse the src.ip, dst.ip, and dst.port from a provided .cap file. It then looks up owner information.
-# Todo: add ports grouping, add src/port filters, add threading (its super slow).
+# Todo: add src/port filters, add threading (its super slow).
+
+# Example commands
+# Get-IpInfoFromCap -capPath "c:\temp\packetcapture.cap" -Verbose -DstIp 1.1.1.1
+# Get-IpInfoFromCap -capPath "c:\temp\packetcapture.cap" -Verbose -DstIp 1.1.1.1 | Out-GridView
+# Get-IpInfoFromCap -capPath "c:\temp\packetcapture.cap" -Verbose -DstIp 1.1.1.1 | Export-Csv c:\temp\output.csv
+
 
 Function Get-IpInfoFromCap{
 
@@ -9,7 +15,6 @@ Function Get-IpInfoFromCap{
     (
         [Parameter(Mandatory=$True, ValueFromPipeline = $true, HelpMessage="Cap file path.")]
         [string]$capPath,
-        [string]$OutputPath,
         [string]$SrcIp,
         [string]$DstIp,
         [int]$Port,
@@ -34,29 +39,32 @@ Function Get-IpInfoFromCap{
 
         # Set output path
         if( -not $OutputPath){           
-            $OutputPath = 'c:\temp\'
-        }
+            $OutputPath = '.\'
+        }           
 
-        # Verify output path
-        $OutputFileTest = $OutputPath + 'file.txt'
-        Try{ 
-            [io.file]::OpenWrite($OutputFileTest).close() 
-            Write-Verbose "Write access to the output directory: $OutputPath" 
-        }Catch{ 
-            Write-Host "No write access to the output: $OutputPath"
-            return 
-        }                
-
-        # Create table to store input
-        $ImportDataTbl = New-Object System.Data.DataTable
-        $ImportDataTbl.Columns.Add("SrcIp") | Out-Null
-        $ImportDataTbl.Columns.Add("DstIp") | Out-Null
-        $ImportDataTbl.Columns.Add("Port") | Out-Null
+        # Port table
+        $TblPortInfo = New-Object System.Data.DataTable
+        $TblPortInfo.Columns.Add("SrcIp") | Out-Null
+        $TblPortInfo.Columns.Add("DstIp") | Out-Null
+        $TblPortInfo.Columns.Add("Ports") | Out-Null
      
-        # Create table to store output
+        # IP info table
+        $TblIPInfo = new-object System.Data.DataTable
+        $TblIPInfo.Columns.Add("IpDest") | Out-Null
+        $TblIPInfo.Columns.Add("IpSrc") | Out-Null
+        $TblIPInfo.Columns.Add("Owner") | Out-Null
+        $TblIPInfo.Columns.Add("StartRange") | Out-Null
+        $TblIPInfo.Columns.Add("EndRange") | Out-Null
+        $TblIPInfo.Columns.Add("Country") | Out-Null
+        $TblIPInfo.Columns.Add("City") | Out-Null
+        $TblIPInfo.Columns.Add("Zip") | Out-Null
+        $TblIPInfo.Columns.Add("ISP") | Out-Null
+        #$TblIPInfo.Columns.Add("Ports") | Out-Null     
+        
+        # Output table
         $OutputTbl = new-object System.Data.DataTable
-        $OutputTbl.Columns.Add("IpDest") | Out-Null
         $OutputTbl.Columns.Add("IpSrc") | Out-Null
+        $OutputTbl.Columns.Add("IpDest") | Out-Null       
         $OutputTbl.Columns.Add("Owner") | Out-Null
         $OutputTbl.Columns.Add("StartRange") | Out-Null
         $OutputTbl.Columns.Add("EndRange") | Out-Null
@@ -64,7 +72,7 @@ Function Get-IpInfoFromCap{
         $OutputTbl.Columns.Add("City") | Out-Null
         $OutputTbl.Columns.Add("Zip") | Out-Null
         $OutputTbl.Columns.Add("ISP") | Out-Null
-        # $OutputTbl.Columns.Add("Ports") | Out-Null             
+        $OutputTbl.Columns.Add("Ports") | Out-Null                            
     }
 
     Process
@@ -99,7 +107,12 @@ Function Get-IpInfoFromCap{
 
         # Execute tshark command (parse cap)
         Write-Verbose "Parsing cap file to temp file: $OutputPath$TsharkTemp.csv"
-        $TsharkCmdOutput = invoke-expression $TsharkCmd 
+        try{
+            $TsharkCmdOutput = invoke-expression $TsharkCmd 
+        }catch{
+            Write-Warning "Bummer. You don't have write access to the current directory. Tshark needs to write parsed output to a file. So..."
+            return
+        }
         
         # Import data tshark parsed
         $CapDataFile = "$OutputPath$TsharkTemp.csv"
@@ -107,10 +120,11 @@ Function Get-IpInfoFromCap{
         $RemoveTsharkTemp = "del $CapDataFile"
         Invoke-Expression $RemoveTsharkTemp
 
-        # Import all parsed data (SrcIp, DstIp, Port) into $ImportDataTbl
-        $capDataIpOnly = $CapData | select ip.src, ip.dst   
+        # Import all parsed data (SrcIp, DstIp, Port) into $TblPortInfo
+        $capDataIpOnly = $CapData | select ip.src,ip.dst -Unique | Sort-Object ip.src
 
-        # Consolidate port into temp table from $ImportDataTbl
+        # Status user
+        Write-Output "Getting IP information..."
 
         # Lookup source IP owner and location
         $capDataIpOnly | ForEach-Object {
@@ -118,8 +132,6 @@ Function Get-IpInfoFromCap{
             # Get source IP
             $IpAddress = $_.'ip.src'        
             $CurrentDest = $_.'ip.dst' 
-
-            # Get ports for source IP
 
             # Send whois request to arin via restful api
             $web = new-object system.net.webclient
@@ -137,10 +149,9 @@ Function Get-IpInfoFromCap{
             $IpCity = $results2.query.city.'#cdata-section'
             $IpZip = $results2.query.zip.'#cdata-section'
             $IpISP = $results2.query.isp.'#cdata-section'
-            # $IpPorts = $IpPorts
 
             # Put results in the data table   
-            $OutputTbl.Rows.Add("$CurrentDest",
+            $TblIPInfo.Rows.Add("$CurrentDest",
                               "$IpAddress",
                               "$IpOwner",
                               "$IpStart",
@@ -154,19 +165,102 @@ Function Get-IpInfoFromCap{
             Write-Verbose "Dest:$CurrentDest Src:$IpAddress Owner: $IpOwner ($IpCountry) ($IpStart -$IpEnd)"
     
         }
+        
+        # Status user
+        Write-Output "Consolidating ports..."
 
+        # Get list of unique src ips
+        $CapSrcIps = $CapData | select ip.src,ip.dst -Unique | Sort-Object ip.src 
+
+        # Iterate through each IP
+        $CapSrcIps | 
+        ForEach-Object{
+            
+            # Combine ports with list
+            $SourceIp =  $_.'ip.src'
+            $DestinationIp =  $_.'ip.dst'
+
+            # loop through full list
+            $CapData | select ip.src,ip.dst,tcp.dstport -Unique |
+            ForEach-Object{
+
+                $Src = $_.'ip.src'
+                $Dst = $_.'ip.dst'
+                $Port = $_.'tcp.dstport'
+
+                # check if it is current ip
+                if(($SourceIp -eq $Src) -and ($DestinationIp -eq $Dst)){                    
+
+                    # build port list
+                    $ports = "$ports$port,"
+                    $GoodSrc =  $Src
+                    $GoodDst = $Dst
+                    $GoodPort = $Port
+                }
+            }
+
+            # remove trailing 
+            $ports = $ports.Substring(0,$ports.Length-1)
+
+            # Add ip info to final list
+            $TblPortInfo.Rows.Add($GoodSrc,$GoodDst,$ports) | out-null
+
+            # clear port list
+            $ports = ""
+        }  
+
+        # Status user
+        Write-Output "Merging records..."
+
+        # Combine Lists
+         $TblPortInfo | 
+         ForEach-Object{
+
+            # Get port information
+            $PortIpSrc = $_.SrcIp
+            $PortIpDst = $_.DstIp
+            $PortIpPorts = $_.Ports
+
+            # Get IP information & merge
+            $TblIPInfo | 
+            ForEach-Object{
+                
+                # Get ip info
+                $IpInfoIpSrc = $_.IpSrc
+                $IpInfoIpDst = $_.IpDest                
+                $IpInfoOwner = $_.Owner
+                $IpInfoStartRange = $_.StartRange
+                $IpInfoEndRange = $_.EndRange
+                $IpInfoCountry = $_.Country
+                $IpInfoCity = $_.City
+                $IpInfoZip = $_.Zip
+                $IpInfoISP = $_.ISP
+
+                # Check for ip match
+                if (($PortIpSrc -eq $IpInfoIpSrc) -and ($PortIpDst -eq $IpInfoIpDst)){
+
+                    # Put results in the data table   
+                    $OutputTbl.Rows.Add($IpInfoIpSrc,
+                                        $IpInfoIpDst,               
+                                        $IpInfoOwner,
+                                        $IpInfoStartRange,
+                                        $IpInfoEndRange,
+                                        $IpInfoCountry,
+                                        $IpInfoCity,
+                                        $IpInfoZip,
+                                        $IpInfoISP,
+                                        $PortIpPorts) | Out-Null
+                }
+            }                   
+         }
     }
 
     End
     {
         # Return the full result set
-        $OutputTbl | Sort-Object Owner -Unique
+        $OutputTbl | Sort-Object Owner -Unique                
     }
 }
 
-# Example command
-Get-IpInfoFromCap -capPath "c:\temp\packetcapture.cap" -Verbose -DstIp [IP] | Out-GridView
-
-
-
-
+# Example
+Get-IpInfoFromCap -capPath "c:\temp\packetcapture.cap" -Verbose -DstIp 1.1.1.1
