@@ -1,9 +1,10 @@
 # Author: scott sutherland
 # This script uses tshark to parse the src.ip, dst.ip, and dst.port from a provided .cap file. It then looks up owner information.
-# Todo: add src/port filters, add threading (its super slow).
+# Todo: add ports grouping, add src/port filters, add threading (its super slow).
 
 # Example commands
 # Get-ChildItem *.cap | select fullname -ExpandProperty fullname | Get-IpInfoFromCap -Verbose -DstIp 1.1.1.1
+# Get-ChildItem *.cap | select fullname -ExpandProperty fullname | Get-IpInfoFromCap -Verbose -DstIp 1.1.1.1 | Out-GridView
 # Get-IpInfoFromCap -capPath "c:\temp\packetcapture.cap" -Verbose -DstIp 1.1.1.1
 # Get-IpInfoFromCap -capPath "c:\temp\packetcapture.cap" -Verbose -DstIp 1.1.1.1 | Out-GridView
 # Get-IpInfoFromCap -capPath "c:\temp\packetcapture.cap" -Verbose -DstIp 1.1.1.1 | Export-Csv c:\temp\output.csv
@@ -125,7 +126,7 @@ Function Get-IpInfoFromCap{
         $capDataIpOnly = $CapData | select ip.src,ip.dst -Unique | Sort-Object ip.src
 
         # Status user
-        Write-Output "Getting IP information..."
+        Write-Host "Getting IP information..."
 
         # Lookup source IP owner and location
         $capDataIpOnly | ForEach-Object {
@@ -168,7 +169,7 @@ Function Get-IpInfoFromCap{
         }
         
         # Status user
-        Write-Output "Consolidating ports..."
+        Write-Host "Consolidating ports..."
 
         # Get list of unique src ips
         $CapSrcIps = $CapData | select ip.src,ip.dst -Unique | Sort-Object ip.src 
@@ -211,7 +212,7 @@ Function Get-IpInfoFromCap{
         }  
 
         # Status user
-        Write-Output "Merging records..."
+        Write-Host "Merging records..."
 
         # Combine Lists
          $TblPortInfo | 
@@ -262,6 +263,3 @@ Function Get-IpInfoFromCap{
         $OutputTbl | Sort-Object Owner -Unique                
     }
 }
-
-# Example
-Get-IpInfoFromCap -capPath "c:\temp\packetcapture.cap" -Verbose -DstIp 1.1.1.1
