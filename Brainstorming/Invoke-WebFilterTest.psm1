@@ -56,13 +56,13 @@ Function Invoke-WebFilterTest{
         $WebSites.rows.add("http://pastebin.com/") | Out-Null    
         $WebSites.rows.add("http://www.filedropper.com/") | Out-Null
         $WebSites.rows.add("http://FriendPaste.com") | Out-Null
-        $WebSites.rows.add("http://FreeTextHost.com")| Out-Null
         $WebSites.rows.add("http://CopyTaste.com")| Out-Null
         $WebSites.rows.add("http://Cl1p.net")| Out-Null
         $WebSites.rows.add("http://ShortText.com")| Out-Null
         $WebSites.rows.add("http://TextSave.de")| Out-Null
         $WebSites.rows.add("http://TextSnip.com")| Out-Null
         $WebSites.rows.add("http://TxtB.in")| Out-Null
+        $WebSites.rows.add("http://www.mcafee.com/us/products/web-gateway.aspx")| Out-Null
 
         # Check for target websites from provide file path
         If ($ListPath){ 
@@ -85,6 +85,7 @@ Function Invoke-WebFilterTest{
         $ResultsTbl = new-object System.Data.DataTable
         $ResultsTbl.Columns.Add("WebSite") | Out-Null
         $ResultsTbl.Columns.Add("Accessible") | Out-Null
+        $ResultsTbl.Columns.Add("WebFilter") | Out-Null
     }
 
     Process
@@ -92,10 +93,11 @@ Function Invoke-WebFilterTest{
         # Setup http handler
         $HTTP_Handle = New-Object net.webclient               
 
-        # Check for website access    
+        # Check for website access  
+        $WebSiteCount2 = $WebSiteCount + 1 
         $WebSites | 
         ForEach-Object {
-
+            $WebSiteCount2 = $WebSiteCount2 - 1 
             $CurrentUrl = $_.URL 
             $Block = 0
             try {
@@ -109,23 +111,23 @@ Function Invoke-WebFilterTest{
                     $CurrentBlockString = $_.String
                     $WebFilterProduct = $_.Product
                     if($Results -like "*$CurrentBlockString*"){
-                        Write-Verbose "Status: Blocked ($WebFilterProduct) - $CurrentUrl"
-                        $ResultsTbl.Rows.Add($CurrentUrl,"No") | Out-Null
+                        Write-Verbose "$WebSiteCount2 of $WebSiteCount - Status: Blocked ($WebFilterProduct) $CurrentUrl"
+                        $ResultsTbl.Rows.Add($CurrentUrl,"No","$WebFilterProduct") | Out-Null
                         $Block = 1
                     }
                 }
             
                 # Check for access
                 if($Block -eq 0){
-                    Write-Verbose "Status: Allowed - $CurrentUrl"
-                    $ResultsTbl.Rows.Add($CurrentUrl,"Yes") | Out-Null
+                    Write-Verbose "$WebSiteCount2 of $WebSiteCount - Status: Allowed $CurrentUrl"
+                    $ResultsTbl.Rows.Add($CurrentUrl,"Yes","NA") | Out-Null
                     return
                 }
             }catch{
 
                  $ErrorMessage = $_.Exception.Message
-                 Write-Verbose "Status: Request Failed - $ErrorMessage - $CurrentUrl"
-                 $ResultsTbl.Rows.Add($CurrentUrl,"Request Failed") | Out-Null
+                 Write-Verbose "$WebSiteCount2 of $WebSiteCount - Status: Request Failed - $ErrorMessage - $CurrentUrl"
+                 $ResultsTbl.Rows.Add($CurrentUrl,"Request Failed","NA") | Out-Null
             }
         }
     }
@@ -136,3 +138,4 @@ Function Invoke-WebFilterTest{
         $ResultsTbl
     }
 }
+
