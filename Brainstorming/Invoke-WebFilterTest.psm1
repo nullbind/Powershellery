@@ -31,8 +31,8 @@ Function Invoke-WebFilterTest{
         $BlockStrings.rows.add("SonicWall","The site has been blocked by the network") | Out-Null  
         $BlockStrings.rows.add("UnTangled","This web page is blocked because it violates network policy.") | Out-Null    
         $BlockStrings.rows.add("Unknown","URL Category Warning Acknowledgement") | Out-Null
-        $BlockStrings.rows.add("McAfee Web Gateway","McAfee Web Gateway")
-        $BlockStrings.rows.add("McAfee Web Gateway","This website was blocked because of the site’s category and/or reputation.")
+        $BlockStrings.rows.add("McAfee Web Gateway","McAfee Web Gateway") | Out-Null
+        $BlockStrings.rows.add("McAfee Web Gateway","This website was blocked because of the site’s category and/or reputation.") | Out-Null
 
         # Create data table for list of target websites
         $WebSites = new-object System.Data.DataTable
@@ -90,7 +90,7 @@ Function Invoke-WebFilterTest{
     Process
     {    
         # Setup http handler
-        $HTTP_Handle = New-Object net.webclient        
+        $HTTP_Handle = New-Object net.webclient               
 
         # Check for website access    
         $WebSites | 
@@ -101,7 +101,7 @@ Function Invoke-WebFilterTest{
             try {
 
                 # Send HTTP request and get results
-                $Results = $HTTP_Handle.DownloadString("$CurrentUrl")
+                $Results = $HTTP_Handle.DownloadString("$CurrentUrl")                
 
                 # Check for blocks
                 $BlockStrings | 
