@@ -3,6 +3,7 @@ Function Invoke-WebFilterTest{
     # Author: scott sutherland
     # Description The basic idea is to build out a quick script to check for access to code repo, file share, and online clipboards used by common malware. 
     # Note: This is a very basic poc.  Ideally it would be nice to include common web filter categories and summary data in output. Also, runspaces for larger lists.
+    # Note: Should add a shorter timeout
     # Invoke-WebFilterTest -Verbose
     # Invoke-WebFilterTest -Verbose | Export-Csv -NoTypeInformation c:\temp\webfiltertest.csv
 
@@ -30,6 +31,8 @@ Function Invoke-WebFilterTest{
         $BlockStrings.rows.add("SonicWall","The site has been blocked by the network") | Out-Null  
         $BlockStrings.rows.add("UnTangled","This web page is blocked because it violates network policy.") | Out-Null    
         $BlockStrings.rows.add("Unknown","URL Category Warning Acknowledgement") | Out-Null
+        $BlockStrings.rows.add("McAfee Web Gateway","McAfee Web Gateway")
+        $BlockStrings.rows.add("McAfee Web Gateway","This website was blocked because of the site’s category and/or reputation.")
 
         # Create data table for list of target websites
         $WebSites = new-object System.Data.DataTable
@@ -87,7 +90,7 @@ Function Invoke-WebFilterTest{
     Process
     {    
         # Setup http handler
-        $HTTP_Handle = New-Object net.webclient
+        $HTTP_Handle = New-Object net.webclient        
 
         # Check for website access    
         $WebSites | 
