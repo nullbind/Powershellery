@@ -62,7 +62,6 @@ Function Invoke-WebFilterTest{
         $WebSites.rows.add("http://TextSave.de")| Out-Null
         $WebSites.rows.add("http://TextSnip.com")| Out-Null
         $WebSites.rows.add("http://TxtB.in")| Out-Null
-        $WebSites.rows.add("http://www.mcafee.com/us/products/web-gateway.aspx")| Out-Null
 
         # Check for target websites from provide file path
         If ($ListPath){ 
