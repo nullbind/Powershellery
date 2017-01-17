@@ -1,8 +1,12 @@
+
 Function Invoke-WebFilterTest{
     # Invoke-WebFilterTest
     # Author: scott sutherland
     # Description The basic idea is to build out a quick script to check for access to code repo, file share, and online clipboards used by common malware. 
-    # Note: This is a very basic poc.  Ideally it would be nice to include common web filter categories and summary data in output. Also, runspaces for larger lists.
+    # Note: This is a very basic /poor  poc.  Ideally it would be nice to include common web filter categories and summary data in output. Also, runspaces for larger lists.
+    # Note: should test access to known blacklisted site
+    # Note: should test access to uncategorized site
+    # Note: should test more categories
     # Note: Should add a shorter timeout
     # Invoke-WebFilterTest -Verbose
     # Invoke-WebFilterTest -Verbose | Export-Csv -NoTypeInformation c:\temp\webfiltertest.csv
