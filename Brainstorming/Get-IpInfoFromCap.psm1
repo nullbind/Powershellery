@@ -1,15 +1,14 @@
 # Author: scott sutherland
 # This script uses tshark to parse the src.ip, dst.ip, and dst.port from a provided .cap file. It then looks up owner information.
-# Todo: add ports grouping, add src/port filters, add threading (its super slow).
+# Todo: add src filters, add threading (its super slow), add udp parsing
 # Note: currently udp ports are not imported and show up as 0
+# information on ips are grabbed from arin.net and ip-api.com
 
 # Example commands
-# Get-ChildItem *.cap | select fullname -ExpandProperty fullname | Get-IpInfoFromCap -Verbose -DstIp 1.1.1.1
-# Get-ChildItem *.cap | select fullname -ExpandProperty fullname | Get-IpInfoFromCap -Verbose -DstIp 1.1.1.1 | Out-GridView
 # Get-IpInfoFromCap -capPath "c:\temp\packetcapture.cap" -Verbose -DstIp 1.1.1.1
 # Get-IpInfoFromCap -capPath "c:\temp\packetcapture.cap" -Verbose -DstIp 1.1.1.1 | Out-GridView
 # Get-IpInfoFromCap -capPath "c:\temp\packetcapture.cap" -Verbose -DstIp 1.1.1.1 | Export-Csv c:\temp\output.csv
-
+# Get-IpInfoFromCap -capPath "c:\temp\packetcapture.cap" -Verbose -DstIp 1.1.1.1 -IpAPI
 
 Function Get-IpInfoFromCap{
 
@@ -21,7 +20,8 @@ Function Get-IpInfoFromCap{
         [string]$SrcIp,
         [string]$DstIp,
         [int]$Port,
-        [string]$TsharkPath 
+        [string]$TsharkPath,
+        [switch]$IpAPI
     )
        
     Begin
@@ -32,18 +32,12 @@ Function Get-IpInfoFromCap{
         }
 
         # Verify tshark path
-        $CheckTshark = Test-Path $TsharkPath 
-        If ($CheckTshark -eq $True) {
+        If ((Test-Path $TsharkPath) -eq $True) {
             Write-Verbose "The tshark path is valid: $TsharkPath"
         }else{
             Write-Host "The tshark path is invalid: $TsharkPath"
             return
-        }
-
-        # Set output path
-        if( -not $OutputPath){           
-            $OutputPath = '.\'
-        }           
+        }        
 
         # Port table
         $TblPortInfo = New-Object System.Data.DataTable
@@ -87,8 +81,7 @@ Function Get-IpInfoFromCap{
         }
 
         # Verify cap path
-        $Checkcap = Test-Path $capPath 
-        If ($Checkcap -eq $True) {
+        If ((Test-Path $capPath) -eq $True) {
             Write-Verbose "The cap path is valid: $capPath"
         }else{
             Write-Host "The cap path is invalid: $capPath"
@@ -99,32 +92,35 @@ Function Get-IpInfoFromCap{
         if(-not $DstIp){           
             $DstIpFilter = ""
         }else{
-            $DstIpFilter = " -Y ip.dst==$DstIp "
+            $DstIpFilter = "-Yip.dst==$DstIp"
         }
 
-        # Create tshark command  
-        $TsharkTemp = ""
-        $set = "abcdefghijklmnopqrstuvwxyz0123456789".ToCharArray()
-        $TsharkTemp += -join ($set | Get-Random -Count 10)
-        $TsharkCmd = 'c:\windows\system32\cmd.exe /c "' + $TsharkPath + '" -r c:\temp\packetcapture.cap -T fields -e ip.src -e ip.dst -e tcp.dstport ' + $DstIpFilter + ' -E header=y -E separator=`, -E occurrence=f  > ' + $TsharkTemp + '.csv' 
-
         # Execute tshark command (parse cap)
-        Write-Verbose "Parsing cap file to temp file: $OutputPath$TsharkTemp.csv"
+        Write-Verbose "Parsing cap file to variable"
         try{
-            $TsharkCmdOutput = invoke-expression $TsharkCmd 
+
+            #$TsharkCmdOutput = &$TsharkPath -r $capPath -T fields -e ip.src -e ip.dst -e tcp.dstport $DstIpFilter -E header=y -E separator=`, -E occurrence=f
+            $a1 = "-r$capPath"
+            $a2 = "-Tfields"
+            $a3 = "-eip.src"
+            $a4 = "-eip.dst"
+            $a5 = "-etcp.dstport"
+            $a7 = "-Eheader=y"
+            $a8 = "-Eseparator=`,"
+            $a9 = "-Eoccurrence=f"
+
+            $TsharkCmdOutput = &$TsharkPath $a1 $a2 $a3 $a4 $a5 $DstIpFilter $a7 $a8 $a9
+
         }catch{
-            Write-Warning "Bummer. You don't have write access to the current directory. Tshark needs to write parsed output to a file. So..."
+            Write-Warning "Bummer. Something went wrong..."
             return
         }
         
         # Import data tshark parsed
-        $CapDataFile = "$OutputPath$TsharkTemp.csv"
-        $CapData = Import-Csv $CapDataFile 
-        $RemoveTsharkTemp = "del $CapDataFile"
-        Invoke-Expression $RemoveTsharkTemp
+        $CapData = ConvertFrom-Csv -InputObject $TsharkCmdOutput
 
         # Import all parsed data (SrcIp, DstIp, Port) into $TblPortInfo
-        $capDataIpOnly = $CapData | select ip.src,ip.dst -Unique | Sort-Object ip.src
+        $capDataIpOnly = $CapData | select ip.src,ip.dst -Unique | Sort-Object ip.src | select -Skip 1
 
         # Status user
         Write-Host "Getting IP information..."
@@ -141,8 +137,10 @@ Function Get-IpInfoFromCap{
             [xml]$results = $web.DownloadString("http://whois.arin.net/rest/ip/$IpAddress")
 
             # Send location query to http://ip-api.com via xml api
-            $web2 = new-object system.net.webclient
-            [xml]$results2 = $web2.DownloadString("http://ip-api.com/xml/$IpAddress")
+            if ($IpAPI){
+                $web2 = new-object system.net.webclient
+                [xml]$results2 = $web2.DownloadString("http://ip-api.com/xml/$IpAddress")
+            }
 
             # Parse data from responses    
             $IpOwner = $results.net.name 
