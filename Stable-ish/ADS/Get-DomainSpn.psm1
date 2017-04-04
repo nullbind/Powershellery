@@ -1,7 +1,7 @@
 # -------------------------------------------
 # Function: Get-DomainSpn
 # -------------------------------------------
-# Author: Scott Sutherland
+# Author: Scott Sutherland.
 # Reference: http://social.technet.microsoft.com/wiki/contents/articles/5392.active-directory-ldap-syntax-filters.aspx
 function Get-DomainSpn
 {
@@ -33,7 +33,7 @@ function Get-DomainSpn
             ComputerName : SQLServer1.domain.local
             Spn          : MSSQLSvc/SQLServer1.domain.local:1433
             LastLogon    : 6/24/2016 6:56 AM
-            Description  : This is a SQL Server test instance using a local managed service account.
+            Description  : This is a SQL Server test instance using a local managed service account..
 
             UserSid      : 15000005210002431346712321821222048886811922073101
             User         : SQLServiceAccount
