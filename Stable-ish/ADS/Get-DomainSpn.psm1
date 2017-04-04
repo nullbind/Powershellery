@@ -340,8 +340,6 @@ function Get-DomainObject
                 $objDomainPath  = [ADSI]''
             }
 
-            write-verbose "blah: $LdapPath"
-
             $objSearcher = New-Object -TypeName System.DirectoryServices.DirectorySearcher -ArgumentList $objDomainPath
         }
 
