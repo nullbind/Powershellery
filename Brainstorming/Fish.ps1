@@ -1,5 +1,5 @@
 # Generates 10 fish
-1..1000| 
+1..5| 
 ForEach-Object{       
 
     # Set random number of spaces
