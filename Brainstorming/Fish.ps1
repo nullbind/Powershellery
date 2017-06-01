@@ -1,4 +1,4 @@
-# Generates 10 fish
+# Generates 5 fish
 1..5| 
 ForEach-Object{       
 
