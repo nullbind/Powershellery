@@ -20,6 +20,9 @@
 # Authenticate - Integrated Windows Auth - works
 $srv = new-object ('Microsoft.SqlServer.Management.Smo.Server') "server\instance" 
 
+# Get instance option
+[System.Data.Sql.SqlDataSourceEnumerator]::Instance.GetDataSources()
+
 # Authenticate - SQL Server authentication - mixed mode - works
 $srv = new-object ('Microsoft.SqlServer.Management.Smo.Server') "10.1.1.1"
 $srv.ConnectionContext.LoginSecure=$false; 
