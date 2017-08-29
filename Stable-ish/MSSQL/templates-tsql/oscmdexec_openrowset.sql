@@ -2,6 +2,7 @@
 -- Targeting custom DSN via linked query (openquery), openrowset, opendatasource
 -- Target xls and mdb variations 
 -- May require https://www.microsoft.com/en-us/download/details.aspx?id=13255 on modern version...
+-- exec master..xp_regwrite 'HKEY_LOCAL_MACHINE','SOFTWARE\Microsoft\Jet\4.0\Engines','SandBoxMode','REG_DWORD',1
 
 -- Enable show advanced options
 sp_configure 'show advanced options',1
