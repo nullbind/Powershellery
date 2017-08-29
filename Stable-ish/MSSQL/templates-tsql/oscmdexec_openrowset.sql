@@ -106,6 +106,8 @@ go
      -- through OPENROWSET.
 SELECT * FROM OPENROWSET('Microsoft.ACE.OLEDB.12.0',';database=C:\temp\ODBC.mdb','select shell("cmd.exe /c echo hello there c:\ > C:\windows\temp\test123.txt") as blah');
 go
+SELECT * FROM OPENROWSET('Microsoft.ACE.OLEDB.12.0',';database=C:\temp\ODBC.mdb','select 1 as blah');
+SELECT * FROM OPENROWSET('Microsoft.ACE.OLEDB.12.0',';database=C:\temp\ODBC.mdb','select ''stringvalue'' as blah');
 
 --===== Cleanup
 EXEC sp_dropserver 'testsql' --Drops the linked server we created above.
