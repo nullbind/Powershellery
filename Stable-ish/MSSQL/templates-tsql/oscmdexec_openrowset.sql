@@ -1,5 +1,6 @@
 -- WORK IN PROGRESS
 -- Targeting custom DSN via linked query (openquery), openrowset, opendatasource
+-- Target xls and mdb variations 
 
 -- Enable show advanced options
 sp_configure 'show advanced options',1
