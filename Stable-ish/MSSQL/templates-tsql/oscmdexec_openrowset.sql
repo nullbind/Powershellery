@@ -1,4 +1,5 @@
 -- WORK IN PROGRESS
+-- Targeting custom DSN via linked query (openquery), openrowset, opendatasource
 
 -- Enable show advanced options
 sp_configure 'show advanced options',1
@@ -57,6 +58,8 @@ select * from openrowset('microsoft.jet.oledb.4.0',';database=C:\Windows\System3
 INSERT INTO OPENROWSET ('Microsoft.Jet.OLEDB.4.0', 'Excel 8.0;Database=G:\Test.xls;', 'SELECT * FROM [Sheet1$]')
 SELECT * FROM OPENROWSET('Microsoft.ACE.OLEDB.12.0', 'Excel 8.0;Database=C:\testing.xlsx;', 'SELECT Name, Class FROM [Sheet1$]') 
 SELECT * FROM OPENROWSET('MICROSOFT.JET.OLEDB.4.0','Text;Database=C:\Temp\;','SELECT * FROM [Test.csv]')
+SELECT * FROM OpenDataSource( 'Microsoft.Jet.OLEDB.4.0','Data Source="c:\test.xls";User ID=Admin;Password=;Extended properties=Excel 5.0')
+select * FROM OPENROWSET('MICROSOFT.JET.OLEDB.4.0','Excel 5.0;HDR=YES;DATABASE=c:\Book1.xls',Sheet1$)
 GO
 
 -- Sample sources
