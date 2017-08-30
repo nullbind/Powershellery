@@ -44,6 +44,19 @@ EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'RUN COMM
 
 RunCmd();
 ', 
+/** alternative option
+		@command=N'function RunCmd()
+					{
+						 var WshShell = new ActiveXObject("WScript.Shell");  
+						  var oExec = WshShell.Exec("c:\\windows\\system32\\cmd.exe /c echo hello > c:\\windows\\temp\\blah.txt"); 
+						  oExec = null; 
+						  WshShell = null; 
+					 }
+
+					RunCmd();
+					', 
+
+**/
 		@database_name=N'JavaScript', 
 		@flags=0
 IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback
