@@ -14,6 +14,8 @@ IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback
 END
 
 DECLARE @jobId BINARY(16)
+DECLARE @user varchar(8000)
+set @user = CURRENT_USER
 EXEC @ReturnCode =  msdb.dbo.sp_add_job @job_name=N'OS COMMAND EXECUTION EXAMPLE - CMDEXEC', 
 		@enabled=1, 
 		@notify_level_eventlog=0, 
@@ -23,7 +25,7 @@ EXEC @ReturnCode =  msdb.dbo.sp_add_job @job_name=N'OS COMMAND EXECUTION EXAMPLE
 		@delete_level=1, 
 		@description=N'No description available.', 
 		@category_name=N'[Uncategorized (Local)]', 
-		@owner_login_name=N'sa', @job_id = @jobId OUTPUT
+		@owner_login_name=@user, @job_id = @jobId OUTPUT
 IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback
 /****** Object:  Step [RUN COMMAND  - CMDEXEC]    Script Date: 8/29/2017 11:23:50 AM ******/
 EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'RUN COMMAND  - CMDEXEC', 
