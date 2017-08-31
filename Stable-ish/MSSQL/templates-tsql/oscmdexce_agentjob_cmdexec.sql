@@ -40,6 +40,7 @@ EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'RUN COMM
 		@os_run_priority=0, @subsystem=N'CmdExec', 
 		@command=N'c:\windows\system32\cmd.exe /c echo hello > c:\windows\temp\blah.txt', 
 		@flags=0
+		--,@proxy_name=N'WinUser1'		
 IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback
 EXEC @ReturnCode = msdb.dbo.sp_update_job @job_id = @jobId, @start_step_id = 1
 IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback
