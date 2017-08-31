@@ -61,6 +61,7 @@ RunCmd();
 **/
 		@database_name=N'JavaScript', 
 		@flags=0
+		--,@proxy_name=N'WinUser1'		
 IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback
 EXEC @ReturnCode = msdb.dbo.sp_update_job @job_id = @jobId, @start_step_id = 1
 IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback
