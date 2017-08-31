@@ -15,7 +15,7 @@ END
 
 DECLARE @jobId BINARY(16)
 DECLARE @user varchar(8000)
-set @user = CURRENT_USER
+SET @user = SYSTEM_USER
 EXEC @ReturnCode =  msdb.dbo.sp_add_job @job_name=N'OS COMMAND EXECUTION EXAMPLE - CMDEXEC', 
 		@enabled=1, 
 		@notify_level_eventlog=0, 
