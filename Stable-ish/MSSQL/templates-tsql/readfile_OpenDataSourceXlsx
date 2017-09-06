@@ -1,1 +1,7 @@
+-- Note: Requires the driver to be installed ahead of time.
+
+-- list available providers
+EXEC sp_MSset_oledb_prop
+
+-- Read text file
 SELECT * FROM OPENDATASOURCE('Microsoft.ACE.OLEDB.12.0','Data Source=C:\windows\temp\Book1.xlsx;Extended Properties=Excel 8.0')...[Targets$]
