@@ -1,6 +1,9 @@
 
 -- Requires the driver be installed ahead of time.
 
+-- list available providers
+EXEC sp_MSset_oledb_prop -- get available providers
+
 -- Enable show advanced options
 sp_configure 'show advanced options',1
 reconfigure
