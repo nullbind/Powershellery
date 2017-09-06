@@ -1,3 +1,5 @@
+-- OLE Automation Procedure - Download Cradle Example
+
 -- Setup Variables
 DECLARE @url varchar(300)   
 DECLARE @WinHTTP int  
@@ -26,4 +28,4 @@ EXEC @handle=sp_OADestroy @WinHTTP
 SELECT @Command
 
 -- Run command
-execute(@Command) 
+EXECUTE (@Command) 
