@@ -3,6 +3,9 @@
 -- EXEC sp_MSset_oledb_prop N'Microsoft.ACE.OLEDB.12.0', N'DynamicParameters', 1  -- not required
 -- EXEC master..xp_regwrite 'HKEY_LOCAL_MACHINE','SOFTWARE\Microsoft\Jet\4.0\Engines','SandBoxMode','REG_DWORD',1; -- not required
 
+-- list available providers
+EXEC sp_MSset_oledb_prop -- get available providers
+
 -- Enable show advanced options
 sp_configure 'show advanced options',1
 reconfigure
