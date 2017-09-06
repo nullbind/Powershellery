@@ -1,0 +1,1 @@
+SELECT * FROM OPENDATASOURCE('Microsoft.ACE.OLEDB.12.0','Data Source=C:\windows\temp\Book1.xlsx;Extended Properties=Excel 8.0')...[Targets$]
