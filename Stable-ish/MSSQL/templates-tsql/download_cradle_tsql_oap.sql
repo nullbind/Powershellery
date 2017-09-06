@@ -1,4 +1,5 @@
 -- OLE Automation Procedure - Download Cradle Example
+-- Does not require a table, but can't handle larger payloads
 
 -- Setup Variables
 DECLARE @url varchar(300)   
