@@ -37,6 +37,7 @@ Function Invoke-WebFilterTest{
         $BlockStrings.rows.add("Unknown","URL Category Warning Acknowledgement") | Out-Null
         $BlockStrings.rows.add("McAfee Web Gateway","McAfee Web Gateway") | Out-Null
         $BlockStrings.rows.add("McAfee Web Gateway","This website was blocked because of the site’s category and/or reputation.") | Out-Null
+        $BlockStrings.rows.add("ZScaler","Internet Security by Zscaler") | Out-Null
 
         # Create data table for list of target websites
         $WebSites = new-object System.Data.DataTable
