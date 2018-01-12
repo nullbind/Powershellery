@@ -2,8 +2,8 @@
 <scriptlet>
 
 <registration
-    description="mrsmith"
-    progid="mrsmith"
+    description="Bandit"
+    progid="Bandit"
     version="1.00"
     classid="{AAAA1111-0000-0000-0000-0000FEEDACDC}"
     remotable="true"
