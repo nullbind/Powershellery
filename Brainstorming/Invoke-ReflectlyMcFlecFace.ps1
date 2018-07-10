@@ -1,4 +1,4 @@
-function Invoke-ReflectivePEInjection
+function Invoke-Nancy
 {
 <#
 #>
