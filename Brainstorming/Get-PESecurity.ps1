@@ -1314,4 +1314,4 @@ function Add-Win32Type
   }
 }
 
-Export-ModuleMember -Function Get-PESecurity
+
