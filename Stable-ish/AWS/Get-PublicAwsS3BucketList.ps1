@@ -128,13 +128,12 @@ Function Get-PublicAwsS3BucketList
 
 # Command Examples
 # Google dork: filetype:pdf .s3.amazonaws.com ; filetype: xls site:s3.amazonaws.com
-# can be subdomain or https://s3.amazonaws.com/asn-cdn-remembers or https://asn-cdn-remembers.s3.amazonaws.com/
+# can be subdomain or https://s3.amazonaws.com/thethingfromthatplace or https://thethingfromthatplace.s3.amazonaws.com/
 # add finding notes about required access for this to work; get a lot of 403, and the occational 404
-# Examples: cmsdocs, asn-cdn-remembers, forthplatform(bigger)
 
 # Get s3 bucket list
-$Output = Get-PublicAwsS3BucketList -Verbose -S3BucketName "asn-cdn-remembers" 
-$Output = Get-PublicAwsS3BucketList -Verbose -S3BucketName "forthplatform" 
+$Output = Get-PublicAwsS3BucketList -Verbose -S3BucketName "thethingfromthatplace" 
+$Output = Get-PublicAwsS3BucketList -Verbose -S3BucketName "thethingfromthatplace" 
 
 
 # View S3 bucket list
@@ -144,10 +143,10 @@ $Output | select -First 1
 Size         : 82838
 ETag         : "fc677f31206e306bfa753856a6528c9a"
 LastModified : 2015-08-12T13:15:22.000Z
-URL          : https://asn-cdn-remembers.s3.amazonaws.com/001241bd47b1c45e3ea37baf2fcbbb00.pdf
-BucketName   : asn-cdn-remembers
+URL          : https://thethingfromthatplace.s3.amazonaws.com/001241bd47b1c45e3ea37baf2fccbb00.pdf
+BucketName   : thethingfromthatplace
 StorageClass : STANDARD
-Key          : 001241bd47b1c45e3ea37baf2fcbbb00.pdf
+Key          : 001241bd47b1c45e3ea37baf2fccbb00.pdf
 FileType     : pdf
 ##>
 
@@ -161,7 +160,7 @@ Write-Verbose "Getting list of file type stored in S3 buckets..."
 $Output | Where-Object FileType -NotLike "*/*" | Group-Object FileType | Select Name,Count | Sort-Object count -Descending
 
 <##
-PS C:\Users\ssutherland> $Output | Where-Object FileType -NotLike "*/*" | Group-Object FileType | Select Name,Count | Sort-Object count -Descending
+PS C:\> $Output | Where-Object FileType -NotLike "*/*" | Group-Object FileType | Select Name,Count | Sort-Object count -Descending
 
 Name                             Count
 ----                             -----
@@ -184,7 +183,7 @@ wmv                                  2
 pdfundefined                         1
 xlsx                                 1
 xls                                  1
-9e1407fc6dff786161a22426adfc9ebe     1  ....canary file?
+9e1407fc6dff786161a22426adfc9ebe     1  ....canary file or just randomly gen name?
 mp4                                  1
 
 ##>
@@ -200,19 +199,19 @@ PS C:\> $Output | where filetype -like "ics"
 Size         : 1966
 ETag         : "d917b326fe876d405e7d267cf364a701"
 LastModified : 2012-12-12T19:18:34.000Z
-URL          : https://asn-cdn-remembers.s3.amazonaws.com/1bf65bfae42fe5a1fd5c1ffa6de32cda.ics
-BucketName   : asn-cdn-remembers
+URL          : https://thethingfromthatplace.s3.amazonaws.com/1bf65bfae42fe5a1fd5c1afa6de32cda.ics
+BucketName   : thethingfromthatplace
 StorageClass : STANDARD
-Key          : 1bf65bfae42fe5a1fd5c1ffa6de32cda.ics
+Key          : 1bf65bfae42fe5a1fd5c1ffa6de32ada.ics
 FileType     : ics
 
 Size         : 1298
 ETag         : "44e7833f0fb6fc432e3dc8e3b2373f5d"
 LastModified : 2013-05-23T21:02:33.000Z
-URL          : https://asn-cdn-remembers.s3.amazonaws.com/424f159dbe883c6f104d46e2a4ccd1d1.ics
-BucketName   : asn-cdn-remembers
+URL          : https://thethingfromthatplace.s3.amazonaws.com/424f159dbe883c6f104d46e2a4cbd1d1.ics
+BucketName   : thethingfromthatplace
 StorageClass : STANDARD
-Key          : 424f159dbe883c6f104d46e2a4ccd1d1.ics
+Key          : 424f159dbe883c6f104d46e2a4cbd1d1.ics
 FileType     : ics
 
 ...
@@ -274,6 +273,6 @@ $TblOutput
 Get-PublicAwsS3Config -S3BucketName "forthplatform" -Verbose
 
 # Get initial inventory
-$results = (Get-PublicAwsS3Config -S3BucketName "rcms3-production"  | Where-Object accessible -Like "Yes" | Select details )
+$results = (Get-PublicAwsS3Config -S3BucketName "thethingfromthatplace"  | Where-Object accessible -Like "Yes" | Select details )
 [xml]$Inventory = $results.Details
 $Inventory.ListBucketResult.Contents 
