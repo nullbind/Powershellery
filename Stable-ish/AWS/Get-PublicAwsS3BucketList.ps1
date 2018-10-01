@@ -2,7 +2,7 @@
 # Get-PublicAwsS3BucketList
 # ---------------------------------
 #  Author: Scott Sutherland (@_nullbind), NetSPI 2018
-# Version: 0.2
+# Version: 0.4
 # Description: This Function can be used to obtain a list of keys (files) stored in AWS s3 buckets.
 # it also supports feed guessing s3 buckets based on a list of domains which is can perform permutations on.
 # S3 buckets that have been make publically readable.
@@ -187,8 +187,6 @@ Function Get-PublicAwsS3BucketListFromDomains
         [string]$S3Bucket
 
     )
-    
-    # todo: remove mail. www. etf prefixes
 
     <#
     Get-PublicAwsS3BucketListFromDomains -Verbose -FilePath C:\temp\list.txt    
@@ -203,15 +201,36 @@ Function Get-PublicAwsS3BucketListFromDomains
     begin{
 
             # Create a list of words to be used for permutations
-            $Permutations = New-Object System.Collections.ArrayList        
+            $Permutations = New-Object System.Collections.ArrayList               
             [void]$Permutations.Add("www")
-            [void]$Permutations.Add("test")
+            [void]$Permutations.Add("web")
             [void]$Permutations.Add("backup")
+            [void]$Permutations.Add("logs")             
             [void]$Permutations.Add("dev")
             [void]$Permutations.Add("qa")
             [void]$Permutations.Add("uat")
             [void]$Permutations.Add("staging")
             [void]$Permutations.Add("prod")
+            [void]$Permutations.Add("api")            
+            [void]$Permutations.Add("test")
+            [void]$Permutations.Add("test123")
+            [void]$Permutations.Add("images")
+            [void]$Permutations.Add("data")            
+            [void]$Permutations.Add("public")            
+            [void]$Permutations.Add("private")    
+            [void]$Permutations.Add("internal")            
+            [void]$Permutations.Add("secret")            
+            [void]$Permutations.Add("files")   
+            [void]$Permutations.Add("tmp")                      
+            [void]$Permutations.Add("temp")   
+            [void]$Permutations.Add("key") 
+            [void]$Permutations.Add("keys")               
+            [void]$Permutations.Add("site")   
+            [void]$Permutations.Add("test123")            
+            [void]$Permutations.Add("test123")
+            [void]$Permutations.Add("123")
+            [void]$Permutations.Add("12")
+            [void]$Permutations.Add("asdf")
 
             # Create list to conduct permutations against
             $List_PrePerm = New-Object System.Collections.ArrayList
@@ -235,23 +254,25 @@ Function Get-PublicAwsS3BucketListFromDomains
                     $Domain = $_
 
                     # Remove domain extenstion
-                    $DomainNoExt = $Domain.split('.')[0]  
+                    $DomainNoExt = $Domain.Replace("mail.", "").Replace("www.", "").split('.')[0] 
 
                     # Add to preperm list
-                    $List_PrePerm.Add("$DomainNoExt")
+                    $List_PrePerm.Add("$DomainNoExt") | Out-Null
                 }
             
                 }else{
                     Write-Verbose "Importing domains from $FilePath Failed. File does not exist."
                 }
             }
+            Write-Verbose "Importing domains from pipeline and provided parameters."
     }
 
     process{
 
         # Process domain names provided as a parameter or pipeline item
         if($S3Bucket){
-            [void]$List_PrePerm.Add("$S3Bucket")
+            $CleanBucket = $S3Bucket.Replace("mail.", "").Replace("www.", "").split('.')[0] 
+            $List_PrePerm.Add("$CleanBucket") | Out-Null
         }            
     }
 
@@ -266,7 +287,7 @@ Function Get-PublicAwsS3BucketListFromDomains
         }
 
         # Generate permutations
-        Write-Verbose "Generating permutations for $ListPrePerm_Count domains."
+        Write-Verbose "$ListPrePerm_Count domains provided."
         
         # Create permutations for each domain
         $List_PrePerm |
@@ -298,7 +319,7 @@ Function Get-PublicAwsS3BucketListFromDomains
             # Check if each permutation exists as s3 bucket
             $S3CheckCount = $List_PostPerm.count
             $MyCount = 0
-            Write-Verbose "$S3CheckCount S3 buckets will be checked."
+            Write-Verbose "$S3CheckCount permutations (S3 buckets) will be checked."
             $List_PostPerm | Get-Unique |
             ForEach-Object {
                 $MyCount = $MyCount + 1
@@ -447,4 +468,3 @@ Function Get-PublicAwsS3Config
     $TblOutput
 
 }
-
