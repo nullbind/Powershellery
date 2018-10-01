@@ -14,10 +14,15 @@
 # add option to export to file xml/csv
 # update help text - for both functions, and provide blog talking about configuration requirements
 # ability to take list of s3 buckets from pipeline or files
-# sites often use for images...so its worth searching for in body of sites that are in scope.. maybe taking contents of eye witness?
+# search for keywords and regex in file name and file contents
 # switch to outputing psobject instead of data table, big sites may take too long..
 # only focused on fully unauthenticated perspective...many of the other tools require creds...
-
+# region support and look for user enumeration based on api options
+# consider adding tie ins to services like cert stream and buckhacker
+# consider noting s3 bucket enumeration for burp/eyewitness etc
+# determine if account is associated with federatation
+# consider adding threading
+# add file download option
 
 #>
 Function Get-PublicAwsS3BucketList  
@@ -27,7 +32,8 @@ Function Get-PublicAwsS3BucketList
 
         [string]$S3BucketName,
         $S3FileList,
-        [string]$LastKey
+        [string]$LastKey,
+        [switch]$SuppressVerbose
         )
 
     begin
@@ -46,18 +52,26 @@ Function Get-PublicAwsS3BucketList
         if($LastKey){            
             $TargetUrl = "https://$S3BucketName.s3.amazonaws.com/?max-keys=1000&list-type=2&start-after=$LastKey"            
         }else{
-            $TargetUrl = "https://$S3BucketName.s3.amazonaws.com/?max-keys=1000&list-type=2"            
-            Write-Verbose "Sending initial request to server..."
-            Write-Verbose "Please note that enumerating large (>100,000 keys) S3 buckets can take up to 5 minutes..."
+            $TargetUrl = "https://$S3BucketName.s3.amazonaws.com/?max-keys=1000&list-type=2"     
+            
+            if(-not $SuppressVerbose){       
+                Write-Verbose "Sending initial request to server..."
+                Write-Verbose "Please note that enumerating large (>100,000 keys) S3 buckets can take up to 5 minutes..."
+            }
         }
 
         # Perform GET request for batch of 1000 records        
         try{
-            [xml]$S3Bucket = $GetBucket.DownloadString($TargetUrl)
+            [xml]$S3Bucket = $GetBucket.DownloadString($TargetUrl)            
         }catch{
-            $_.Exception.Message
-            return
-        }
+            
+            
+                #$_.Exception.Message
+                $ErrorCode = $_.Exception.Message.split("(")[2].replace(")","").replace("`"","")
+                write-verbose "$ErrorCode - $TargetUrl"
+                return
+            
+        }        
 
         # Display bucket information
         $S3BucketInfo = $S3Bucket.ListBucketResult | Select-Object Name,StartAfter,IsTruncated,Keycount
@@ -65,11 +79,13 @@ Function Get-PublicAwsS3BucketList
         $BucketStartAfter = $S3BucketInfo.StartAfter 
         $BucketTruncated = $S3BucketInfo.IsTruncated
         $BucketKeyCount = $S3BucketInfo.Keycount
-        Write-Verbose "     Base URL:https://$S3BucketName.s3.amazonaws.com/?max-keys=1000&list-type=2&start-after="
-        Write-Verbose "     Name: $BucketName"
-        Write-Verbose "     StartAfter: $BucketStartAfter"
-        Write-Verbose "     IsTruncated: $BucketTruncated"
-        Write-Verbose "     KeyCount: $BucketKeyCount"
+        if(-not $SuppressVerbose){  
+            Write-Verbose "     Base URL:https://$S3BucketName.s3.amazonaws.com/?max-keys=1000&list-type=2&start-after="
+            Write-Verbose "     Name: $BucketName"
+            Write-Verbose "     StartAfter: $BucketStartAfter"
+            Write-Verbose "     IsTruncated: $BucketTruncated"
+            Write-Verbose "     KeyCount: $BucketKeyCount"
+        }
 
         # Get file list for current batch
         $S3FileList += $S3Bucket.ListBucketResult.Contents
@@ -92,8 +108,10 @@ Function Get-PublicAwsS3BucketList
             
             # Return final count in verbose message 
             $FinalKeyCount = $S3FileList.Count
-            Write-Verbose "$FinalKeyCount keys (files) were found."
-            Write-Verbose "Generating output table..."
+            Write-Verbose "$FinalKeyCount keys (files) were found. - https://$S3BucketName.s3.amazonaws.com/?max-keys=1000&list-type=2"
+            if(-not $SuppressVerbose){                 
+                Write-Verbose "$S3BucketName - Generating output table..."
+            }
 
             # Flatten table structure                       
             $S3FileList |
@@ -125,6 +143,8 @@ Function Get-PublicAwsS3BucketList
     }
 }
 
+#
+
 
 # Command Examples
 # Google dork: filetype:pdf .s3.amazonaws.com ; filetype: xls site:s3.amazonaws.com
@@ -132,12 +152,11 @@ Function Get-PublicAwsS3BucketList
 # add finding notes about required access for this to work; get a lot of 403, and the occational 404
 
 # Get s3 bucket list
-$Output = Get-PublicAwsS3BucketList -Verbose -S3BucketName "thethingfromthatplace" 
-$Output = Get-PublicAwsS3BucketList -Verbose -S3BucketName "thethingfromthatplace" 
-
+# $Output = Get-PublicAwsS3BucketList -Verbose -S3BucketName "thethingfromthatplace" 
 
 # View S3 bucket list
-$Output | select -First 1
+# $Output | select -First 1
+
 
 <##
 Size         : 82838
@@ -151,13 +170,160 @@ FileType     : pdf
 ##>
 
 
-# Write s3 bucket list to xml file
+Function Get-PublicAwsS3BucketListFromDomains
+{
+    [CmdletBinding()]
+    Param(
+
+        [Parameter(Mandatory = $false, 
+        HelpMessage = 'File containing domain names.')]
+        [string]$FilePath,
+
+        [Parameter(Mandatory = $false, 
+        ValueFromPipeline = $true,
+        ValueFromPipelineByPropertyName = $true,
+        HelpMessage = 'name of the s3 bucket.')]
+        [string]$S3Bucket
+
+    )
+    
+    <#
+    Get-PublicAwsS3BucketListFromDomains -Verbose -FilePath C:\temp\list.txt    
+    Get-PublicAwsS3BucketListFromDomains -Verbose -FilePath C:\temp\list.txt -S3Bucket "testing"
+    "test.com","testing.com" | Get-PublicAwsS3BucketListFromDomains -Verbose 
+    GC Domains.txt | Get-PublicAwsS3BucketListFromDomains -Verbose 
+    GC Domains.txt | Get-PublicAwsS3BucketListFromDomains -Verbose -FilePath C:\temp\list.txt
+    $Results = Get-PublicAwsS3BucketListFromDomains -Verbose -FilePath C:\temp\list.txt   
+    $Results
+    #>
+
+    begin{
+
+            # Create a list of words to be used for permutations
+            $Permutations = New-Object System.Collections.ArrayList        
+            [void]$Permutations.Add("www")
+            [void]$Permutations.Add("test")
+            [void]$Permutations.Add("backup")
+            [void]$Permutations.Add("dev")
+            [void]$Permutations.Add("qa")
+            [void]$Permutations.Add("uat")
+            [void]$Permutations.Add("staging")
+            [void]$Permutations.Add("prod")
+
+            # Create list to conduct permutations against
+            $List_PrePerm = New-Object System.Collections.ArrayList
+
+            # Create list for storing S3 buckets to test
+            $List_PostPerm = New-Object System.Collections.ArrayList
+
+            # Load the file contents into preperm
+            if($FilePath){
+                
+                # Check if file exists                    
+                if(Test-Path $FilePath){                                   
+
+                Write-Verbose "Importing domains from $FilePath."
+
+                # Load contents of file
+                GC $FilePath | 
+                ForEach-Object{
+
+                    # Get domain
+                    $Domain = $_
+
+                    # Remove domain extenstion
+                    $DomainNoExt = $Domain.split('.')[0]  
+
+                    # Add to preperm list
+                    $List_PrePerm.Add("$DomainNoExt")
+                }
+            
+                }else{
+                    Write-Verbose "Importing domains from $FilePath Failed. File does not exist."
+                }
+            }
+    }
+
+    process{
+
+        # Process domain names provided as a parameter or pipeline item
+        if($S3Bucket){
+            [void]$List_PrePerm.Add("$S3Bucket")
+        }            
+    }
+
+    end{
+
+        # Get count of List_PrePerm
+        $ListPrePerm_Count = $List_PrePerm.count
+
+        if($ListPrePerm_Count -eq 0){
+            Write-Verbose "No files or S3 bucket names were provided for processing."
+            return
+        }
+
+        # Generate permutations
+        Write-Verbose "Generating permutations for $ListPrePerm_Count domains."
+        
+        # Create permutations for each domain
+        $List_PrePerm |
+        ForEach-Object{
+
+            $S3Name = $_
+
+            # Standalone word
+            $List_PostPerm.Add("$S3Name")| Out-Null
+
+            # Create permutation for s3 bucket
+            $Permutations |
+            ForEach-Object{ 
+                
+                # Concat to front                              
+                $List_PostPerm.Add("$_$S3Name")| Out-Null
+
+                # Add to front with dash
+                $List_PostPerm.Add("$_-$S3Name")| Out-Null
+
+                # Add to back with dash
+                $List_PostPerm.Add("$S3Name-$_") | Out-Null
+            }                        
+        }
+
+        # Perform requests if there is anything to process
+        if($List_PostPerm){
+
+            # Check if each permutation exists as s3 bucket
+            $S3CheckCount = $List_PostPerm.count
+            $MyCount = 0
+            Write-Verbose "$S3CheckCount S3 buckets will be checked."
+            $List_PostPerm | Get-Unique |
+            ForEach-Object {
+                $MyCount = $MyCount + 1
+                Write-Verbose "Testing $MyCount of $S3CheckCount "
+                Get-PublicAwsS3BucketList -S3BucketName $_ -SuppressVerbose           
+            }
+        }
+    }
+}
+
+Function Get-PublicAwsS3BucketListFromS3List
+{
+    [CmdletBinding()]
+    Param(
+
+        [string]$FilePath
+        )
+}
+
+<#
+# Write s3 bucket list to xml file - add function for export
 Write-Verbose "Exporting results to filelist.xml..."
 $Output | Export-Clixml filelist.xml
 
-# Get the file types in s3 bucket list
+# Get the file types in s3 bucket list - add function for summary data
 Write-Verbose "Getting list of file type stored in S3 buckets..."
 $Output | Where-Object FileType -NotLike "*/*" | Group-Object FileType | Select Name,Count | Sort-Object count -Descending
+#>
 
 <##
 PS C:\> $Output | Where-Object FileType -NotLike "*/*" | Group-Object FileType | Select Name,Count | Sort-Object count -Descending
@@ -189,7 +355,7 @@ mp4                                  1
 ##>
 
 # Select list of file type
-$Output | where filetype -like "ics"
+# $Output | where filetype -like "ics"
 
 <##
 
@@ -225,54 +391,57 @@ Function Get-PublicAwsS3Config
         [string]$S3BucketName
         )
 
-# Create list of taret urls
-$MyTargetUrls = New-Object System.Collections.ArrayList
-$MyTargetUrls.Add("policy") | Out-Null
-$MyTargetUrls.Add("requestPayment") | Out-Null
-$MyTargetUrls.Add("tagging") | Out-Null
-$MyTargetUrls.Add("versioning") | Out-Null
-$MyTargetUrls.Add("website")  | Out-Null
-$MyTargetUrls.Add("encryption") | Out-Null
-$MyTargetUrls.Add("lifecycle") | Out-Null
-$MyTargetUrls.Add("acl") | Out-Null
+    <#
+    # Check Access to management features
+    Get-PublicAwsS3Config -S3BucketName "thethingfromthatplace" -Verbose
 
-# Define output table
-$TblOutput = New-Object System.Data.DataTable
-$TblOutput.Columns.Add("Feature") | Out-Null
-$TblOutput.Columns.Add("Accessible") | Out-Null
-$TblOutput.Columns.Add("Details") | Out-Null
+    # Get initial inventory
+    $results = (Get-PublicAwsS3Config -S3BucketName "thethingfromthatplace"  | Where-Object accessible -Like "Yes" | Select details )
+    [xml]$Inventory = $results.Details
+    $Inventory.ListBucketResult.Contents 
+    #>
+
+    # Create list of taret urls
+    $MyTargetUrls = New-Object System.Collections.ArrayList
+    $MyTargetUrls.Add("policy") | Out-Null
+    $MyTargetUrls.Add("requestPayment") | Out-Null
+    $MyTargetUrls.Add("tagging") | Out-Null
+    $MyTargetUrls.Add("versioning") | Out-Null
+    $MyTargetUrls.Add("website")  | Out-Null
+    $MyTargetUrls.Add("encryption") | Out-Null
+    $MyTargetUrls.Add("lifecycle") | Out-Null
+    $MyTargetUrls.Add("acl") | Out-Null
+
+    # Define output table
+    $TblOutput = New-Object System.Data.DataTable
+    $TblOutput.Columns.Add("Feature") | Out-Null
+    $TblOutput.Columns.Add("Accessible") | Out-Null
+    $TblOutput.Columns.Add("Details") | Out-Null
 
 
-# Attempt to access each target url
-$WebClient = New-Object net.webclient
-$webclient.Headers.Add("Host:$S3BucketName.s3.amazonaws.com")
-[System.Net.ServicePointManager]::ServerCertificateValidationCallback = {$true}
-Write-Output "Checking access to $S3BucketName AWS S3 Resources..."
-$MyTargetUrls | 
-ForEach-Object{
+    # Attempt to access each target url
+    $WebClient = New-Object net.webclient
+    $webclient.Headers.Add("Host:$S3BucketName.s3.amazonaws.com")
+    [System.Net.ServicePointManager]::ServerCertificateValidationCallback = {$true}
+    Write-Output "Checking access to $S3BucketName AWS S3 Resources..."
+    $MyTargetUrls | 
+    ForEach-Object{
     
-    $Feature = $_
+        $Feature = $_
 
-    Write-Verbose "Trying https://s3.amazonaws.com/$_"
+        Write-Verbose "Trying https://s3.amazonaws.com/$_"
 
-    try{        
-        $Record = $WebClient.DownloadString("https://s3.amazonaws.com/$_")        
-        $TblOutput.Rows.Add($Feature,"Yes",$record) | Out-Null
+        try{        
+            $Record = $WebClient.DownloadString("https://s3.amazonaws.com/$_")        
+            $TblOutput.Rows.Add($Feature,"Yes",$record) | Out-Null
 
-    }catch{        
-        $ErrorCode = $_.Exception.Message.split("(")[2].replace(")","").replace("`"","")
-        $TblOutput.Rows.Add($Feature,"No",$ErrorCode) | Out-Null
+        }catch{        
+            $ErrorCode = $_.Exception.Message.split("(")[2].replace(")","").replace("`"","")
+            $TblOutput.Rows.Add($Feature,"No",$ErrorCode) | Out-Null
+        }
     }
+
+    $TblOutput
+
 }
 
-$TblOutput
-
-}
-
-# Check Access to management features
-Get-PublicAwsS3Config -S3BucketName "forthplatform" -Verbose
-
-# Get initial inventory
-$results = (Get-PublicAwsS3Config -S3BucketName "thethingfromthatplace"  | Where-Object accessible -Like "Yes" | Select details )
-[xml]$Inventory = $results.Details
-$Inventory.ListBucketResult.Contents 
