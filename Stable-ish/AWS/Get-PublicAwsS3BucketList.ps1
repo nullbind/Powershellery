@@ -2,7 +2,7 @@
 # Get-PublicAwsS3BucketList
 # ---------------------------------
 #  Author: Scott Sutherland (@_nullbind), NetSPI 2018
-# Version: 0.4
+# Version: 0.5
 # Description: This Function can be used to obtain a list of keys (files) stored in AWS s3 buckets.
 # it also supports feed guessing s3 buckets based on a list of domains which is can perform permutations on.
 # S3 buckets that have been make publically readable.
@@ -177,15 +177,18 @@ Function Get-PublicAwsS3BucketListFromDomains
     Param(
 
         [Parameter(Mandatory = $false, 
-        HelpMessage = 'File containing domain names.')]
-        [string]$FilePath,
+        HelpMessage = 'Provide a file containing domain names or desired S3 bucket names.')]
+        [string]$BucketList,
 
         [Parameter(Mandatory = $false, 
         ValueFromPipeline = $true,
         ValueFromPipelineByPropertyName = $true,
-        HelpMessage = 'name of the s3 bucket.')]
-        [string]$S3Bucket
+        HelpMessage = 'Provide the base S3Bucket name.')]
+        [string]$S3Bucket,
 
+        [Parameter(Mandatory = $false, 
+        HelpMessage = 'Perform enumeration using basic permutations.')]
+        [switch]$Permutate
     )
 
     <#
@@ -239,15 +242,15 @@ Function Get-PublicAwsS3BucketListFromDomains
             $List_PostPerm = New-Object System.Collections.ArrayList
 
             # Load the file contents into preperm
-            if($FilePath){
+            if($BucketList){
                 
                 # Check if file exists                    
-                if(Test-Path $FilePath){                                   
+                if(Test-Path $BucketList){                                   
 
-                Write-Verbose "Importing domains from $FilePath."
+                Write-Verbose "Importing domains from $BucketList."
 
                 # Load contents of file
-                GC $FilePath | 
+                GC $BucketList | 
                 ForEach-Object{
 
                     # Get domain
@@ -258,10 +261,13 @@ Function Get-PublicAwsS3BucketListFromDomains
 
                     # Add to preperm list
                     $List_PrePerm.Add("$DomainNoExt") | Out-Null
+
+                    # Standalone word
+                    $List_PostPerm.Add("$DomainNoExt")| Out-Null
                 }
             
                 }else{
-                    Write-Verbose "Importing domains from $FilePath Failed. File does not exist."
+                    Write-Verbose "Importing domains from $BucketList Failed. File does not exist."
                 }
             }
             Write-Verbose "Importing domains from pipeline and provided parameters."
@@ -273,6 +279,9 @@ Function Get-PublicAwsS3BucketListFromDomains
         if($S3Bucket){
             $CleanBucket = $S3Bucket.Replace("mail.", "").Replace("www.", "").split('.')[0] 
             $List_PrePerm.Add("$CleanBucket") | Out-Null
+            
+            # Standalone word
+            $List_PostPerm.Add("$CleanBucket")| Out-Null
         }            
     }
 
@@ -286,31 +295,31 @@ Function Get-PublicAwsS3BucketListFromDomains
             return
         }
 
-        # Generate permutations
-        Write-Verbose "$ListPrePerm_Count domains provided."
+        if($Permutate){
+
+            # Generate permutations
+            Write-Verbose "$ListPrePerm_Count domains provided."
         
-        # Create permutations for each domain
-        $List_PrePerm |
-        ForEach-Object{
+            # Create permutations for each domain
+            $List_PrePerm |
+            ForEach-Object{
 
-            $S3Name = $_
+                $S3Name = $_
 
-            # Standalone word
-            $List_PostPerm.Add("$S3Name")| Out-Null
-
-            # Create permutation for s3 bucket
-            $Permutations |
-            ForEach-Object{ 
+                # Create permutation for s3 bucket
+                $Permutations |
+                ForEach-Object{ 
                 
-                # Concat to front                              
-                $List_PostPerm.Add("$_$S3Name")| Out-Null
+                    # Concat to front                              
+                    $List_PostPerm.Add("$_$S3Name")| Out-Null
 
-                # Add to front with dash
-                $List_PostPerm.Add("$_-$S3Name")| Out-Null
+                    # Add to front with dash
+                    $List_PostPerm.Add("$_-$S3Name")| Out-Null
 
-                # Add to back with dash
-                $List_PostPerm.Add("$S3Name-$_") | Out-Null
-            }                        
+                    # Add to back with dash
+                    $List_PostPerm.Add("$S3Name-$_") | Out-Null
+                }                        
+            }
         }
 
         # Perform requests if there is anything to process
