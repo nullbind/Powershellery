@@ -2,7 +2,7 @@
 # Get-PublicAwsS3BucketList
 # ---------------------------------
 #  Author: Scott Sutherland (@_nullbind), NetSPI 2018
-# Version: 0.1
+# Version: 0.2
 # Description: This Function can be used to obtain a list of keys (files) stored in AWS 
 # S3 buckets that have been make publically readable.
 # Ref: https://docs.aws.amazon.com/AmazonS3/latest/API/v2-RESTBucketGET.html
@@ -187,6 +187,8 @@ Function Get-PublicAwsS3BucketListFromDomains
 
     )
     
+    # todo: remove mail. www. etf prefixes
+
     <#
     Get-PublicAwsS3BucketListFromDomains -Verbose -FilePath C:\temp\list.txt    
     Get-PublicAwsS3BucketListFromDomains -Verbose -FilePath C:\temp\list.txt -S3Bucket "testing"
