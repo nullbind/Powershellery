@@ -3,7 +3,8 @@
 # ---------------------------------
 #  Author: Scott Sutherland (@_nullbind), NetSPI 2018
 # Version: 0.2
-# Description: This Function can be used to obtain a list of keys (files) stored in AWS 
+# Description: This Function can be used to obtain a list of keys (files) stored in AWS s3 buckets.
+# it also supports feed guessing s3 buckets based on a list of domains which is can perform permutations on.
 # S3 buckets that have been make publically readable.
 # Ref: https://docs.aws.amazon.com/AmazonS3/latest/API/v2-RESTBucketGET.html
 # Ref: https://docs.aws.amazon.com/AmazonS3/latest/dev/using-with-s3-actions.html#using-with-s3-actions-related-to-buckets
