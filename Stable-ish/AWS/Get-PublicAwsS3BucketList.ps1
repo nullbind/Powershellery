@@ -24,6 +24,8 @@
 # determine if account is associated with federatation
 # consider adding threading
 # add file download option
+# note that access denied means it exists, but listings are not possible from an unauthenticated perspective, 
+#  - however, other attacks may be possible so there should be a list only option. non there, access denied, list, list/write etc
 
 #>
 Function Get-PublicAwsS3BucketList  
