@@ -6,6 +6,7 @@
 
 # Example commands
 # Get-IpInfoFromCap -capPath "c:\temp\packetcapture.cap" -Verbose -DstIp 1.1.1.1
+# Get-IpInfoFromCap -capPath "c:\temp\packetcapture.cap" -Verbose -DstIp 1.1.1.1 -UDP
 # Get-IpInfoFromCap -capPath "c:\temp\packetcapture.cap" -Verbose -DstIp 1.1.1.1 | Out-GridView
 # Get-IpInfoFromCap -capPath "c:\temp\packetcapture.cap" -Verbose -DstIp 1.1.1.1 | Export-Csv c:\temp\output.csv
 # Get-IpInfoFromCap -capPath "c:\temp\packetcapture.cap" -Verbose -DstIp 1.1.1.1 -IpAPI
@@ -21,11 +22,14 @@ Function Get-IpInfoFromCap{
         [string]$DstIp,
         [int]$Port,
         [string]$TsharkPath,
-        [switch]$IpAPI
+        [switch]$IpAPI,
+        [switch]$UDP
     )
        
     Begin
     {
+        # Set TCP/UDP variable for filtering
+        if ($UDP){$protocol = "udp"}else{$protocol= "tcp"}
         # Set tshark path
         if( -not $TsharkPath){           
             $TsharkPath = 'C:\Program Files\Wireshark\tshark.exe'
@@ -104,7 +108,7 @@ Function Get-IpInfoFromCap{
             $a2 = "-Tfields"
             $a3 = "-eip.src"
             $a4 = "-eip.dst"
-            $a5 = "-etcp.dstport"
+            $a5 = "-e$protocol.dstport"
             $a7 = "-Eheader=y"
             $a8 = "-Eseparator=`,"
             $a9 = "-Eoccurrence=f"
@@ -182,12 +186,12 @@ Function Get-IpInfoFromCap{
             $DestinationIp =  $_.'ip.dst'
 
             # loop through full list
-            $CapData | select ip.src,ip.dst,tcp.dstport -Unique |
+            $CapData | select ip.src,ip.dst,"$protocol.dstport" -Unique |
             ForEach-Object{
 
                 $Src = $_.'ip.src'
                 $Dst = $_.'ip.dst'
-                $Port = $_.'tcp.dstport'
+                $Port = $_."$protocol.dstport"
 
                 # check if it is current ip
                 if(($SourceIp -eq $Src) -and ($DestinationIp -eq $Dst)){                    
