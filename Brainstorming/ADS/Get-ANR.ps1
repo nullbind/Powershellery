@@ -1,4 +1,5 @@
 ﻿# Ref: http://social.technet.microsoft.com/wiki/contents/articles/5392.active-directory-ldap-syntax-filters.aspx
+ # http://www.rlmueller.net/AmbiguousNameResolution.htm
 function Get-ANR
 {
     [CmdletBinding()]
