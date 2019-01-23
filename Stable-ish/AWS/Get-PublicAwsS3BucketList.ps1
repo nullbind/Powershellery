@@ -2,7 +2,7 @@
 # Get-PublicAwsS3BucketList
 # ---------------------------------
 #  Author: Scott Sutherland (@_nullbind), NetSPI 2018
-# Version: 0.5
+# Version: 0.6
 # Description: This Function can be used to obtain a list of keys (files) stored in AWS s3 buckets.
 # it also supports feed guessing s3 buckets based on a list of domains which is can perform permutations on.
 # S3 buckets that have been make publically readable.
@@ -72,6 +72,21 @@ Function Get-PublicAwsS3BucketList
                 #$_.Exception.Message
                 $ErrorCode = $_.Exception.Message.split("(")[2].replace(")","").replace("`"","")
                 write-verbose "$ErrorCode - $TargetUrl"
+
+                # Return record
+                if ($ErrorCode -like "*403*"){
+                    New-Object PSObject -Property @{                     
+                        URL="$TargetUrl";
+                        BucketName = "$S3BucketName"
+                        Key="NA"; 
+                        FileType="NA"
+                        LastModified="NA";
+                        ETag="NA";
+                        Size="NA";
+                        StorageClass="NA"
+                        Comment="Access Forbidden"
+                    }
+                }
                 return
             
         }        
@@ -82,6 +97,7 @@ Function Get-PublicAwsS3BucketList
         $BucketStartAfter = $S3BucketInfo.StartAfter 
         $BucketTruncated = $S3BucketInfo.IsTruncated
         $BucketKeyCount = $S3BucketInfo.Keycount
+
         if(-not $SuppressVerbose){  
             Write-Verbose "     Base URL:https://$S3BucketName.s3.amazonaws.com/?max-keys=1000&list-type=2&start-after="
             Write-Verbose "     Name: $BucketName"
@@ -136,6 +152,7 @@ Function Get-PublicAwsS3BucketList
                     ETag=$_.ETag;
                     Size=$_.Size;
                     StorageClass=$_.StorageClass;
+                    Comment="List Permission Granted to Everyone";
                 }
             }
         }
