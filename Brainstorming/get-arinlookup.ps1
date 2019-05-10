@@ -21,9 +21,16 @@ $MyIPs | ForEach-Object {
 
     # Send whois request to arin via restful api
     $targetip = $IpAddress[0]
-    Write-Output "Looking up $targetip..."
+
+    # arin lookup
     $web = new-object system.net.webclient
     [xml]$results = $web.DownloadString("http://whois.arin.net/rest/ip/$targetip")
+
+    # Send location query to http://ip-api.com via xml api
+    if ($IpAddress){
+        $web2 = new-object system.net.webclient
+        [xml]$results2 = $web2.DownloadString("http://ip-api.com/xml/$targetip")
+    }
 
     # Parse data from responses    
     $IpOwner = $results.net.name 
@@ -46,7 +53,7 @@ $MyIPs | ForEach-Object {
       "$IpISP") | Out-Null
 
     # status the user
-    Write-Verbose "Dest:$CurrentDest Src:$IpAddress Owner: $IpOwner ($IpCountry) ($IpStart -$IpEnd)"
+    Write-Output "Dest:$CurrentDest Src:$IpAddress Owner: $IpOwner ($IpCountry) ($IpStart -$IpEnd)"
     
 }
 
