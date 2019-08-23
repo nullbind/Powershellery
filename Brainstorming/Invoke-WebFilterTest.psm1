@@ -107,6 +107,8 @@ Function Invoke-WebFilterTest{
             try {
 
                 # Send HTTP request and get results
+                # disable the passthrough authentication to determine what doesnt have to go through the authenticated proxy ;)
+                $HTTP_Handle.Proxy.Credentials = [System.Net.CredentialCache]::DefaultNetworkCredentials
                 $Results = $HTTP_Handle.DownloadString("$CurrentUrl")                
 
                 # Check for blocks
