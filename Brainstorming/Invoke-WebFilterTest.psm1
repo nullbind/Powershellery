@@ -1,20 +1,26 @@
 
 Function Invoke-WebFilterTest{
+
     # Invoke-WebFilterTest
     # Author: scott sutherland
-    # Description The basic idea is to build out a quick script to check for access to code repo, file share, and online clipboards used by common malware. 
-    # Note: This is a very basic /poor  poc.  Ideally it would be nice to include common web filter categories and summary data in output. Also, runspaces for larger lists.
+    # Description The basic idea is to build out a quick script to check for access to code repositories, file shares, and online clipboards used by common malware. 
+    # Note: This is a very basic PoC.  Ideally it would be nice to include common web filter categories and summary data in output. Also, runspaces for larger lists.
     # Note: should test access to known blacklisted site
     # Note: should test access to uncategorized site
     # Note: should test more categories
     # Note: Should add a shorter timeout
+    
+    # Example Commands:
     # Invoke-WebFilterTest -Verbose
+    # Invoke-WebFilterTest -Verbose -$ListPath c:\temp\urls.txt
+    # Invoke-WebFilterTest -Verbose -$ListPath c:\temp\urls.txt -UseCurrentUserContext
     # Invoke-WebFilterTest -Verbose | Export-Csv -NoTypeInformation c:\temp\webfiltertest.csv
 
     [CmdletBinding()]
     param
     (
-        [string]$ListPath
+        [string]$ListPath,
+        [Switch]$UseCurrentUserContext
     )
 
     Begin
@@ -105,10 +111,18 @@ Function Invoke-WebFilterTest{
             $CurrentUrl = $_.URL 
             $Block = 0
             try {
+               
+                # Enable passthrough authentication to authenticate to the proxy using your current user context;)
+                if($UseCurrentUserContext)
+                {
+                    $HTTP_Handle.Proxy.Credentials = [System.Net.CredentialCache]::DefaultNetworkCredentials
+                }
+
+                # Reduce ssl requirements
+                [System.Net.ServicePointManager]::ServerCertificateValidationCallback = {$true}
+                [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
                 # Send HTTP request and get results
-                # disable the passthrough authentication to determine what doesnt have to go through the authenticated proxy ;)
-                $HTTP_Handle.Proxy.Credentials = [System.Net.CredentialCache]::DefaultNetworkCredentials
                 $Results = $HTTP_Handle.DownloadString("$CurrentUrl")                
 
                 # Check for blocks
@@ -144,4 +158,3 @@ Function Invoke-WebFilterTest{
         $ResultsTbl
     }
 }
-
