@@ -1,0 +1,21 @@
+Command Line
+wevtutil el | Foreach-Object {wevtutil cl "$_"}
+wevtutil cl system
+wevtutil cl application
+wevtutil cl security
+
+VBScript
+strComputer = "."
+Set objWMIService = GetObject("winmgmts:" _
+& "{impersonationLevel=impersonate, (Backup, Security)}!\\" _
+& strComputer & "\root\cimv2")
+Set colLogFiles = objWMIService.ExecQuery _
+("Select * from Win32_NTEventLogFile")
+For each objLogfile in colLogFiles
+objLogFile.ClearEventLog()
+Next
+
+PowerShell
+Clear-EventLog
+Clear-EventLog "Windows PowerShell"
+Clear-EventLog -LogName "ODiag", "OSession" -ComputerName "localhost", "Server02"
