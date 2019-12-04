@@ -17,3 +17,17 @@ version="1.0">
 2. Test minimalist.xsl execution using wmic xsl file.
 
 wmic os get /FORMAT:minimalist.xsl
+
+
+get-wmiobject -class "win32_share" -namespace "root\CIMV2" -computer "targetname"
+Get-CimInstance -Query "SELECT * FROM CIM_DataFile WHERE Drive = 'C:' AND Path = '\\'"
+Get-CimInstance -Query "SELECT * FROM Win32_Directory WHERE Drive = 'C:' AND Path = '\\'"
+Get-WmiObject -Namespace ROOT/SecurityCenter2 -Class AntiSpywareProduct -ComputerName 10.1.1.1 -Credential $Credential
+Get-WmiObject -Query "SELECT * FROM AntiSpywareProduct" -NameSpace ROOT/SecurityCenter2 -ComputerName 10.1.1.1 -Credential $Credential
+Get-CimInstance -Namespace ROOT/SecurityCenter2 -ClassName AntiSpywareProduct -CimSession $CimSession
+Get-WmiObject -Namespace ROOT/SecurityCenter2 -Class AntiVirusProduct -ComputerName 10.1.1.1 -Credential $Credential
+Get-WmiObject -Query "SELECT * FROM AntiVirusProduct" -NameSpace ROOT/SecurityCenter2 -ComputerName 10.1.1.1 -Credential $Credential
+Get-CimInstance -Namespace ROOT/SecurityCenter2 -ClassName AntiVirusProduct -CimSession $CimSession
+Get-WmiObject -Namespace ROOT/SecurityCenter2 -Class FirewallProduct -ComputerName 10.1.1.1 -Credential $Credential
+Get-WmiObject -Query "SELECT * FROM AntiVirusProduct" -NameSpace ROOT/SecurityCenter2 -ComputerName 10.1.1.1 -Credential $Credential
+Get-CimInstance -Namespace ROOT/SecurityCenter2 -ClassName FirewallProduct -CimSession $CimSession
