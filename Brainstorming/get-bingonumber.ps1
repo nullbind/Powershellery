@@ -26,11 +26,9 @@ Function Get-BingoNumbers
             # Update count of numbers called
             $CalledCount = $CalledNumbers.Count                
 
-        }else{
-            # write-output "already exists"
-        }    
+        }
     }
 }
 
-
+# Call numbers
 Get-BingoNumbers
