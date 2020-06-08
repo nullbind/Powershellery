@@ -1,14 +1,15 @@
 # Author: scott sutherland
 # This script uses tshark to parse the src.ip, dst.ip, and dst.port from a provided .cap file. It then looks up owner information.
-# Todo: add src filters, add threading (its super slow), add udp parsing
+# Add threading (its super slow)
+# Add udp parsing
 # Note: currently udp ports are not imported and show up as 0
-# information on ips are grabbed from arin.net and ip-api.com
 
 # Example commands
-# Get-IpInfoFromCap -capPath "c:\temp\packetcapture.cap" -Verbose -DstIp 1.1.1.1
-# Get-IpInfoFromCap -capPath "c:\temp\packetcapture.cap" -Verbose -DstIp 1.1.1.1 | Out-GridView
-# Get-IpInfoFromCap -capPath "c:\temp\packetcapture.cap" -Verbose -DstIp 1.1.1.1 | Export-Csv c:\temp\output.csv
-# Get-IpInfoFromCap -capPath "c:\temp\packetcapture.cap" -Verbose -DstIp 1.1.1.1 -IpAPI
+# Get-IpInfoFromCap -capPath "c:\temp\packetcapture.cap" -Verbose -IpFilter 1.1.1.1
+# Get-IpInfoFromCap -capPath "c:\temp\packetcapture.cap" -Verbose -IpFilter 1.1.1.1
+# Get-IpInfoFromCap -capPath "c:\temp\packetcapture.cap" -Verbose -IpFilter 1.1.1.1 | Out-GridView
+# Get-IpInfoFromCap -capPath "c:\temp\packetcapture.cap" -Verbose -IpFilter 1.1.1.1 | Export-Csv c:\temp\output.csv
+# Get-IpInfoFromCap -capPath "c:\temp\packetcapture.cap" -Verbose -IpFilter 1.1.1.1 -IpAPI
 
 Function Get-IpInfoFromCap{
 
@@ -17,8 +18,7 @@ Function Get-IpInfoFromCap{
     (
         [Parameter(Mandatory=$True, ValueFromPipeline = $true, HelpMessage="Cap file path.")]
         [string]$capPath,
-        [string]$SrcIp,
-        [string]$DstIp,
+        [string]$IpFilter,
         [int]$Port,
         [string]$TsharkPath,
         [switch]$IpAPI
@@ -50,19 +50,20 @@ Function Get-IpInfoFromCap{
         $TblIPInfo.Columns.Add("IpDest") | Out-Null
         $TblIPInfo.Columns.Add("IpSrc") | Out-Null
         $TblIPInfo.Columns.Add("Owner") | Out-Null
+        $TblIPInfo.Columns.Add("ArinRef") | Out-Null
         $TblIPInfo.Columns.Add("StartRange") | Out-Null
         $TblIPInfo.Columns.Add("EndRange") | Out-Null
         $TblIPInfo.Columns.Add("Country") | Out-Null
         $TblIPInfo.Columns.Add("City") | Out-Null
         $TblIPInfo.Columns.Add("Zip") | Out-Null
-        $TblIPInfo.Columns.Add("ISP") | Out-Null
-        #$TblIPInfo.Columns.Add("Ports") | Out-Null     
+        $TblIPInfo.Columns.Add("ISP") | Out-Null   
         
         # Output table
         $OutputTbl = new-object System.Data.DataTable
         $OutputTbl.Columns.Add("IpSrc") | Out-Null
         $OutputTbl.Columns.Add("IpDest") | Out-Null       
         $OutputTbl.Columns.Add("Owner") | Out-Null
+        $OutputTbl.Columns.Add("ArinRef") | Out-Null
         $OutputTbl.Columns.Add("StartRange") | Out-Null
         $OutputTbl.Columns.Add("EndRange") | Out-Null
         $OutputTbl.Columns.Add("Country") | Out-Null
@@ -89,10 +90,10 @@ Function Get-IpInfoFromCap{
         }                                  
             
         # Set DstIp filter
-        if(-not $DstIp){           
-            $DstIpFilter = ""
+        if(-not $IpFilter){           
+            $CurrentIpFilter = ""
         }else{
-            $DstIpFilter = "-Yip.dst==$DstIp"
+            $CurrentIpFilter = "-Yip.addr==$IpFilter"
         }
 
         # Execute tshark command (parse cap)
@@ -109,7 +110,7 @@ Function Get-IpInfoFromCap{
             $a8 = "-Eseparator=`,"
             $a9 = "-Eoccurrence=f"
 
-            $TsharkCmdOutput = &$TsharkPath $a1 $a2 $a3 $a4 $a5 $DstIpFilter $a7 $a8 $a9
+            $TsharkCmdOutput = &$TsharkPath $a1 $a2 $a3 $a4 $a5 $CurrentIpFilter $a7 $a8 $a9
 
         }catch{
             Write-Warning "Bummer. Something went wrong..."
@@ -119,9 +120,9 @@ Function Get-IpInfoFromCap{
         # Import data tshark parsed
         $CapData = ConvertFrom-Csv -InputObject $TsharkCmdOutput
 
-        # Import all parsed data (SrcIp, DstIp, Port) into $TblPortInfo
+        # Import all parsed data (SrcIp, DstIp, Port) into $TblPortInfo        
         $capDataIpOnly = $CapData | select ip.src,ip.dst -Unique | Sort-Object ip.src | select -Skip 1
-
+        
         # Status user
         Write-Host "Getting IP information..."
 
@@ -136,25 +137,22 @@ Function Get-IpInfoFromCap{
             $web = new-object system.net.webclient
             [xml]$results = $web.DownloadString("http://whois.arin.net/rest/ip/$IpAddress")
 
-            # Send location query to http://ip-api.com via xml api
-            if ($IpAPI){
-                $web2 = new-object system.net.webclient
-                [xml]$results2 = $web2.DownloadString("http://ip-api.com/xml/$IpAddress")
-            }
 
             # Parse data from responses    
             $IpOwner = $results.net.name 
             $IpStart = $results.net.startAddress
-            $IpEnd = $results.net.endaddress  
-            $IpCountry = $results2.query.country.'#cdata-section'
-            $IpCity = $results2.query.city.'#cdata-section'
-            $IpZip = $results2.query.zip.'#cdata-section'
-            $IpISP = $results2.query.isp.'#cdata-section'
+            $IpEnd = $results.net.endaddress 
+            $ArinRef = "http://whois.arin.net/rest/ip/$IpAddress" 
+            $IpCountry = ""
+            $IpCity = ""
+            $IpZip = ""
+            $IpISP = ""
 
             # Put results in the data table   
             $TblIPInfo.Rows.Add("$CurrentDest",
                               "$IpAddress",
                               "$IpOwner",
+                              "$ArinRef",
                               "$IpStart",
                               "$IpEnd",
                               "$IpCountry",
@@ -230,6 +228,7 @@ Function Get-IpInfoFromCap{
                 $IpInfoIpSrc = $_.IpSrc
                 $IpInfoIpDst = $_.IpDest                
                 $IpInfoOwner = $_.Owner
+                $ArinRef = $_.ArinRef
                 $IpInfoStartRange = $_.StartRange
                 $IpInfoEndRange = $_.EndRange
                 $IpInfoCountry = $_.Country
@@ -244,6 +243,7 @@ Function Get-IpInfoFromCap{
                     $OutputTbl.Rows.Add($IpInfoIpSrc,
                                         $IpInfoIpDst,               
                                         $IpInfoOwner,
+                                        $ArinRef,
                                         $IpInfoStartRange,
                                         $IpInfoEndRange,
                                         $IpInfoCountry,
