@@ -57,3 +57,6 @@ public class Sample : System.Configuration.Install.Installer
                                 
                 }               
 }
+
+
+// C:\Windows\Microsoft.NET\Framework64\v3.5\csc.exe /r:System.EnterpriseServices.dll /r:C:\Windows\assembly\GAC_MSIL\System.Management.Automation\1.0.0.0__31bf3856ad364e35\System.Management.Automation.dll /r:C:\Windows\assembly\GAC_MSIL\Microsoft.Build.Framework\3.5.0.0__b03f5f7f11d50a3a\Microsoft.Build.Framework.dll /r:C:\Windows\assembly\GAC_MSIL\Microsoft.Build.Utilities.v3.5\3.5.0.0__b03f5f7f11d50a3a\Microsoft.Build.Utilities.v3.5.dll /out:executePowerShell.exe executePowerShell.cs
