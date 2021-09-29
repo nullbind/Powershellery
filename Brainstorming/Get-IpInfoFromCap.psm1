@@ -165,6 +165,9 @@ Function Get-IpInfoFromCap{
     
         }
         
+        # Save Output
+        $TblIPInfo | Export-Csv -NoTypeInformation ./ipinfo.csv
+
         # Status user
         Write-Host "Consolidating ports..."
 
