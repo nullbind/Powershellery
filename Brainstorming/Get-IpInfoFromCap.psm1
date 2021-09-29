@@ -49,6 +49,7 @@ Function Get-IpInfoFromCap{
         $TblIPInfo = new-object System.Data.DataTable
         $TblIPInfo.Columns.Add("IpDest") | Out-Null
         $TblIPInfo.Columns.Add("IpSrc") | Out-Null
+        $TblIPInfo.Columns.Add("Org") | Out-Null
         $TblIPInfo.Columns.Add("Owner") | Out-Null
         $TblIPInfo.Columns.Add("ArinRef") | Out-Null
         $TblIPInfo.Columns.Add("StartRange") | Out-Null
@@ -61,7 +62,8 @@ Function Get-IpInfoFromCap{
         # Output table
         $OutputTbl = new-object System.Data.DataTable
         $OutputTbl.Columns.Add("IpSrc") | Out-Null
-        $OutputTbl.Columns.Add("IpDest") | Out-Null       
+        $OutputTbl.Columns.Add("IpDest") | Out-Null               
+        $OutputTbl.Columns.Add("IpOrg") | Out-Null
         $OutputTbl.Columns.Add("Owner") | Out-Null
         $OutputTbl.Columns.Add("ArinRef") | Out-Null
         $OutputTbl.Columns.Add("StartRange") | Out-Null
@@ -140,6 +142,7 @@ Function Get-IpInfoFromCap{
 
             # Parse data from responses    
             $IpOwner = $results.net.name 
+            $IpOrg = $results.net.orgRef.name
             $IpStart = $results.net.startAddress
             $IpEnd = $results.net.endaddress 
             $ArinRef = "http://whois.arin.net/rest/ip/$IpAddress" 
@@ -151,6 +154,7 @@ Function Get-IpInfoFromCap{
             # Put results in the data table   
             $TblIPInfo.Rows.Add("$CurrentDest",
                               "$IpAddress",
+                              "$IpOrg",
                               "$IpOwner",
                               "$ArinRef",
                               "$IpStart",
@@ -161,7 +165,7 @@ Function Get-IpInfoFromCap{
                               "$IpISP") | Out-Null
 
             # status the user
-            Write-Verbose "Dest:$CurrentDest Src:$IpAddress Owner: $IpOwner ($IpCountry) ($IpStart -$IpEnd)"
+            Write-Verbose "Dest:$CurrentDest Src:$IpAddress Org: $IpOrg Owner: $IpOwner ($IpCountry) ($IpStart -$IpEnd)"
     
         }
         
@@ -230,6 +234,7 @@ Function Get-IpInfoFromCap{
                 # Get ip info
                 $IpInfoIpSrc = $_.IpSrc
                 $IpInfoIpDst = $_.IpDest                
+                $IpOrg = $_.IpOrg
                 $IpInfoOwner = $_.Owner
                 $ArinRef = $_.ArinRef
                 $IpInfoStartRange = $_.StartRange
@@ -244,7 +249,8 @@ Function Get-IpInfoFromCap{
 
                     # Put results in the data table   
                     $OutputTbl.Rows.Add($IpInfoIpSrc,
-                                        $IpInfoIpDst,               
+                                        $IpInfoIpDst, 
+                                        $IpOrg,              
                                         $IpInfoOwner,
                                         $ArinRef,
                                         $IpInfoStartRange,
