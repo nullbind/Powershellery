@@ -29,7 +29,7 @@ ForEach-Object{
     $Spaces     | O .   |
     $Spaces     \ .     /  
     $Spaces      |     |
-    $Spaces      ( O O )
+    $Spaces      ( 0 0 )
     $Spaces      / / \ \__  
     $Spaces    )/ /|||\ \( 
     $Spaces  _(( /(( ))\ ))(("    
