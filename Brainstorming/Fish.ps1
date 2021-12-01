@@ -44,8 +44,8 @@ ForEach-Object{
     
     # Fish 5 object
     $Fish5 = "       
-    $Spaces      ><(((o>
-    $Spaces             ><(((o>"  
+    $Spaces      ><(((o>    
+    $Spaces             ><(((o> 
     $Spaces  ><(((o>"  
     
     # Choose random bubbles
