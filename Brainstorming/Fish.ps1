@@ -48,6 +48,11 @@ ForEach-Object{
     $Spaces             ><(((o> 
     $Spaces  ><(((o>"  
     
+    $Fish6 = "       __  |__
+    $Fish6 =       __L L_|L L__
+    $Fish6 = ...[+(____________)
+    $Fish6 =        C_________/
+    
     # Choose random bubbles
     $myBubbles = New-Object System.Collections.ArrayList
     $myBubbles.Add("$Bubbles1") | Out-Null
@@ -62,7 +67,8 @@ ForEach-Object{
     $myFish.Add("$Fish3") | Out-Null
     $myFish.Add("$Fish4") | Out-Null
     $myFish.Add("$Fish5") | Out-Null
-    $RandomFish = Get-Random -Maximum 5
+    $myFish.Add("$Fish6") | Out-Null
+    $RandomFish = Get-Random -Maximum 6
     $DisplayFish = $myFish[$RandomFish]
 
     Write-Output "$DisplayBubbles"
