@@ -1,4 +1,4 @@
 <?xml version="1.0"?>
-<whoami>
-whoami
-</whoami>
+<TagYourIt>
+Get-Process
+</TagYourIt>
