@@ -1,5 +1,5 @@
 # Generates 5 fish
-1..5| 
+1..1000| 
 ForEach-Object{       
 
     # Set random number of spaces
@@ -68,6 +68,8 @@ ForEach-Object{
 
     Write-Output "$DisplayBubbles"
     Write-Output "$DisplayFish" 
+
+    Write-Output "$DisplayFish" | Out-File C:\temp\fish-test.log
 
     # Delay the print
     sleep .75
