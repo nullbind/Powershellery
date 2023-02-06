@@ -1,0 +1,5 @@
+<command>
+   <a>
+      <execute>whoami</execute>
+   </a>
+  </command>
