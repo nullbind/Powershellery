@@ -51,7 +51,7 @@ ForEach-Object{
     $Fish6 = "       __  |__
     $Fish6 =       __L L_|L L__
     $Fish6 = ...[+(____________)
-    $Fish6 =        C_________/
+    $Fish6 =        C_________/"
     
     # Choose random bubbles
     $myBubbles = New-Object System.Collections.ArrayList
