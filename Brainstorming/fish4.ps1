@@ -69,6 +69,9 @@ ForEach-Object{
     Write-Output "$DisplayBubbles"
     Write-Output "$DisplayFish" 
 
+    # Set-Content
+    # SC | sc
+    # Out-File
     [System.IO.File]::WriteAllLines("c:\temp\fish.log",$DisplayFish)
 
     # Delay the print
