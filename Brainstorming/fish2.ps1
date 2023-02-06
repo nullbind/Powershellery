@@ -69,7 +69,7 @@ ForEach-Object{
     Write-Output "$DisplayBubbles"
     Write-Output "$DisplayFish" 
 
-    Write-Output "$DisplayFish" | Out-File C:\temp\fish-test.log
+    $DisplayFish | | Set-Content -Path c:\temp\fish-test.log
 
     # Delay the print
     sleep .75
